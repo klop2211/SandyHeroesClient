@@ -1,0 +1,349 @@
+#include "stdafx.h"
+#include "GameFramework.h"
+#include "Timer.h"
+
+GameFramework* GameFramework::kGameFramework = nullptr;
+
+
+GameFramework::GameFramework(HINSTANCE hinstance, HWND hwnd) 
+    : app_instance_(hinstance), main_wnd_(hwnd)
+{
+	assert(kGameFramework == nullptr);
+	kGameFramework = this;
+}
+
+GameFramework::~GameFramework()
+{
+    if (d3d_device_)
+    {
+        FlushCommandQueue();
+    }
+}
+
+void GameFramework::Initialize()
+{
+    InitDirect3D();
+
+    OnResize();
+
+    client_timer_.reset(new Timer);
+    client_timer_->Reset();
+}
+
+void GameFramework::InitDirect3D()
+{
+    UINT dxgi_farctory_flags = 0;
+
+#if defined(DEBUG) | defined(_DEBUG)
+    // D3D12 디버그 레이어를 활성화 합니다.
+    {
+        ComPtr<ID3D12Debug> debugController;
+        D3D12GetDebugInterface(IID_PPV_ARGS(&debugController));
+    }
+    dxgi_farctory_flags |= DXGI_CREATE_FACTORY_DEBUG;
+#endif
+
+    CreateDXGIFactory2(dxgi_farctory_flags, IID_PPV_ARGS(&dxgi_factory_));
+
+    // 하드웨어 디바이스의 생성을 시도합니다.
+    HRESULT hardwareResult = D3D12CreateDevice(
+        nullptr, // 기본 어뎁터 사용합니다.
+        D3D_FEATURE_LEVEL_12_0,
+        IID_PPV_ARGS(&d3d_device_));
+
+    // 실패할 경우 WRAP 디바이스를 사용합니다.
+    if (FAILED(hardwareResult))
+    {
+        ComPtr<IDXGIAdapter> pWrapAdapter;
+        dxgi_factory_->EnumWarpAdapter(IID_PPV_ARGS(&pWrapAdapter));
+
+        D3D12CreateDevice(
+            pWrapAdapter.Get(),
+            D3D_FEATURE_LEVEL_11_0,
+            IID_PPV_ARGS(&d3d_device_));
+    }
+
+    if (!d3d_device_)
+    {
+        MessageBox(NULL, L"Direct3D 12 Device Cannot be Created.", L"Error", MB_OK);
+        ::PostQuitMessage(0);
+        return;
+    }
+
+    //펜스 생성
+    d3d_device_->CreateFence(current_fence_value_, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&d3d_fence_));
+
+    rtv_descriptor_size_ = d3d_device_->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+    dsv_descriptor_size_ = d3d_device_->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
+    cbv_srv_uav_descriptor_size_ = d3d_device_->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+
+    //4x msaa 검사
+    D3D12_FEATURE_DATA_MULTISAMPLE_QUALITY_LEVELS quality_levels = {};
+    quality_levels.Format = back_buffer_format_;
+    quality_levels.SampleCount = 4;
+    quality_levels.Flags = D3D12_MULTISAMPLE_QUALITY_LEVELS_FLAG_NONE;
+    quality_levels.NumQualityLevels = 0;
+    d3d_device_->CheckFeatureSupport(
+        D3D12_FEATURE_MULTISAMPLE_QUALITY_LEVELS,
+        &quality_levels,
+        sizeof(quality_levels));
+
+    msaa_quality_ = quality_levels.NumQualityLevels;
+    assert(msaa_quality_ > 0 && "Unexpected MSAA quality level.");
+
+    CreateCommandObject();
+    CreateSwapChain();
+    CreateRtvAndDsvDescriptorHeaps();
+
+}
+
+void GameFramework::CreateCommandObject()
+{
+    D3D12_COMMAND_QUEUE_DESC queue_desc = {};
+    queue_desc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
+    queue_desc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
+    HRESULT hresult = d3d_device_->CreateCommandQueue(&queue_desc, IID_PPV_ARGS(&d3d_command_queue_));
+
+    d3d_device_->CreateCommandAllocator(
+        D3D12_COMMAND_LIST_TYPE_DIRECT, 
+        IID_PPV_ARGS(&d3d_command_allocator_));
+
+    d3d_device_->CreateCommandList(
+        0, 
+        D3D12_COMMAND_LIST_TYPE_DIRECT, 
+        d3d_command_allocator_.Get(),
+        nullptr, 
+        IID_PPV_ARGS(&d3d_command_list_));
+
+    // 렌더링 하기에 앞서서 커맨드 리스트를 리셋하고 커맨드를 기록하는데,
+    // 리셋을 하기 위해선 커맨드 리스트가 닫혀있는 상태여야 합니다.
+    d3d_command_list_->Close();
+}
+
+void GameFramework::CreateSwapChain()
+{
+    DXGI_SWAP_CHAIN_DESC swap_chain_desc{};
+    swap_chain_desc.BufferDesc.Width = client_width_;
+    swap_chain_desc.BufferDesc.Height = client_height_;
+    swap_chain_desc.BufferDesc.RefreshRate.Numerator = client_refresh_rate_;
+    swap_chain_desc.BufferDesc.RefreshRate.Denominator = 1;
+    swap_chain_desc.BufferDesc.Format = back_buffer_format_;
+    swap_chain_desc.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
+    swap_chain_desc.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
+    swap_chain_desc.SampleDesc.Count = msaa_state_ ? 4 : 1;
+    swap_chain_desc.SampleDesc.Quality = msaa_state_ ? (msaa_quality_ - 1) : 0;
+    swap_chain_desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+    swap_chain_desc.BufferCount = kSwapChainBufferCount;
+    swap_chain_desc.OutputWindow = main_wnd_;
+    swap_chain_desc.Windowed = true;
+    swap_chain_desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
+    swap_chain_desc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
+
+    HRESULT hresult = dxgi_factory_->CreateSwapChain(
+        d3d_command_queue_.Get(),
+        &swap_chain_desc,
+        (IDXGISwapChain**)dxgi_swap_chain_.GetAddressOf());
+
+    dxgi_factory_->MakeWindowAssociation(main_wnd_, DXGI_MWA_NO_ALT_ENTER);
+
+    int i = 0;
+    ++i;
+}
+
+void GameFramework::CreateRtvAndDsvDescriptorHeaps()
+{
+    D3D12_DESCRIPTOR_HEAP_DESC rtv_heap_desc = {};
+    rtv_heap_desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+    rtv_heap_desc.NumDescriptors = kSwapChainBufferCount;
+    rtv_heap_desc.NodeMask = 0;
+    rtv_heap_desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+    d3d_device_->CreateDescriptorHeap(&rtv_heap_desc, 
+        IID_PPV_ARGS(d3d_rtv_heap_.GetAddressOf()));
+
+    D3D12_DESCRIPTOR_HEAP_DESC dsv_heap_desc = {};
+    dsv_heap_desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
+    dsv_heap_desc.NumDescriptors = kDepthStencilBufferCount;
+    dsv_heap_desc.NodeMask = 0;
+    dsv_heap_desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+    d3d_device_->CreateDescriptorHeap(&dsv_heap_desc,
+        IID_PPV_ARGS(d3d_dsv_heap_.GetAddressOf()));
+
+}
+
+void GameFramework::OnResize()
+{
+    FlushCommandQueue();
+
+    d3d_command_list_->Reset(d3d_command_allocator_.Get(), nullptr);
+
+    //후면버퍼를 다시 만들기 위해 기존 버퍼 삭제
+    for (ComPtr<ID3D12Resource>& swap_chain_buffer : d3d_swap_chain_buffers_)
+        swap_chain_buffer.Reset();
+
+    d3d_depth_stencil_buffer_.Reset();
+
+    //후면버퍼 크기 변경
+    dxgi_swap_chain_->ResizeBuffers(
+        kSwapChainBufferCount, 
+        client_width_, client_height_, 
+        back_buffer_format_, 
+        DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH);
+
+    current_back_buffer_ = 0;
+
+    //Rtv 생성
+    CD3DX12_CPU_DESCRIPTOR_HANDLE rtv_heap_handle (
+        d3d_rtv_heap_->GetCPUDescriptorHandleForHeapStart());
+    for (int i = 0; i < kSwapChainBufferCount; ++i)
+    {
+        //버퍼 가져오기
+        dxgi_swap_chain_->GetBuffer(i, 
+            IID_PPV_ARGS(d3d_swap_chain_buffers_[i].GetAddressOf()));
+        //뷰 생성
+        d3d_device_->CreateRenderTargetView(
+            d3d_swap_chain_buffers_[i].Get(), nullptr, rtv_heap_handle);
+
+        //힙 오프셋 이동
+        rtv_heap_handle.Offset(1, rtv_descriptor_size_);
+    }
+
+
+    //Depth-Stencil 버퍼 생성
+    D3D12_RESOURCE_DESC ds_buffer_desc = {};
+    ds_buffer_desc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+    ds_buffer_desc.Alignment = 0;
+    ds_buffer_desc.Width = client_width_;
+    ds_buffer_desc.Height = client_height_;
+    ds_buffer_desc.DepthOrArraySize = 1;
+    ds_buffer_desc.MipLevels = 1;
+    ds_buffer_desc.Format = depth_stencil_buffer_format_;
+    ds_buffer_desc.SampleDesc.Count = msaa_state_ ? 4 : 1; //msaa를 사용하면 4 아니면 1
+    ds_buffer_desc.SampleDesc.Quality = msaa_state_ ? (msaa_quality_ - 1) : 1; 
+    ds_buffer_desc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
+    ds_buffer_desc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
+
+    D3D12_CLEAR_VALUE ds_clear_value = {};
+    ds_clear_value.Format = depth_stencil_buffer_format_;
+    ds_clear_value.DepthStencil.Depth = 1.f;
+    ds_clear_value.DepthStencil.Stencil = 0;
+
+    d3d_device_->CreateCommittedResource(
+        &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+        D3D12_HEAP_FLAG_NONE,
+        &ds_buffer_desc,
+        D3D12_RESOURCE_STATE_COMMON,
+        &ds_clear_value,
+        IID_PPV_ARGS(d3d_depth_stencil_buffer_.GetAddressOf()));
+
+    //Dsv 생성
+    // 향후 ds 버퍼를 구성할 때 포멧이 바뀌거나 버퍼에 대한 
+    // 설명이 desc에 충분하지 않다면 아래 주석을 사용해서 dsv를 생성해야함
+    /*D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc;
+    dsvDesc.Flags = D3D12_DSV_FLAG_NONE;
+    dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
+    dsvDesc.Format = mDepthStencilFormat;
+    dsvDesc.Texture2D.MipSlice = 0;*/
+    d3d_device_->CreateDepthStencilView(
+        d3d_depth_stencil_buffer_.Get(), 
+        nullptr,                
+        DepthStencilView());
+
+    //뎁스버퍼를 사용 가능 상태로 변경
+    d3d_command_list_->ResourceBarrier(1,
+        &CD3DX12_RESOURCE_BARRIER::Transition(
+            d3d_depth_stencil_buffer_.Get(),
+            D3D12_RESOURCE_STATE_COMMON,
+            D3D12_RESOURCE_STATE_DEPTH_WRITE));
+
+    //명령 실행
+    d3d_command_list_->Close();
+    ID3D12CommandList* command_list[] = { d3d_command_list_.Get() };
+    d3d_command_queue_->ExecuteCommandLists(_countof(command_list), command_list);
+
+    FlushCommandQueue();
+
+    //뷰포트 업데이트
+    client_viewport_.TopLeftX = 0;
+    client_viewport_.TopLeftY = 0;
+    client_viewport_.Width = client_width_;
+    client_viewport_.Height = client_height_;
+    client_viewport_.MaxDepth = 1.f;
+    client_viewport_.MinDepth = 0;
+
+    scissor_rect_ = { 0, 0, client_width_, client_height_ };
+}
+
+void GameFramework::FrameAdvance()
+{
+    client_timer_->Tick();
+
+    d3d_command_allocator_->Reset();
+
+    d3d_command_list_->Reset(d3d_command_allocator_.Get(), nullptr);
+
+    d3d_command_list_->ResourceBarrier(1,
+        &CD3DX12_RESOURCE_BARRIER::Transition(
+            d3d_swap_chain_buffers_[current_back_buffer_].Get(),
+            D3D12_RESOURCE_STATE_PRESENT,
+            D3D12_RESOURCE_STATE_RENDER_TARGET));
+
+    d3d_command_list_->RSSetViewports(1, &client_viewport_);
+    d3d_command_list_->RSSetScissorRects(1, &scissor_rect_);
+
+    d3d_command_list_->ClearRenderTargetView(
+        CurrentBackBufferView(), DirectX::Colors::Purple, 0, nullptr);
+    d3d_command_list_->ClearDepthStencilView(
+        DepthStencilView(), D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.f, 0, 0, nullptr);
+
+    
+    const UINT kNumRenderTargetDescriptors = 1; // 렌더대상의 개수
+    d3d_command_list_->OMSetRenderTargets(
+        kNumRenderTargetDescriptors,
+        &CurrentBackBufferView(),
+        true, &DepthStencilView());
+
+    d3d_command_list_->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(
+        d3d_swap_chain_buffers_[current_back_buffer_].Get(),
+        D3D12_RESOURCE_STATE_RENDER_TARGET,
+        D3D12_RESOURCE_STATE_PRESENT));
+
+    d3d_command_list_->Close();
+    ID3D12CommandList* command_lists[] = {d3d_command_list_.Get()};
+    d3d_command_queue_->ExecuteCommandLists(_countof(command_lists), command_lists);
+
+    dxgi_swap_chain_->Present(0, 0);
+    current_back_buffer_ = (current_back_buffer_ + 1) % kSwapChainBufferCount;
+
+    FlushCommandQueue();
+
+}
+
+void GameFramework::FlushCommandQueue()
+{
+    ++current_fence_value_;
+
+    d3d_command_queue_->Signal(d3d_fence_.Get(), current_fence_value_);
+
+    if (d3d_fence_->GetCompletedValue() < current_fence_value_)
+    {
+        HANDLE event_handle = CreateEventEx(nullptr, nullptr, 0, EVENT_ALL_ACCESS);
+
+        d3d_fence_->SetEventOnCompletion(current_fence_value_, event_handle);
+
+        WaitForSingleObject(event_handle, INFINITE);
+        CloseHandle(event_handle);
+    }
+}
+
+D3D12_CPU_DESCRIPTOR_HANDLE GameFramework::CurrentBackBufferView() const
+{
+    return CD3DX12_CPU_DESCRIPTOR_HANDLE(
+        d3d_rtv_heap_->GetCPUDescriptorHandleForHeapStart(), 
+        current_back_buffer_,
+        rtv_descriptor_size_);
+}
+
+D3D12_CPU_DESCRIPTOR_HANDLE GameFramework::DepthStencilView() const
+{
+    return d3d_dsv_heap_->GetCPUDescriptorHandleForHeapStart();
+}
