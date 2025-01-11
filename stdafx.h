@@ -39,8 +39,10 @@
 #pragma comment(lib, "dxguid.lib")
 
 #include "d3dx12.h"
+#include <DirectXMath.h>
 
 using Microsoft::WRL::ComPtr;
+using namespace DirectX;
 
 // 상수값
 const int kDefaultFrmaeBufferWidth = 1366;
@@ -60,3 +62,98 @@ namespace d3d_util
 		ComPtr<ID3D12Resource>& upload_buffer);
 
 }
+
+namespace xmath_util_float3
+{
+	inline XMFLOAT3 Add(const XMFLOAT3& vector1, const XMFLOAT3& vector2) 
+	{ 
+		XMFLOAT3 r_value;
+		XMStoreFloat3(&r_value, XMLoadFloat3(&vector1) + XMLoadFloat3(&vector2));
+		return r_value;
+	}
+
+	inline XMFLOAT3 Subtract(const XMFLOAT3& vector1, const XMFLOAT3& vector2)
+	{
+		XMFLOAT3 r_value;
+		XMStoreFloat3(&r_value, XMLoadFloat3(&vector1) - XMLoadFloat3(&vector2));
+		return r_value;
+	}
+
+	inline XMFLOAT3 ScalarProduct(const XMFLOAT3& vector, float scalar)
+	{
+		XMFLOAT3 r_value;
+		XMStoreFloat3(&r_value, XMLoadFloat3(&vector) * scalar);
+		return r_value;
+	}
+
+	inline float DotProduct(const XMFLOAT3& vector1, const XMFLOAT3& vector2)
+	{
+		XMFLOAT3 r_value;
+		XMStoreFloat3(&r_value, XMVector3Dot(XMLoadFloat3(&vector1), XMLoadFloat3(&vector1)));
+		return r_value.x;
+	}
+
+	inline XMFLOAT3 CrossProduct(const XMFLOAT3& vector1, const XMFLOAT3& vector2)
+	{
+		XMFLOAT3 r_value;
+		XMStoreFloat3(&r_value, XMVector3Cross(XMLoadFloat3(&vector1), XMLoadFloat3(&vector1)));
+		return r_value;
+	}
+
+	inline XMFLOAT3 Normalize(const XMFLOAT3& vector)
+	{
+		XMFLOAT3 r_value;
+		XMStoreFloat3(&r_value, XMVector3Normalize(XMLoadFloat3(&vector)));
+		return r_value;
+	}
+
+}
+
+namespace xmath_util_float4
+{
+	inline XMFLOAT4 Add(const XMFLOAT4& vector1, const XMFLOAT4& vector2)
+	{
+		XMFLOAT4 r_value;
+		XMStoreFloat4(&r_value, XMLoadFloat4(&vector1) + XMLoadFloat4(&vector2));
+		return r_value;
+	}
+
+	inline XMFLOAT4 Subtract(const XMFLOAT4& vector1, const XMFLOAT4& vector2)
+	{
+		XMFLOAT4 r_value;
+		XMStoreFloat4(&r_value, XMLoadFloat4(&vector1) - XMLoadFloat4(&vector2));
+		return r_value;
+	}
+
+	inline XMFLOAT4 ScalarProduct(const XMFLOAT4& vector, float scalar)
+	{
+		XMFLOAT4 r_value;
+		XMStoreFloat4(&r_value, XMLoadFloat4(&vector) * scalar);
+		return r_value;
+	}
+
+}
+
+namespace xmath_util_float4x4
+{
+	inline XMFLOAT4X4 Identity()
+	{
+		XMFLOAT4X4 r_value;
+		XMStoreFloat4x4(&r_value, XMMatrixIdentity());
+		return r_value;
+	}
+
+	inline XMFLOAT4X4 Multiply(const XMFLOAT4X4& matrix1, const XMFLOAT4X4& matrix2)
+	{
+		XMFLOAT4X4 r_value;
+		XMStoreFloat4x4(&r_value, XMLoadFloat4x4(&matrix1) * XMLoadFloat4x4(&matrix2));
+		return r_value;
+	}
+}
+
+// xmf 관련 연산자 오버로딩
+inline XMFLOAT3 operator+(const XMFLOAT3& lhs, const XMFLOAT3& rhs) { return xmath_util_float3::Add(lhs, rhs); }
+inline void operator+=(XMFLOAT3& lhs, const XMFLOAT3& rhs) { lhs = xmath_util_float3::Add(lhs, rhs); }
+inline XMFLOAT3 operator-(const XMFLOAT3& lhs, const XMFLOAT3& rhs) { return xmath_util_float3::Subtract(lhs, rhs); }
+inline XMFLOAT3 operator*(const XMFLOAT3& lhs, const float& rhs) { return xmath_util_float3::ScalarProduct(lhs, rhs); }
+inline XMFLOAT4X4 operator*(const XMFLOAT4X4& lhs, const XMFLOAT4X4& rhs) { return xmath_util_float4x4::Multiply(lhs, rhs); }
