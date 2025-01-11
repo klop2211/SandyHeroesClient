@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "Object.h"
+#include "Component.h"
 
 Object::~Object()
 {
@@ -7,6 +8,9 @@ Object::~Object()
 		delete sibling_;
 	if (child_)
 		delete child_;
+
+	for (Component* component : component_list_)
+		delete component;
 }
 
 Object::Object(const Object& other) : 
@@ -15,7 +19,15 @@ Object::Object(const Object& other) :
 	child_ = nullptr;
 	sibling_ = nullptr;
 
-	//TODO: 컴포넌트 복사 코드
+	for (Component* component : other.component_list_)
+	{
+		component_list_.push_back(component->GetCopy());
+	}
+}
+
+XMFLOAT4X4 Object::transform_matrix() const
+{
+	return transform_matrix_;
 }
 
 XMFLOAT3 Object::position_vector() const
@@ -38,6 +50,11 @@ XMFLOAT3 Object::up_vector() const
 	return XMFLOAT3(transform_matrix_._21, transform_matrix_._22, transform_matrix_._23);
 }
 
+XMFLOAT4X4 Object::world_matrix() const
+{
+	return world_matrix_;
+}
+
 XMFLOAT3 Object::world_position_vector() const
 {
 	return XMFLOAT3(world_matrix_._41, world_matrix_._42, world_matrix_._43);
@@ -56,6 +73,11 @@ XMFLOAT3 Object::world_right_vector() const
 XMFLOAT3 Object::world_up_vector() const
 {
 	return XMFLOAT3(world_matrix_._21, world_matrix_._22, world_matrix_._23);
+}
+
+void Object::set_transform_matrix(const XMFLOAT4X4& value)
+{
+	transform_matrix_ = value;
 }
 
 void Object::set_position_vector(const XMFLOAT3& value)

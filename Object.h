@@ -8,19 +8,21 @@ class Object
 {
 public:
 	Object() {}
-	~Object();
+	virtual ~Object();
 
 	//복사 생성자(child, sibling의 포인터는 가져오지 않음)
 	Object(const Object& other);
 
 	//getter
 	// 변환행렬 및 각 벡터
+	XMFLOAT4X4 transform_matrix() const;
 	XMFLOAT3 position_vector() const;
 	XMFLOAT3 look_vector() const;
 	XMFLOAT3 right_vector() const;
 	XMFLOAT3 up_vector() const;
 
 	// 월드행렬 및 각 벡터
+	XMFLOAT4X4 world_matrix() const;
 	XMFLOAT3 world_position_vector() const;
 	XMFLOAT3 world_look_vector() const;
 	XMFLOAT3 world_right_vector() const;
@@ -28,6 +30,7 @@ public:
 
 	//setter
 	// 변환행렬 및 각 벡터
+	void set_transform_matrix(const XMFLOAT4X4& value);
 	void set_position_vector(const XMFLOAT3& value);
 	void set_look_vector(const XMFLOAT3& value);
 	void set_right_vector(const XMFLOAT3& value);
@@ -54,6 +57,9 @@ protected:
 	Object* child_ = nullptr;
 	Object* sibling_ = nullptr;
 
+	// 오브젝트에 추가된 모든 컴포넌트의 리스트
+	// 실제로 컴포넌트를 사용하는 용도보다는 삭제 및 복사의 편리를 위해 있는 변수
+	// 물론 이를 통해 사용도 가능은하다.
 	std::list<Component*> component_list_;
 
 private:
