@@ -7,7 +7,7 @@ class Component;
 class Object
 {
 public:
-	Object() {}
+	Object();
 	virtual ~Object();
 
 	//복사 생성자(child, sibling의 포인터는 가져오지 않음)
@@ -28,6 +28,10 @@ public:
 	XMFLOAT3 world_right_vector() const;
 	XMFLOAT3 world_up_vector() const;
 
+	UINT id() const;
+
+	std::string name() const;
+
 	//setter
 	// 변환행렬 및 각 벡터
 	void set_transform_matrix(const XMFLOAT4X4& value);
@@ -37,6 +41,8 @@ public:
 	void set_up_vector(const XMFLOAT3& value);
 
 	// 월드행렬의 setter는 지원하지 않는다.(상위노드의 의해 업데이트 되기 때문)
+
+	void set_name(const std::string& value);
 
 	void AddChild(Object* object);
 	void AddSibling(Object* object);
@@ -62,9 +68,15 @@ protected:
 	// 물론 이를 통해 사용도 가능은하다.
 	std::list<Component*> component_list_;
 
+	std::string name_ = "None";
+
 private:
 	// 오브젝트의 실제 월드 행렬(즉, 상위노드의 변환이 전부 적용된)
 	XMFLOAT4X4 world_matrix_ = xmath_util_float4x4::Identity();		
+
+	// 다음 생성될 오브젝트의 id, 1부터 시작한다. 즉, id 0번은 나올 수 없음
+	static UINT kObjectNextId;
+	UINT id_ = 0;
 
 };
 

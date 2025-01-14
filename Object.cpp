@@ -2,6 +2,14 @@
 #include "Object.h"
 #include "Component.h"
 
+UINT Object::kObjectNextId = 1;
+
+Object::Object()
+{
+	id_ = kObjectNextId;
+	++kObjectNextId;
+}
+
 Object::~Object()
 {
 	if (sibling_)
@@ -14,8 +22,13 @@ Object::~Object()
 }
 
 Object::Object(const Object& other) : 
-	transform_matrix_(other.transform_matrix_), world_matrix_(other.world_matrix_)
+	transform_matrix_(other.transform_matrix_), 
+	world_matrix_(other.world_matrix_), 
+	name_(other.name_)
 {
+	id_ = kObjectNextId;
+	++kObjectNextId;
+
 	child_ = nullptr;
 	sibling_ = nullptr;
 
@@ -75,6 +88,16 @@ XMFLOAT3 Object::world_up_vector() const
 	return XMFLOAT3(world_matrix_._21, world_matrix_._22, world_matrix_._23);
 }
 
+UINT Object::id() const
+{
+	return id_;
+}
+
+std::string Object::name() const
+{
+	return name_;
+}
+
 void Object::set_transform_matrix(const XMFLOAT4X4& value)
 {
 	transform_matrix_ = value;
@@ -106,6 +129,11 @@ void Object::set_up_vector(const XMFLOAT3& value)
 	transform_matrix_._21 = value.x;
 	transform_matrix_._22 = value.y;
 	transform_matrix_._23 = value.z;
+}
+
+void Object::set_name(const std::string& value)
+{
+	name_ = value;
 }
 
 void Object::AddChild(Object* object)

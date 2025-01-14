@@ -28,6 +28,24 @@
     <Filter Include="Component">
       <UniqueIdentifier>{eb13979b-95cf-4b8c-9af3-95f6b3521ad1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shader">
+      <UniqueIdentifier>{6fd218ff-d5dd-4ea2-affb-599ffaba36fc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shader\ColorShader">
+      <UniqueIdentifier>{6161465d-57f6-41f0-9081-a8d55943a45c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Mesh">
+      <UniqueIdentifier>{7275f89b-6016-4a00-aee4-df8a76907ee8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Component\MeshComponent">
+      <UniqueIdentifier>{595c9353-178b-46b5-a9ad-eaf088f4572a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="FrameResourceManager">
+      <UniqueIdentifier>{7cb23a6e-4380-474a-844e-c02a6d497ff7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scene\TestScene">
+      <UniqueIdentifier>{9067d95c-12fd-4805-add0-fa632b158c81}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="targetver.h">
@@ -60,6 +78,30 @@
     <ClInclude Include="Component.h">
       <Filter>Component</Filter>
     </ClInclude>
+    <ClInclude Include="Shader.h">
+      <Filter>Shader</Filter>
+    </ClInclude>
+    <ClInclude Include="ColorShader.h">
+      <Filter>Shader\ColorShader</Filter>
+    </ClInclude>
+    <ClInclude Include="Mesh.h">
+      <Filter>Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="MeshComponent.h">
+      <Filter>Component\MeshComponent</Filter>
+    </ClInclude>
+    <ClInclude Include="UploadBuffer.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="FrameResource.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="FrameResourceManager.h">
+      <Filter>FrameResourceManager</Filter>
+    </ClInclude>
+    <ClInclude Include="TestScene.h">
+      <Filter>Scene\TestScene</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="SandyHeroesClient.cpp">
@@ -83,6 +125,24 @@
     <ClCompile Include="Component.cpp">
       <Filter>Component</Filter>
     </ClCompile>
+    <ClCompile Include="Shader.cpp">
+      <Filter>Shader</Filter>
+    </ClCompile>
+    <ClCompile Include="ColorShader.cpp">
+      <Filter>Shader\ColorShader</Filter>
+    </ClCompile>
+    <ClCompile Include="Mesh.cpp">
+      <Filter>Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="MeshComponent.cpp">
+      <Filter>Component\MeshComponent</Filter>
+    </ClCompile>
+    <ClCompile Include="FrameResourceManager.cpp">
+      <Filter>FrameResourceManager</Filter>
+    </ClCompile>
+    <ClCompile Include="TestScene.cpp">
+      <Filter>Scene\TestScene</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="SandyHeroesClient.rc">
@@ -96,5 +156,9 @@
     <Image Include="SandyHeroesClient.ico">
       <Filter>리소스 파일</Filter>
     </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="GlobalValues.hlsl" />
+    <FxCompile Include="ColorShader.hlsl" />
   </ItemGroup>
 </Project>

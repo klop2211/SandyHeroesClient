@@ -1,6 +1,11 @@
 #include "stdafx.h"
 #include "GameFramework.h"
 #include "Timer.h"
+#include "Object.h"
+#include "Shader.h"
+#include "TestScene.h"
+#include "FrameResourceManager.h"
+#include "FrameResource.h"  
 
 GameFramework* GameFramework::kGameFramework = nullptr;
 
@@ -25,6 +30,14 @@ void GameFramework::Initialize()
     InitDirect3D();
 
     OnResize();
+
+    BuildRootSignature();
+
+    //씬 생성 및 초기화
+    scene_ = std::make_unique<TestScene>();
+    scene_->Initialize(d3d_device_.Get(), d3d_command_list_.Get(), d3d_root_signature_.Get());
+
+    FrameResourceManager::GetInstance().ResetFrameResources(d3d_device_.Get(), 1, 1000, 1000);
 
     client_timer_.reset(new Timer);
     client_timer_->Reset();
@@ -169,6 +182,49 @@ void GameFramework::CreateRtvAndDsvDescriptorHeaps()
         IID_PPV_ARGS(d3d_dsv_heap_.GetAddressOf()));
 
 }
+
+void GameFramework::BuildRootSignature()
+{
+    CD3DX12_DESCRIPTOR_RANGE cbv_table0;
+    cbv_table0.Init(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1, 0);
+
+    CD3DX12_DESCRIPTOR_RANGE cbv_table1;
+    cbv_table1.Init(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1, 1);
+
+    CD3DX12_DESCRIPTOR_RANGE cbv_table2;
+    cbv_table2.Init(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1, 2);
+
+    CD3DX12_DESCRIPTOR_RANGE cbv_table3;
+    cbv_table3.Init(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1, 3);
+
+    CD3DX12_ROOT_PARAMETER root_parameter[4];
+
+    root_parameter[0].InitAsDescriptorTable(1, &cbv_table0);
+    root_parameter[1].InitAsDescriptorTable(1, &cbv_table1);
+    root_parameter[2].InitAsDescriptorTable(1, &cbv_table2);
+    root_parameter[3].InitAsDescriptorTable(1, &cbv_table3);
+
+    CD3DX12_ROOT_SIGNATURE_DESC root_sig_desc(4, root_parameter, 0, nullptr,
+        D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+
+    ComPtr<ID3DBlob> serialized_root_sig = nullptr;
+    ComPtr<ID3DBlob> error_blob = nullptr;
+    D3D12SerializeRootSignature(&root_sig_desc, D3D_ROOT_SIGNATURE_VERSION_1, 
+        serialized_root_sig.GetAddressOf(), error_blob.GetAddressOf());
+
+    if (error_blob)
+    {
+        OutputDebugStringA((char*)error_blob->GetBufferPointer());
+    }
+
+    d3d_device_->CreateRootSignature(
+        0,
+        serialized_root_sig->GetBufferPointer(),
+        serialized_root_sig->GetBufferSize(),
+        IID_PPV_ARGS(d3d_root_signature_.GetAddressOf()));
+
+}
+
 
 void GameFramework::OnResize()
 {

@@ -50,3 +50,8 @@ ComPtr<ID3D12Resource> d3d_util::CreateDefaultBuffer(
 
 	return default_buffer;
 }
+
+UINT d3d_util::CalculateConstantBufferSize(UINT byte_size)
+{
+	return (byte_size + 255) & ~255;
+}

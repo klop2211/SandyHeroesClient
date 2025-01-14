@@ -1,6 +1,7 @@
 #pragma once
 
 class Timer;
+class Scene;
 
 class GameFramework
 {
@@ -14,6 +15,8 @@ public:
 	void CreateCommandObject();
 	void CreateSwapChain();
 	void CreateRtvAndDsvDescriptorHeaps();
+
+	void BuildRootSignature();
 
 	void OnResize();
 
@@ -54,6 +57,8 @@ private:
 
 	ComPtr<ID3D12Resource> d3d_depth_stencil_buffer_;
 
+	ComPtr<ID3D12RootSignature> d3d_root_signature_;
+
 	UINT rtv_descriptor_size_;
 	UINT dsv_descriptor_size_;
 	UINT cbv_srv_uav_descriptor_size_;
@@ -75,6 +80,8 @@ private:
 	D3D12_RECT scissor_rect_;
 
 	std::unique_ptr<Timer> client_timer_;
+
+	std::unique_ptr<Scene> scene_ = nullptr;
 
 };
 

@@ -15,11 +15,12 @@
 #include <tchar.h>
 #include <assert.h>
 
-// STL 헤더 파일
+// C++ 헤더 파일
 #include <vector>
 #include <list>
 #include <array>
 #include <memory>
+#include <string>
 
 // DirectX 관련 헤더 파일 및 선언문
 #include <wrl.h>
@@ -61,6 +62,9 @@ namespace d3d_util
 		UINT64 byte_size,
 		ComPtr<ID3D12Resource>& upload_buffer);
 
+	// 상수 버퍼는 항상 256바이트의 배수여야 한다.
+	// 이 함수는 버퍼의 사이즈를 256의 배수로 계산해주는 함수다.
+	UINT CalculateConstantBufferSize(UINT byte_size);
 }
 
 namespace xmath_util_float3
