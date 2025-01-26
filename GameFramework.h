@@ -2,6 +2,8 @@
 
 class Timer;
 class Scene;
+class FrameResourceManager;
+class DescriptorManager;
 
 class GameFramework
 {
@@ -83,5 +85,8 @@ private:
 
 	std::unique_ptr<Scene> scene_ = nullptr;
 
+	std::unique_ptr<FrameResourceManager> frame_resource_manager_ = nullptr;
+
+	std::unique_ptr<DescriptorManager> descriptor_manager_ = nullptr;
 };
 

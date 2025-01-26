@@ -2,14 +2,25 @@
 #include "MeshComponent.h"
 #include "Mesh.h"
 #include "Object.h"
+#include "FrameResource.h"
+#include "DescriptorManager.h"
 
 MeshComponent::MeshComponent(Object* owner, Mesh* mesh) : Component(owner), mesh_(mesh)
 {
-
+	mesh->AddMeshComponent(this);
 }
 
 MeshComponent::MeshComponent(const MeshComponent& other) : Component(other), mesh_(other.mesh_)
 {
+	other.mesh_->AddMeshComponent(this);
+}
+
+MeshComponent& MeshComponent::operator=(const MeshComponent& rhs)
+{
+	owner_ = rhs.owner_;
+	mesh_ = rhs.mesh_;
+	mesh_->AddMeshComponent(this);
+	return *this;
 }
 
 Component* MeshComponent::GetCopy()
@@ -17,11 +28,12 @@ Component* MeshComponent::GetCopy()
 	return new MeshComponent(*this);
 }
 
-void MeshComponent::UpdateShaderVariables(ID3D12GraphicsCommandList* command_list)
+XMFLOAT4X4 MeshComponent::GetOwnerWorld() const
 {
-	XMFLOAT4X4 owner_world_matrix;
-	XMStoreFloat4x4(&owner_world_matrix, 
-		XMMatrixTranspose(XMLoadFloat4x4(&owner_->world_matrix())));
-	//TODO: 루트시그너처 작성후 인덱스 0을 enum class 등 상수를 정의하기
-	command_list->SetGraphicsRoot32BitConstants(0, 16, &owner_world_matrix, 0);
+	return owner_->world_matrix();
+}
+
+bool MeshComponent::IsVisible() const
+{
+	return is_visible_;
 }

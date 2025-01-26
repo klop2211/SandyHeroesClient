@@ -108,3 +108,13 @@ void Shader::CreateShader(ID3D12Device* device, ID3D12RootSignature* root_signat
 	if (pipeline_state_desc.InputLayout.pInputElementDescs) delete pipeline_state_desc.InputLayout.pInputElementDescs;
 
 }
+
+ID3D12PipelineState* Shader::GetPipelineState() const
+{
+	return d3d_pipeline_state_.Get();
+}
+
+ShaderType Shader::shader_type() const
+{
+	return shader_type_;
+}

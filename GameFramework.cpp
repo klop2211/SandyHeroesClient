@@ -5,7 +5,8 @@
 #include "Shader.h"
 #include "TestScene.h"
 #include "FrameResourceManager.h"
-#include "FrameResource.h"  
+#include "DescriptorManager.h"
+#include "Mesh.h"
 
 GameFramework* GameFramework::kGameFramework = nullptr;
 
@@ -31,13 +32,23 @@ void GameFramework::Initialize()
 
     OnResize();
 
+    d3d_command_list_->Reset(d3d_command_allocator_.Get(), nullptr);
+
     BuildRootSignature();
+
+    frame_resource_manager_ = std::make_unique<FrameResourceManager>();
+    descriptor_manager_ = std::make_unique<DescriptorManager>();
 
     //씬 생성 및 초기화
     scene_ = std::make_unique<TestScene>();
-    scene_->Initialize(d3d_device_.Get(), d3d_command_list_.Get(), d3d_root_signature_.Get());
+    scene_->Initialize(d3d_device_.Get(), d3d_command_list_.Get(), d3d_root_signature_.Get(), 
+        frame_resource_manager_.get(), descriptor_manager_.get());
 
-    FrameResourceManager::GetInstance().ResetFrameResources(d3d_device_.Get(), 1, 1000, 1000);
+    d3d_command_list_->Close();
+    ID3D12CommandList* cmd_list[] = { d3d_command_list_.Get() };
+    d3d_command_queue_->ExecuteCommandLists(1, cmd_list);
+
+    FlushCommandQueue();
 
     client_timer_.reset(new Timer);
     client_timer_->Reset();
@@ -89,6 +100,7 @@ void GameFramework::InitDirect3D()
     rtv_descriptor_size_ = d3d_device_->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
     dsv_descriptor_size_ = d3d_device_->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
     cbv_srv_uav_descriptor_size_ = d3d_device_->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+    DescriptorManager::kCbvSrvUavDescriptorSize = cbv_srv_uav_descriptor_size_;
 
     //4x msaa 검사
     D3D12_FEATURE_DATA_MULTISAMPLE_QUALITY_LEVELS quality_levels = {};
@@ -333,9 +345,11 @@ void GameFramework::FrameAdvance()
 {
     client_timer_->Tick();
 
-    d3d_command_allocator_->Reset();
+    auto& command_allocator = frame_resource_manager_->curr_frame_resource()->d3d_allocator;
 
-    d3d_command_list_->Reset(d3d_command_allocator_.Get(), nullptr);
+    command_allocator->Reset();
+
+    d3d_command_list_->Reset(command_allocator.Get(), nullptr);
 
     d3d_command_list_->ResourceBarrier(1,
         &CD3DX12_RESOURCE_BARRIER::Transition(
@@ -351,12 +365,18 @@ void GameFramework::FrameAdvance()
     d3d_command_list_->ClearDepthStencilView(
         DepthStencilView(), D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.f, 0, 0, nullptr);
 
-    
     const UINT kNumRenderTargetDescriptors = 1; // 렌더대상의 개수
     d3d_command_list_->OMSetRenderTargets(
         kNumRenderTargetDescriptors,
         &CurrentBackBufferView(),
         true, &DepthStencilView());
+
+    ID3D12DescriptorHeap* descriptor_heaps[] = { descriptor_manager_->GetDescriptorHeap() };
+    d3d_command_list_->SetDescriptorHeaps(_countof(descriptor_heaps), descriptor_heaps);
+
+    d3d_command_list_->SetGraphicsRootSignature(d3d_root_signature_.Get());
+
+    scene_->Render(d3d_command_list_.Get());
 
     d3d_command_list_->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(
         d3d_swap_chain_buffers_[current_back_buffer_].Get(),
@@ -370,7 +390,11 @@ void GameFramework::FrameAdvance()
     dxgi_swap_chain_->Present(0, 0);
     current_back_buffer_ = (current_back_buffer_ + 1) % kSwapChainBufferCount;
 
-    FlushCommandQueue();
+    frame_resource_manager_->curr_frame_resource()->fence = ++current_fence_value_;
+
+    d3d_command_queue_->Signal(d3d_fence_.Get(), current_fence_value_);
+
+    frame_resource_manager_->CirculateFrameResource(d3d_fence_.Get());
 
 }
 

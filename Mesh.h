@@ -1,12 +1,13 @@
 #pragma once
 
 class MeshComponent;
+class FrameResourceManager;
+class DescriptorManager;
 
 // 메쉬 정보를 가지는 클래스
 class Mesh
 {
 public:
-
 	// 메쉬 정보는 복사될 이유가 없음
 	Mesh(const Mesh&) = delete;
 	Mesh& operator=(const Mesh&) = delete;
@@ -15,9 +16,17 @@ public:
 
 	void CreateShaderVariables(ID3D12Device* device, ID3D12GraphicsCommandList* command_list);
 
-	virtual void Render(ID3D12GraphicsCommandList* command_list);
+	virtual void Render(ID3D12GraphicsCommandList* command_list,
+		FrameResourceManager* frame_resource_manager, DescriptorManager* descriptor_manager);
+
+	//getter
+	int shader_type() const;
+
+	//업데이트 되어야 할 cb의 인덱스를 갖는 변수 Scene 렌더시 0으로 초기화 해야한다.
+	static int kCBObjectCurrentIndex;
 
 protected:
+
 	D3D12_PRIMITIVE_TOPOLOGY primitive_topology_ = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 
 	std::vector<XMFLOAT3> positions_;
@@ -41,5 +50,8 @@ protected:
 
 	// 이 메쉬를 참조중인 컴포넌트 리스트
 	std::list<MeshComponent*> mesh_component_list_;
+
+	// 메쉬가 사용하는 쉐이더의 타입 Shader.h 참고
+	int shader_type_ = 0;
 };
 

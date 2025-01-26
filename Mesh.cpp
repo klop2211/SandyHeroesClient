@@ -1,9 +1,14 @@
 #include "stdafx.h"
 #include "Mesh.h"
 #include "MeshComponent.h"
+#include "FrameResourceManager.h"
+#include "DescriptorManager.h"
+
+int Mesh::kCBObjectCurrentIndex = 0;
 
 void Mesh::AddMeshComponent(MeshComponent* mesh_component)
 {
+	mesh_component_list_.push_back(mesh_component);
 }
 
 void Mesh::CreateShaderVariables(ID3D12Device* device, ID3D12GraphicsCommandList* command_list)
@@ -39,8 +44,32 @@ void Mesh::CreateShaderVariables(ID3D12Device* device, ID3D12GraphicsCommandList
 	}
 }
 
-void Mesh::Render(ID3D12GraphicsCommandList* command_list)
+void Mesh::Render(ID3D12GraphicsCommandList* command_list, 
+	FrameResourceManager* frame_resource_manager, DescriptorManager* descriptor_manager)
 {
+	FrameResource* curr_frame_resource = frame_resource_manager->curr_frame_resource();
+	int curr_frame_resource_index = frame_resource_manager->curr_frame_resource_index();
+	int cb_object_count = frame_resource_manager->object_count();
+
+	//이 메쉬를 사용하는 오브젝트의 CB 시작 인덱스를 저장한다.
+	int cb_object_start_index = kCBObjectCurrentIndex;
+
+	//메쉬 컴포넌트를 활용하여 오브젝트 CB를 업데이트한다.
+	for (MeshComponent* mesh_component : mesh_component_list_)
+	{
+		// 그릴 필요 없는 대상에 대해서는 업데이트를 할 필요 없음
+		if (!mesh_component->IsVisible())
+			continue;
+		CBObject object_buffer{};
+		XMStoreFloat4x4(&object_buffer.world_matrix,
+			XMMatrixTranspose(XMLoadFloat4x4(&mesh_component->GetOwnerWorld())));
+
+		UploadBuffer<CBObject>* object_cb = curr_frame_resource->cb_object.get();
+		object_cb->CopyData(kCBObjectCurrentIndex, object_buffer);
+
+		kCBObjectCurrentIndex++;
+	}
+
 	command_list->IASetPrimitiveTopology(primitive_topology_);
 
 	//정점 버퍼 set
@@ -49,27 +78,38 @@ void Mesh::Render(ID3D12GraphicsCommandList* command_list)
 
 	if (indices_array_.size())
 	{
-		for (MeshComponent* mesh_component : mesh_component_list_)
+		for (int i = 0; i < indices_array_.size(); ++i)
 		{
-			//메쉬 컴포넌트를 이용하여 월드행렬 set
-			mesh_component->UpdateShaderVariables(command_list);
+			command_list->IASetIndexBuffer(&index_buffer_views_[i]);
+			for (int object_index = cb_object_start_index; object_index < kCBObjectCurrentIndex; ++object_index)
+			{		
+				// 현 프레임 리소스에 해당하는 오브젝트의 CBV의 오프셋을 계산합니다.
+				UINT cbv_index = curr_frame_resource_index * cb_object_count + object_index;
+				D3D12_GPU_DESCRIPTOR_HANDLE gpu_handle = descriptor_manager->GetGpuHandle(cbv_index);
 
-			for (int i = 0; i < indices_array_.size(); ++i)
-			{
-				command_list->IASetIndexBuffer(&index_buffer_views_[i]);
+				//TODO: 루트시그너처 작성후 인덱스 0을 enum class 등 상수를 정의하기
+				command_list->SetGraphicsRootDescriptorTable(0, gpu_handle);
 				command_list->DrawIndexedInstanced(indices_array_[i].size(), 1, 0, 0, 0);
 			}
 		}
 	}
 	else
 	{
-		for (MeshComponent* mesh_component : mesh_component_list_)
+		for (int object_index = cb_object_start_index; object_index < kCBObjectCurrentIndex; ++object_index)
 		{
-			//메쉬 컴포넌트를 이용하여 월드행렬 set
-			mesh_component->UpdateShaderVariables(command_list);
+			// 현 프레임 리소스에 해당하는 오브젝트의 CBV의 오프셋을 계산합니다.
+			UINT cbv_index = curr_frame_resource_index * cb_object_count + object_index;
+			D3D12_GPU_DESCRIPTOR_HANDLE gpu_handle = descriptor_manager->GetGpuHandle(cbv_index);
 
+			//TODO: 루트시그너처 작성후 인덱스 0을 enum class 등 상수를 정의하기
+			command_list->SetGraphicsRootDescriptorTable(0, gpu_handle);
 			command_list->DrawInstanced(positions_.size(), 1, 0, 0);
 		}
 	}
 
+}
+
+int Mesh::shader_type() const
+{
+	return shader_type_;
 }

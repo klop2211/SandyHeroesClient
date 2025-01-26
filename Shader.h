@@ -23,6 +23,10 @@ public:
 
 	void CreateShader(ID3D12Device* device, ID3D12RootSignature* root_signature);
 
+	ID3D12PipelineState* GetPipelineState() const;
+
+	ShaderType shader_type() const;
+
 protected:
 	ComPtr<ID3D12PipelineState> d3d_pipeline_state_;
 

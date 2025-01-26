@@ -46,6 +46,9 @@
     <Filter Include="Scene\TestScene">
       <UniqueIdentifier>{9067d95c-12fd-4805-add0-fa632b158c81}</UniqueIdentifier>
     </Filter>
+    <Filter Include="DescriptorManager">
+      <UniqueIdentifier>{7c762a4b-9f15-4f20-a537-e5a4cc10266a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="targetver.h">
@@ -93,14 +96,17 @@
     <ClInclude Include="UploadBuffer.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="FrameResource.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
     <ClInclude Include="FrameResourceManager.h">
       <Filter>FrameResourceManager</Filter>
     </ClInclude>
     <ClInclude Include="TestScene.h">
       <Filter>Scene\TestScene</Filter>
+    </ClInclude>
+    <ClInclude Include="FrameResource.h">
+      <Filter>FrameResourceManager</Filter>
+    </ClInclude>
+    <ClInclude Include="DescriptorManager.h">
+      <Filter>DescriptorManager</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -142,6 +148,9 @@
     </ClCompile>
     <ClCompile Include="TestScene.cpp">
       <Filter>Scene\TestScene</Filter>
+    </ClCompile>
+    <ClCompile Include="DescriptorManager.cpp">
+      <Filter>DescriptorManager</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
