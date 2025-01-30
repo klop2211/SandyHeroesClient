@@ -42,6 +42,24 @@ void Mesh::CreateShaderVariables(ID3D12Device* device, ID3D12GraphicsCommandList
 
 		vertex_buffer_views_.push_back(vertex_buffer_view);
 	}
+
+	for (const std::vector<UINT>& index_buffer : indices_array_)
+	{
+		d3d_index_buffers_.emplace_back();
+		d3d_index_upload_buffers_.emplace_back();
+
+		d3d_index_buffers_.back() = d3d_util::CreateDefaultBuffer(device, command_list,
+			index_buffer.data(), sizeof(UINT) * index_buffer.size(),
+			d3d_index_upload_buffers_.back());
+
+		D3D12_INDEX_BUFFER_VIEW index_buffer_view;
+		index_buffer_view.BufferLocation = d3d_index_buffers_.back()->GetGPUVirtualAddress();
+		index_buffer_view.Format = DXGI_FORMAT_R32_UINT;
+		index_buffer_view.SizeInBytes = sizeof(UINT) * index_buffer.size();
+
+		index_buffer_views_.push_back(index_buffer_view);
+	}
+
 }
 
 void Mesh::Render(ID3D12GraphicsCommandList* command_list, 
@@ -112,4 +130,19 @@ void Mesh::Render(ID3D12GraphicsCommandList* command_list,
 int Mesh::shader_type() const
 {
 	return shader_type_;
+}
+
+std::string Mesh::name() const
+{
+	return name_;
+}
+
+void Mesh::set_shader_type(int value)
+{
+	shader_type_ = value;
+}
+
+void Mesh::set_name(const std::string& name)
+{
+	name_ = name;
 }

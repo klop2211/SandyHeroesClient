@@ -28,7 +28,7 @@ ComPtr<ID3D12Resource> d3d_util::CreateDefaultBuffer(
 		IID_PPV_ARGS(upload_buffer.GetAddressOf()));
 
 	// 디폴트 버퍼로 복사할 데이터 서술
-	D3D12_SUBRESOURCE_DATA subresource_data;
+	D3D12_SUBRESOURCE_DATA subresource_data{};
 	subresource_data.pData = init_data;
 	subresource_data.RowPitch = byte_size;
 	subresource_data.SlicePitch = subresource_data.RowPitch;
@@ -39,9 +39,11 @@ ComPtr<ID3D12Resource> d3d_util::CreateDefaultBuffer(
 			default_buffer.Get(),
 			D3D12_RESOURCE_STATE_COMMON,
 			D3D12_RESOURCE_STATE_COPY_DEST));
-	UpdateSubresources(command_list, 
+
+	UpdateSubresources<1>(command_list, 
 		default_buffer.Get(), upload_buffer.Get(), 
 		0, 0, 1, &subresource_data);
+
 	command_list->ResourceBarrier(1,
 		&CD3DX12_RESOURCE_BARRIER::Transition(
 			default_buffer.Get(),

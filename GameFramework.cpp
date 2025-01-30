@@ -345,6 +345,14 @@ void GameFramework::FrameAdvance()
 {
     client_timer_->Tick();
 
+    //ÀÎÇ² Ã³¸®
+
+    //¾÷µ¥ÀÌÆ®
+    scene_->Update(client_timer_->ElapsedTime());
+    scene_->UpdateObjectWorldMatrix();
+
+
+    //·»´õ
     auto& command_allocator = frame_resource_manager_->curr_frame_resource()->d3d_allocator;
 
     command_allocator->Reset();

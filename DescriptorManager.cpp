@@ -48,10 +48,16 @@ ID3D12DescriptorHeap* DescriptorManager::GetDescriptorHeap() const
 
 D3D12_CPU_DESCRIPTOR_HANDLE DescriptorManager::GetCpuHandle(int index) const
 {
-	return CD3DX12_CPU_DESCRIPTOR_HANDLE(d3d_cbv_heap_->GetCPUDescriptorHandleForHeapStart()).Offset(index, kCbvSrvUavDescriptorSize);
+	CD3DX12_CPU_DESCRIPTOR_HANDLE r_value =
+		CD3DX12_CPU_DESCRIPTOR_HANDLE(d3d_cbv_heap_->GetCPUDescriptorHandleForHeapStart());
+	r_value.Offset(index, kCbvSrvUavDescriptorSize);
+	return r_value;
 }
 
 D3D12_GPU_DESCRIPTOR_HANDLE DescriptorManager::GetGpuHandle(int index) const
 {
-	return CD3DX12_GPU_DESCRIPTOR_HANDLE(d3d_cbv_heap_->GetGPUDescriptorHandleForHeapStart()).Offset(index, kCbvSrvUavDescriptorSize);
+	CD3DX12_GPU_DESCRIPTOR_HANDLE r_value = 
+		CD3DX12_GPU_DESCRIPTOR_HANDLE(d3d_cbv_heap_->GetGPUDescriptorHandleForHeapStart());
+	r_value.Offset(index, kCbvSrvUavDescriptorSize);
+	return r_value;
 }

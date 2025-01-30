@@ -73,7 +73,7 @@ private:
 
 	DXGI_FORMAT depth_stencil_buffer_format_ = DXGI_FORMAT_D24_UNORM_S8_UINT;
 
-	int client_width_ = kDefaultFrmaeBufferWidth;
+	int client_width_ = kDefaultFrameBufferWidth;
 	int client_height_ = kDefaultFrameBufferHeight;
 	int client_refresh_rate_ = kDefaultRefreshRate;
 

@@ -52,9 +52,7 @@ public:
 	// 노드를 순회하며 world_matrix를 업데이트한다.(최상위 노드의 경우 인자에 nullptr을 넣으면 된다)
 	void UpdateWorldMatrix(const XMFLOAT4X4* const parent_transform); 
 
-
-	// 이 클래스를 상속받은 클래스에서 만들어야함!
-	virtual void Update(float elased_time) {};
+	virtual void Update(float elapsed_time);
 
 protected:
 	// 오브젝트의 변환행렬
@@ -64,9 +62,7 @@ protected:
 	Object* sibling_ = nullptr;
 
 	// 오브젝트에 추가된 모든 컴포넌트의 리스트
-	// 실제로 컴포넌트를 사용하는 용도보다는 삭제 및 복사의 편리를 위해 있는 변수
-	// 물론 이를 통해 사용도 가능은하다.
-	std::list<Component*> component_list_;
+	std::list<std::unique_ptr<Component>> component_list_;
 
 	std::string name_ = "None";
 

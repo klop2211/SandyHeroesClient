@@ -8,6 +8,8 @@ class DescriptorManager;
 class Mesh
 {
 public:
+	Mesh() {}
+	virtual ~Mesh() {}
 	// 메쉬 정보는 복사될 이유가 없음
 	Mesh(const Mesh&) = delete;
 	Mesh& operator=(const Mesh&) = delete;
@@ -21,6 +23,11 @@ public:
 
 	//getter
 	int shader_type() const;
+	std::string name() const;
+
+	//setter
+	void set_shader_type(int value);
+	void set_name(const std::string& name);
 
 	//업데이트 되어야 할 cb의 인덱스를 갖는 변수 Scene 렌더시 0으로 초기화 해야한다.
 	static int kCBObjectCurrentIndex;

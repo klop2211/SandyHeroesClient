@@ -49,6 +49,9 @@
     <Filter Include="DescriptorManager">
       <UniqueIdentifier>{7c762a4b-9f15-4f20-a537-e5a4cc10266a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Mesh\Cube">
+      <UniqueIdentifier>{96e9464c-3e60-43fb-b9dc-c2a3b97bbcee}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="targetver.h">
@@ -108,6 +111,12 @@
     <ClInclude Include="DescriptorManager.h">
       <Filter>DescriptorManager</Filter>
     </ClInclude>
+    <ClInclude Include="CubeMesh.h">
+      <Filter>Mesh\Cube</Filter>
+    </ClInclude>
+    <ClInclude Include="CameraComponent.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="SandyHeroesClient.cpp">
@@ -151,6 +160,12 @@
     </ClCompile>
     <ClCompile Include="DescriptorManager.cpp">
       <Filter>DescriptorManager</Filter>
+    </ClCompile>
+    <ClCompile Include="CubeMesh.cpp">
+      <Filter>Mesh\Cube</Filter>
+    </ClCompile>
+    <ClCompile Include="CameraComponent.cpp">
+      <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

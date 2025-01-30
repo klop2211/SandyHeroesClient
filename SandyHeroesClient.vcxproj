@@ -70,6 +70,12 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <OutDir>.</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <OutDir>.</OutDir>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -127,8 +133,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="CameraComponent.h" />
     <ClInclude Include="ColorShader.h" />
     <ClInclude Include="Component.h" />
+    <ClInclude Include="CubeMesh.h" />
     <ClInclude Include="d3dx12.h" />
     <ClInclude Include="DescriptorManager.h" />
     <ClInclude Include="FrameResource.h" />
@@ -148,8 +156,10 @@
     <ClInclude Include="UploadBuffer.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="CameraComponent.cpp" />
     <ClCompile Include="ColorShader.cpp" />
     <ClCompile Include="Component.cpp" />
+    <ClCompile Include="CubeMesh.cpp" />
     <ClCompile Include="DescriptorManager.cpp" />
     <ClCompile Include="FrameResourceManager.cpp" />
     <ClCompile Include="GameFramework.cpp" />

@@ -21,6 +21,8 @@ public:
 
 	virtual void Render(ID3D12GraphicsCommandList* command_list) override;
 
+	virtual void Update(float elapsed_time) override;
+
 private:
 
 };

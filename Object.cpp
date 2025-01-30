@@ -16,9 +16,6 @@ Object::~Object()
 		delete sibling_;
 	if (child_)
 		delete child_;
-
-	for (Component* component : component_list_)
-		delete component;
 }
 
 Object::Object(const Object& other) : 
@@ -32,9 +29,12 @@ Object::Object(const Object& other) :
 	child_ = nullptr;
 	sibling_ = nullptr;
 
-	for (Component* component : other.component_list_)
+	//복사 대상 오브젝트의 컴포넌트들을 가져오고 이 오브젝트로 owner를 재설정한다.
+	for (const std::unique_ptr<Component>& component : other.component_list_)
 	{
-		component_list_.push_back(component->GetCopy());
+		component_list_.emplace_back();
+		component_list_.back().reset(component->GetCopy());
+		component_list_.back()->set_owner(this);
 	}
 }
 
@@ -172,4 +172,12 @@ void Object::UpdateWorldMatrix(const XMFLOAT4X4* const parent_world)
 		sibling_->UpdateWorldMatrix(parent_world);
 	if (child_)
 		child_->UpdateWorldMatrix(&world_matrix_);
+}
+
+void Object::Update(float elapsed_time)
+{
+	for (const std::unique_ptr<Component>& component : component_list_)
+	{
+		component->Update(elapsed_time);
+	}
 }

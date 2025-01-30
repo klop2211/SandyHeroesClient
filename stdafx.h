@@ -46,7 +46,7 @@ using Microsoft::WRL::ComPtr;
 using namespace DirectX;
 
 // 상수값
-const int kDefaultFrmaeBufferWidth = 1366;
+const int kDefaultFrameBufferWidth = 1366;
 const int kDefaultFrameBufferHeight = 768;
 const UINT kDefaultRefreshRate = 60;
 
@@ -93,14 +93,14 @@ namespace xmath_util_float3
 	inline float DotProduct(const XMFLOAT3& vector1, const XMFLOAT3& vector2)
 	{
 		XMFLOAT3 r_value;
-		XMStoreFloat3(&r_value, XMVector3Dot(XMLoadFloat3(&vector1), XMLoadFloat3(&vector1)));
+		XMStoreFloat3(&r_value, XMVector3Dot(XMLoadFloat3(&vector1), XMLoadFloat3(&vector2)));
 		return r_value.x;
 	}
 
 	inline XMFLOAT3 CrossProduct(const XMFLOAT3& vector1, const XMFLOAT3& vector2)
 	{
 		XMFLOAT3 r_value;
-		XMStoreFloat3(&r_value, XMVector3Cross(XMLoadFloat3(&vector1), XMLoadFloat3(&vector1)));
+		XMStoreFloat3(&r_value, XMVector3Cross(XMLoadFloat3(&vector1), XMLoadFloat3(&vector2)));
 		return r_value;
 	}
 
@@ -147,10 +147,24 @@ namespace xmath_util_float4x4
 		return r_value;
 	}
 
+	inline XMFLOAT4X4 PerspectiveFovLH(float fov_angle_y, float aspect_ratio, float near_z, float far_z)
+	{
+		XMFLOAT4X4 r_value;
+		XMStoreFloat4x4(&r_value, XMMatrixPerspectiveFovLH(fov_angle_y, aspect_ratio, near_z, far_z));
+		return(r_value);
+	}
+
 	inline XMFLOAT4X4 Multiply(const XMFLOAT4X4& matrix1, const XMFLOAT4X4& matrix2)
 	{
 		XMFLOAT4X4 r_value;
 		XMStoreFloat4x4(&r_value, XMLoadFloat4x4(&matrix1) * XMLoadFloat4x4(&matrix2));
+		return r_value;
+	}
+
+	inline XMFLOAT4X4 TransPose(const XMFLOAT4X4& matrix)
+	{
+		XMFLOAT4X4 r_value;
+		XMStoreFloat4x4(&r_value, XMMatrixTranspose(XMLoadFloat4x4(&matrix)));
 		return r_value;
 	}
 }

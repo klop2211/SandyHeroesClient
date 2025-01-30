@@ -5,6 +5,7 @@ class Shader;
 class FrameResourceManager;
 class DescriptorManager;
 class Mesh;
+class CameraComponent;
 
 class Scene
 {
@@ -23,6 +24,10 @@ public:
 	virtual void BuildConstantBufferViews(ID3D12Device* device) = 0;
 	virtual void Render(ID3D12GraphicsCommandList* command_list) = 0;
 
+	virtual void Update(float elapsed_time) = 0;
+
+	void UpdateObjectWorldMatrix();
+
 protected:
 	std::list<std::unique_ptr<Object>> object_list_;
 	std::vector<std::unique_ptr<Shader>> shaders_;
@@ -35,6 +40,8 @@ protected:
 	// 이 용량만큼 상수버퍼가 gpu에 만들어진다.
 	int cb_object_capacity_ = 0;
 	int cb_skinned_mesh_object_capacity_ = 0;
+
+	CameraComponent* main_camera_;
 
 };
 

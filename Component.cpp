@@ -6,6 +6,11 @@ Component::Component(Object* owner) : owner_(owner)
 {
 }
 
-Component::Component(const Component& other) : owner_(other.owner_)
+Component::Component(const Component& other) : owner_(nullptr)
 {
+}
+
+void Component::set_owner(Object* owner)
+{
+	owner_ = owner;
 }

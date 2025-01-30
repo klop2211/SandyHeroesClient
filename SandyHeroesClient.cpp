@@ -112,12 +112,12 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 
    DWORD dwStyle = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU |
        WS_BORDER;
-   RECT rc = { 0, 0, kDefaultFrmaeBufferWidth, kDefaultFrameBufferHeight };
+   RECT rc = { 0, 0, kDefaultFrameBufferWidth, kDefaultFrameBufferHeight };
 
    //실제 클라이언트 창의 크기를 rc로 조정 해주는 함수
    AdjustWindowRect(&rc, dwStyle, FALSE);
    hWnd = CreateWindowW(szWindowClass, szTitle, dwStyle,
-       1920 / 2 - kDefaultFrmaeBufferWidth / 2, 1080 / 2 - kDefaultFrameBufferHeight / 2, rc.right, rc.bottom, nullptr, nullptr, hInstance, nullptr);
+       1920 / 2 - kDefaultFrameBufferWidth / 2, 1080 / 2 - kDefaultFrameBufferHeight / 2, rc.right, rc.bottom, nullptr, nullptr, hInstance, nullptr);
 
    if (!hWnd)
    {

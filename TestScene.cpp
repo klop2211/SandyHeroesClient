@@ -5,6 +5,9 @@
 #include "FrameResourceManager.h"
 #include "DescriptorManager.h"
 #include "Mesh.h"
+#include "CubeMesh.h"
+#include "MeshComponent.h"
+#include "CameraComponent.h"
 
 void TestScene::Initialize(ID3D12Device* device, ID3D12GraphicsCommandList* command_list, 
 	ID3D12RootSignature* root_signature, FrameResourceManager* frame_resource_manager,
@@ -14,10 +17,11 @@ void TestScene::Initialize(ID3D12Device* device, ID3D12GraphicsCommandList* comm
 	descriptor_manager_ = descriptor_manager;
 
 	BuildShader(device, root_signature);
+	BuildMesh(device, command_list);
 	BuildObject(device, command_list);
-
 	BuildFrameResources(device);
 	BuildDescriptorHeap(device);
+	BuildConstantBufferViews(device);
 }
 
 void TestScene::BuildShader(ID3D12Device* device, ID3D12RootSignature* root_signature)
@@ -36,12 +40,39 @@ void TestScene::BuildShader(ID3D12Device* device, ID3D12RootSignature* root_sign
 
 void TestScene::BuildMesh(ID3D12Device* device, ID3D12GraphicsCommandList* command_list)
 {
+	meshes_.reserve(3);
+	meshes_.push_back(std::make_unique<CubeMesh>(XMFLOAT4(0, 1, 0, 1)));
+	meshes_.push_back(std::make_unique<CubeMesh>(XMFLOAT4(1, 1, 0, 1)));
+	meshes_.push_back(std::make_unique<CubeMesh>(XMFLOAT4(0, 0, 1, 1)));
+
+	for (const std::unique_ptr<Mesh>& mesh : meshes_)
+	{
+		mesh->CreateShaderVariables(device, command_list);
+	}
 }
 
 void TestScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* command_list)
 {
 	cb_object_capacity_ = 1000;
-	cb_skinned_mesh_object_capacity_ = 1000;
+	cb_skinned_mesh_object_capacity_ = 1;
+
+	//오브젝트를 생성하고
+	Object* cube_object = new Object();
+	//메쉬컴포넌트를 원하는 오브젝트와 메쉬를 넣어 생성한다.
+	MeshComponent* cube_component = new MeshComponent(cube_object, meshes_[0].get());
+	//이를 씬의 오브젝트리스트에 추가
+	object_list_.emplace_back();
+	object_list_.back().reset(cube_object);
+
+	Object* camera_object = new Object();
+	CameraComponent* camera_component = 
+		new CameraComponent(camera_object, 0.3, 10000, 
+			(float)kDefaultFrameBufferWidth / (float)kDefaultFrameBufferHeight, 58);
+	camera_object->set_position_vector(XMFLOAT3(0, 0, -5));
+	object_list_.emplace_back();
+	object_list_.back().reset(camera_object);
+	
+	main_camera_ = camera_component;
 
 }
 
@@ -80,9 +111,6 @@ void TestScene::BuildConstantBufferViews(ID3D12Device* device)
 		//모든 오브젝트에 대해 cbv가 필요하다.
 		for (UINT i = 0; i < cb_object_capacity_; ++i)
 		{
-			// i번째 오브젝트의 상수버퍼 어드레스
-			cb_adress += object_cb_size;
-
 			// 디스크립터 힙 오프셋
 			int heap_index = cb_object_capacity_ * frame_index + i;
 			D3D12_CPU_DESCRIPTOR_HANDLE handle = descriptor_manager_->GetCpuHandle(heap_index);
@@ -92,6 +120,9 @@ void TestScene::BuildConstantBufferViews(ID3D12Device* device)
 			cbv_desc.SizeInBytes = object_cb_size;
 
 			device->CreateConstantBufferView(&cbv_desc, handle);
+
+			// 다음 오브젝트의 상수버퍼 어드레스
+			cb_adress += object_cb_size;
 		}
 
 		// 위 오브젝트와 동일한 방법으로 만들어준다.
@@ -101,8 +132,6 @@ void TestScene::BuildConstantBufferViews(ID3D12Device* device)
 		cb_adress = bone_transform_cb->GetGPUVirtualAddress();
 		for (UINT i = 0; i < cb_skinned_mesh_object_capacity_; ++i)
 		{
-			cb_adress += bone_transform_cb_size;
-
 			int heap_index = descriptor_manager_->cbv_bone_transform_offset() +
 				cb_skinned_mesh_object_capacity_ * frame_index + i;
 			D3D12_CPU_DESCRIPTOR_HANDLE handle = descriptor_manager_->GetCpuHandle(heap_index);
@@ -112,6 +141,8 @@ void TestScene::BuildConstantBufferViews(ID3D12Device* device)
 			cbv_desc.SizeInBytes = bone_transform_cb_size;
 
 			device->CreateConstantBufferView(&cbv_desc, handle);
+
+			cb_adress += bone_transform_cb_size;
 		}
 
 		ID3D12Resource* pass_cb =
@@ -134,6 +165,20 @@ void TestScene::BuildConstantBufferViews(ID3D12Device* device)
 
 void TestScene::Render(ID3D12GraphicsCommandList* command_list)
 {
+	main_camera_->UpdateCameraInfo();
+
+	CBPass cb_pass{};
+	cb_pass.view_matrix = xmath_util_float4x4::TransPose(main_camera_->view_matrix());
+	cb_pass.proj_matrix = xmath_util_float4x4::TransPose(main_camera_->projection_matrix());
+	cb_pass.camera_position = main_camera_->world_position();
+
+	frame_resource_manager_->curr_frame_resource()->cb_pass.get()->CopyData(0, cb_pass);
+
+	int pass_index = descriptor_manager_->cbv_pass_offset() + frame_resource_manager_->curr_frame_resource_index();
+	D3D12_GPU_DESCRIPTOR_HANDLE handle = descriptor_manager_->GetGpuHandle(pass_index);
+
+	command_list->SetGraphicsRootDescriptorTable(3, handle);
+
 	//TODO: 향후 스킨메쉬 클래스 추가시 kCBSkinnedMeshObjectCurrentIndex에 대한 초기화 필요
 	Mesh::kCBObjectCurrentIndex = 0;
 
@@ -151,5 +196,13 @@ void TestScene::Render(ID3D12GraphicsCommandList* command_list)
 			}
 		}
 
+	}
+}
+
+void TestScene::Update(float elapsed_time)
+{
+	for (const std::unique_ptr<Object>& object : object_list_)
+	{
+		object->Update(elapsed_time);
 	}
 }
