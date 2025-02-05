@@ -8,13 +8,17 @@
 #include "CubeMesh.h"
 #include "MeshComponent.h"
 #include "CameraComponent.h"
+#include "InputControllerComponent.h"
+#include "TestControllerComponent.h"
+#include "InputManager.h"
 
 void TestScene::Initialize(ID3D12Device* device, ID3D12GraphicsCommandList* command_list, 
 	ID3D12RootSignature* root_signature, FrameResourceManager* frame_resource_manager,
-	DescriptorManager* descriptor_manager)
+	DescriptorManager* descriptor_manager, InputManager* input_manager)
 {
 	frame_resource_manager_ = frame_resource_manager;
 	descriptor_manager_ = descriptor_manager;
+	input_manager_ = input_manager;
 
 	BuildShader(device, root_signature);
 	BuildMesh(device, command_list);
@@ -60,6 +64,7 @@ void TestScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 	Object* cube_object = new Object();
 	//메쉬컴포넌트를 원하는 오브젝트와 메쉬를 넣어 생성한다.
 	MeshComponent* cube_component = new MeshComponent(cube_object, meshes_[0].get());
+	cube_object->AddComponent(cube_component);
 	//이를 씬의 오브젝트리스트에 추가
 	object_list_.emplace_back();
 	object_list_.back().reset(cube_object);
@@ -68,7 +73,13 @@ void TestScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 	CameraComponent* camera_component = 
 		new CameraComponent(camera_object, 0.3, 10000, 
 			(float)kDefaultFrameBufferWidth / (float)kDefaultFrameBufferHeight, 58);
+	//인풋 처리 컨트롤러 생성
+	TestControllerComponent* controller = new TestControllerComponent(camera_object);
+	//메인 컨트롤러로 설정
+	input_manager_->set_main_controller(controller);
+	camera_object->AddComponent(controller);
 	camera_object->set_position_vector(XMFLOAT3(0, 0, -5));
+
 	object_list_.emplace_back();
 	object_list_.back().reset(camera_object);
 	

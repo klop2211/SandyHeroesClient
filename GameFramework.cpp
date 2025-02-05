@@ -7,12 +7,13 @@
 #include "FrameResourceManager.h"
 #include "DescriptorManager.h"
 #include "Mesh.h"
+#include "InputManager.h"
+#include "InputControllerComponent.h"
 
 GameFramework* GameFramework::kGameFramework = nullptr;
 
 
-GameFramework::GameFramework(HINSTANCE hinstance, HWND hwnd) 
-    : app_instance_(hinstance), main_wnd_(hwnd)
+GameFramework::GameFramework() 
 {
 	assert(kGameFramework == nullptr);
 	kGameFramework = this;
@@ -26,8 +27,11 @@ GameFramework::~GameFramework()
     }
 }
 
-void GameFramework::Initialize()
+void GameFramework::Initialize(HINSTANCE hinstance, HWND hwnd)
 {
+    app_instance_ = hinstance;
+    main_wnd_ = hwnd;
+
     InitDirect3D();
 
     OnResize();
@@ -38,11 +42,12 @@ void GameFramework::Initialize()
 
     frame_resource_manager_ = std::make_unique<FrameResourceManager>();
     descriptor_manager_ = std::make_unique<DescriptorManager>();
+    input_manager_ = std::make_unique<InputManager>();
 
     //씬 생성 및 초기화
     scene_ = std::make_unique<TestScene>();
     scene_->Initialize(d3d_device_.Get(), d3d_command_list_.Get(), d3d_root_signature_.Get(), 
-        frame_resource_manager_.get(), descriptor_manager_.get());
+        frame_resource_manager_.get(), descriptor_manager_.get(), input_manager_.get());
 
     d3d_command_list_->Close();
     ID3D12CommandList* cmd_list[] = { d3d_command_list_.Get() };
@@ -346,6 +351,7 @@ void GameFramework::FrameAdvance()
     client_timer_->Tick();
 
     //인풋 처리
+    input_manager_->Update();
 
     //업데이트
     scene_->Update(client_timer_->ElapsedTime());
@@ -434,4 +440,24 @@ D3D12_CPU_DESCRIPTOR_HANDLE GameFramework::CurrentBackBufferView() const
 D3D12_CPU_DESCRIPTOR_HANDLE GameFramework::DepthStencilView() const
 {
     return d3d_dsv_heap_->GetCPUDescriptorHandleForHeapStart();
+}
+
+LRESULT GameFramework::ProcessWindowMessage(HWND h_wnd, UINT message_id, WPARAM w_param, LPARAM l_param)
+{
+    switch (message_id)
+    {
+    case WM_LBUTTONDOWN:
+    case WM_RBUTTONDOWN:
+    case WM_LBUTTONUP:
+    case WM_RBUTTONUP:
+    //case WM_MOUSEMOVE:
+    case WM_KEYDOWN:
+    case WM_KEYUP:
+        if (input_manager_ && client_timer_)
+            input_manager_->AddInputMessage(message_id, w_param, l_param, client_timer_->TotalTime());
+        break;
+    default:
+        break;
+    }
+    return 0;
 }

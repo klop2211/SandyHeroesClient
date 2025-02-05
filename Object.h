@@ -8,6 +8,7 @@ class Object
 {
 public:
 	Object();
+	Object(const std::string& name);
 	virtual ~Object();
 
 	//복사 생성자(child, sibling의 포인터는 가져오지 않음)
@@ -29,8 +30,9 @@ public:
 	XMFLOAT3 world_up_vector() const;
 
 	UINT id() const;
-
 	std::string name() const;
+	XMFLOAT3 velocity() const;
+
 
 	//setter
 	// 변환행렬 및 각 벡터
@@ -43,9 +45,11 @@ public:
 	// 월드행렬의 setter는 지원하지 않는다.(상위노드의 의해 업데이트 되기 때문)
 
 	void set_name(const std::string& value);
+	void set_velocity(const XMFLOAT3& value);
 
 	void AddChild(Object* object);
 	void AddSibling(Object* object);
+	void AddComponent(Component* component);
 
 	Object* DeepCopyObject(Object* parent);
 
@@ -66,6 +70,10 @@ protected:
 
 	std::string name_ = "None";
 
+	//물리 관련 변수들
+	XMFLOAT3 velocity_{ 0,0,0 };
+
+
 private:
 	// 오브젝트의 실제 월드 행렬(즉, 상위노드의 변환이 전부 적용된)
 	XMFLOAT4X4 world_matrix_ = xmath_util_float4x4::Identity();		
@@ -73,6 +81,7 @@ private:
 	// 다음 생성될 오브젝트의 id, 1부터 시작한다. 즉, id 0번은 나올 수 없음
 	static UINT kObjectNextId;
 	UINT id_ = 0;
+	
 
 };
 

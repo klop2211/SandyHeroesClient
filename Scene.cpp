@@ -6,6 +6,8 @@
 #include "DescriptorManager.h"
 #include "Mesh.h"
 #include "CameraComponent.h"
+#include "InputManager.h"
+#include "InputControllerComponent.h"
 
 void Scene::UpdateObjectWorldMatrix()
 {
@@ -13,4 +15,9 @@ void Scene::UpdateObjectWorldMatrix()
 	{
 		object->UpdateWorldMatrix(nullptr);
 	}
+}
+
+void Scene::SetInputController(InputControllerComponent* controller)
+{
+	input_manager_->set_main_controller(controller);
 }

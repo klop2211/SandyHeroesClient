@@ -21,6 +21,7 @@
 #include <array>
 #include <memory>
 #include <string>
+#include <unordered_map>
 
 // DirectX 관련 헤더 파일 및 선언문
 #include <wrl.h>

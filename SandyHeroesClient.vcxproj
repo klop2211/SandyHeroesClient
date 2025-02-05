@@ -142,6 +142,8 @@
     <ClInclude Include="FrameResource.h" />
     <ClInclude Include="FrameResourceManager.h" />
     <ClInclude Include="GameFramework.h" />
+    <ClInclude Include="InputControllerComponent.h" />
+    <ClInclude Include="InputManager.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="MeshComponent.h" />
     <ClInclude Include="Object.h" />
@@ -151,6 +153,7 @@
     <ClInclude Include="Shader.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
+    <ClInclude Include="TestControllerComponent.h" />
     <ClInclude Include="TestScene.h" />
     <ClInclude Include="Timer.h" />
     <ClInclude Include="UploadBuffer.h" />
@@ -163,6 +166,8 @@
     <ClCompile Include="DescriptorManager.cpp" />
     <ClCompile Include="FrameResourceManager.cpp" />
     <ClCompile Include="GameFramework.cpp" />
+    <ClCompile Include="InputControllerComponent.cpp" />
+    <ClCompile Include="InputManager.cpp" />
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="MeshComponent.cpp" />
     <ClCompile Include="Object.cpp" />
@@ -170,6 +175,7 @@
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="stdafx.cpp" />
+    <ClCompile Include="TestControllerComponent.cpp" />
     <ClCompile Include="TestScene.cpp" />
     <ClCompile Include="Timer.cpp" />
   </ItemGroup>

@@ -12,6 +12,7 @@ HINSTANCE hInst;                                // 현재 인스턴스입니다.
 WCHAR szTitle[MAX_LOADSTRING];                  // 제목 표시줄 텍스트입니다.
 WCHAR szWindowClass[MAX_LOADSTRING];            // 기본 창 클래스 이름입니다.
 HWND hWnd;
+GameFramework game_framework;
 
 // 이 코드 모듈에 포함된 함수의 선언을 전달합니다:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
@@ -44,9 +45,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     MSG msg;
 
-    GameFramework game_framework(hInst, hWnd);
-
-    game_framework.Initialize();
+    game_framework.Initialize(hInst, hWnd);
 
     while (1)
     {
@@ -144,6 +143,15 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     switch (message)
     {
+    case WM_SIZE:
+    case WM_LBUTTONDOWN:
+    case WM_LBUTTONUP:
+    case WM_RBUTTONDOWN:
+    case WM_RBUTTONUP:
+    case WM_KEYDOWN:
+    case WM_KEYUP:
+        game_framework.ProcessWindowMessage(hWnd, message, wParam, lParam);
+        break;
     case WM_COMMAND:
         {
             int wmId = LOWORD(wParam);

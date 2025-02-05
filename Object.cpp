@@ -10,6 +10,11 @@ Object::Object()
 	++kObjectNextId;
 }
 
+Object::Object(const std::string& name) : Object()
+{
+	name_ = name;
+}
+
 Object::~Object()
 {
 	if (sibling_)
@@ -98,6 +103,11 @@ std::string Object::name() const
 	return name_;
 }
 
+XMFLOAT3 Object::velocity() const
+{
+	return velocity_;
+}
+
 void Object::set_transform_matrix(const XMFLOAT4X4& value)
 {
 	transform_matrix_ = value;
@@ -136,6 +146,11 @@ void Object::set_name(const std::string& value)
 	name_ = value;
 }
 
+void Object::set_velocity(const XMFLOAT3& value)
+{
+	velocity_ = value;
+}
+
 void Object::AddChild(Object* object)
 {
 	if (child_)
@@ -150,6 +165,12 @@ void Object::AddSibling(Object* object)
 		sibling_->AddSibling(object);
 	else
 		sibling_ = object;
+}
+
+void Object::AddComponent(Component* component)
+{
+	component_list_.emplace_back();
+	component_list_.back().reset(component);
 }
 
 Object* Object::DeepCopyObject(Object* parent)
@@ -180,4 +201,6 @@ void Object::Update(float elapsed_time)
 	{
 		component->Update(elapsed_time);
 	}
+
+	set_position_vector(position_vector() + (velocity_ * elapsed_time));
 }

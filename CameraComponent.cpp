@@ -10,7 +10,7 @@ CameraComponent::CameraComponent(Object* owner,
 }
 
 CameraComponent::CameraComponent(const CameraComponent& other) : 
-	Component(other.owner_), 
+	Component(nullptr), 
 	view_matrix_(other.view_matrix_), projection_matrix_(other.projection_matrix_)
 {
 

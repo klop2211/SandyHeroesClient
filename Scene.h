@@ -6,6 +6,8 @@ class FrameResourceManager;
 class DescriptorManager;
 class Mesh;
 class CameraComponent;
+class InputManager;
+class InputControllerComponent;
 
 class Scene
 {
@@ -15,7 +17,7 @@ public:
 
 	virtual void Initialize(ID3D12Device* device, ID3D12GraphicsCommandList* command_list, 
 		ID3D12RootSignature* root_signature, FrameResourceManager* frame_resource_manager,
-		DescriptorManager* descriptor_manager) = 0;
+		DescriptorManager* descriptor_manager, InputManager* input_manager) = 0;
 	virtual void BuildShader(ID3D12Device* device, ID3D12RootSignature* root_signature) = 0;
 	virtual void BuildMesh(ID3D12Device* device, ID3D12GraphicsCommandList* command_list) = 0;
 	virtual void BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* command_list) = 0;
@@ -27,6 +29,7 @@ public:
 	virtual void Update(float elapsed_time) = 0;
 
 	void UpdateObjectWorldMatrix();
+	void SetInputController(InputControllerComponent* controller);
 
 protected:
 	std::list<std::unique_ptr<Object>> object_list_;
@@ -35,6 +38,7 @@ protected:
 
 	FrameResourceManager* frame_resource_manager_ = nullptr;
 	DescriptorManager* descriptor_manager_ = nullptr;
+	InputManager* input_manager_ = nullptr;
 
 	// 일반 메쉬를 사용하는 오브젝트의 최대 용량
 	// 이 용량만큼 상수버퍼가 gpu에 만들어진다.

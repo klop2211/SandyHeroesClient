@@ -4,14 +4,15 @@ class Timer;
 class Scene;
 class FrameResourceManager;
 class DescriptorManager;
+class InputManager;
 
 class GameFramework
 {
 public:
-	GameFramework(HINSTANCE hinstance, HWND hwnd);
+	GameFramework();
 	~GameFramework();
 
-	void Initialize();
+	void Initialize(HINSTANCE hinstance, HWND hwnd);
 
 	void InitDirect3D();
 	void CreateCommandObject();
@@ -30,6 +31,8 @@ public:
 	//현재 후면버퍼 뷰의 CPU핸들을 리턴
 	D3D12_CPU_DESCRIPTOR_HANDLE CurrentBackBufferView() const;
 	D3D12_CPU_DESCRIPTOR_HANDLE DepthStencilView() const;
+
+	LRESULT CALLBACK ProcessWindowMessage(HWND h_wnd, UINT message_id, WPARAM w_param, LPARAM l_param);
 
 private:
 	static GameFramework* kGameFramework;
@@ -86,7 +89,8 @@ private:
 	std::unique_ptr<Scene> scene_ = nullptr;
 
 	std::unique_ptr<FrameResourceManager> frame_resource_manager_ = nullptr;
-
 	std::unique_ptr<DescriptorManager> descriptor_manager_ = nullptr;
+	std::unique_ptr<InputManager> input_manager_ = nullptr;
+
 };
 

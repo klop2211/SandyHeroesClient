@@ -40,17 +40,26 @@
     <Filter Include="Component\MeshComponent">
       <UniqueIdentifier>{595c9353-178b-46b5-a9ad-eaf088f4572a}</UniqueIdentifier>
     </Filter>
-    <Filter Include="FrameResourceManager">
-      <UniqueIdentifier>{7cb23a6e-4380-474a-844e-c02a6d497ff7}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Scene\TestScene">
       <UniqueIdentifier>{9067d95c-12fd-4805-add0-fa632b158c81}</UniqueIdentifier>
     </Filter>
-    <Filter Include="DescriptorManager">
-      <UniqueIdentifier>{7c762a4b-9f15-4f20-a537-e5a4cc10266a}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Mesh\Cube">
       <UniqueIdentifier>{96e9464c-3e60-43fb-b9dc-c2a3b97bbcee}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Component\CameraComponent">
+      <UniqueIdentifier>{b5ad54b6-d298-486f-9166-bff24f6bf93a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Manager">
+      <UniqueIdentifier>{e8b9f229-4c85-4817-ba09-8e170489aa99}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Manager\DescriptorManager">
+      <UniqueIdentifier>{7c762a4b-9f15-4f20-a537-e5a4cc10266a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Manager\FrameResourceManager">
+      <UniqueIdentifier>{7cb23a6e-4380-474a-844e-c02a6d497ff7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Manager\InputManager">
+      <UniqueIdentifier>{4b8d8f53-86ab-4bdc-8cf3-92480074ef7e}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -100,21 +109,30 @@
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="FrameResourceManager.h">
-      <Filter>FrameResourceManager</Filter>
+      <Filter>Manager\FrameResourceManager</Filter>
     </ClInclude>
     <ClInclude Include="TestScene.h">
       <Filter>Scene\TestScene</Filter>
     </ClInclude>
     <ClInclude Include="FrameResource.h">
-      <Filter>FrameResourceManager</Filter>
+      <Filter>Manager\FrameResourceManager</Filter>
     </ClInclude>
     <ClInclude Include="DescriptorManager.h">
-      <Filter>DescriptorManager</Filter>
+      <Filter>Manager\DescriptorManager</Filter>
     </ClInclude>
     <ClInclude Include="CubeMesh.h">
       <Filter>Mesh\Cube</Filter>
     </ClInclude>
     <ClInclude Include="CameraComponent.h">
+      <Filter>Component\CameraComponent</Filter>
+    </ClInclude>
+    <ClInclude Include="InputManager.h">
+      <Filter>Manager\InputManager</Filter>
+    </ClInclude>
+    <ClInclude Include="InputControllerComponent.h">
+      <Filter>Component</Filter>
+    </ClInclude>
+    <ClInclude Include="TestControllerComponent.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>
@@ -153,18 +171,27 @@
       <Filter>Component\MeshComponent</Filter>
     </ClCompile>
     <ClCompile Include="FrameResourceManager.cpp">
-      <Filter>FrameResourceManager</Filter>
+      <Filter>Manager\FrameResourceManager</Filter>
     </ClCompile>
     <ClCompile Include="TestScene.cpp">
       <Filter>Scene\TestScene</Filter>
     </ClCompile>
     <ClCompile Include="DescriptorManager.cpp">
-      <Filter>DescriptorManager</Filter>
+      <Filter>Manager\DescriptorManager</Filter>
     </ClCompile>
     <ClCompile Include="CubeMesh.cpp">
       <Filter>Mesh\Cube</Filter>
     </ClCompile>
     <ClCompile Include="CameraComponent.cpp">
+      <Filter>Component\CameraComponent</Filter>
+    </ClCompile>
+    <ClCompile Include="InputManager.cpp">
+      <Filter>Manager\InputManager</Filter>
+    </ClCompile>
+    <ClCompile Include="InputControllerComponent.cpp">
+      <Filter>Component</Filter>
+    </ClCompile>
+    <ClCompile Include="TestControllerComponent.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
