@@ -46,8 +46,6 @@ void TestScene::BuildMesh(ID3D12Device* device, ID3D12GraphicsCommandList* comma
 {
 	meshes_.reserve(3);
 	meshes_.push_back(std::make_unique<CubeMesh>(XMFLOAT4(0, 1, 0, 1)));
-	meshes_.push_back(std::make_unique<CubeMesh>(XMFLOAT4(1, 1, 0, 1)));
-	meshes_.push_back(std::make_unique<CubeMesh>(XMFLOAT4(0, 0, 1, 1)));
 
 	for (const std::unique_ptr<Mesh>& mesh : meshes_)
 	{

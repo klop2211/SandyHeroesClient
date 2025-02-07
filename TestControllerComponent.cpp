@@ -9,6 +9,9 @@ TestControllerComponent::TestControllerComponent(Object* owner)
 	is_key_down_['A'] = false;
 	is_key_down_['S'] = false;
 	is_key_down_['D'] = false;
+	is_key_down_['Q'] = false;
+	is_key_down_['E'] = false;
+
 }
 
 Component* TestControllerComponent::GetCopy()
@@ -51,6 +54,20 @@ void TestControllerComponent::ProcessInput(UINT message_id, WPARAM w_param, LPAR
 				owner_->set_velocity(owner_->velocity() + XMFLOAT3(1, 0, 0));
 			}
 			break;
+		case 'Q':
+			if (!is_key_down_['Q'])
+			{
+				is_key_down_['Q'] = true;
+				owner_->set_velocity(owner_->velocity() + XMFLOAT3(0, -1, 0));
+			}
+			break;
+		case 'E':
+			if (!is_key_down_['E'])
+			{
+				is_key_down_['E'] = true;
+				owner_->set_velocity(owner_->velocity() + XMFLOAT3(0, 1, 0));
+			}
+			break;
 		default:
 			break;
 		}
@@ -86,7 +103,20 @@ void TestControllerComponent::ProcessInput(UINT message_id, WPARAM w_param, LPAR
 				owner_->set_velocity(owner_->velocity() + XMFLOAT3(-1, 0, 0));
 			}
 			break;
-
+		case 'Q':
+			if (is_key_down_['Q'])
+			{
+				is_key_down_['Q'] = false;
+				owner_->set_velocity(owner_->velocity() + XMFLOAT3(0, 1, 0));
+			}
+			break;
+		case 'E':
+			if (is_key_down_['E'])
+			{
+				is_key_down_['E'] = false;
+				owner_->set_velocity(owner_->velocity() + XMFLOAT3(0, -1, 0));
+			}
+			break;
 		default:
 			break;
 		}

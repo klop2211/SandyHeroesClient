@@ -1,7 +1,7 @@
 #pragma once
 #include "InputControllerComponent.h"
 
-//인풋을 받아서 전후좌우 이동 및 상하 좌우 회전을 수행하는 단순한 컴포넌트
+//인풋을 받아서 전후좌우상하 이동 및 상하 좌우 회전을 수행하는 단순한 컴포넌트
 class TestControllerComponent :
     public InputControllerComponent
 {
