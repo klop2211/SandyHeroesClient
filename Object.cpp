@@ -203,4 +203,13 @@ void Object::Update(float elapsed_time)
 	}
 
 	set_position_vector(position_vector() + (velocity_ * elapsed_time));
+
+}
+
+void Object::Rotate(float pitch, float yaw, float roll)
+{
+	XMMATRIX rotation = XMMatrixRotationRollPitchYaw(
+		XMConvertToRadians(pitch), XMConvertToRadians(yaw), XMConvertToRadians(roll));
+
+	XMStoreFloat4x4(&transform_matrix_, rotation * XMLoadFloat4x4(&transform_matrix_));
 }

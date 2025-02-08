@@ -450,7 +450,7 @@ LRESULT GameFramework::ProcessWindowMessage(HWND h_wnd, UINT message_id, WPARAM 
     case WM_RBUTTONDOWN:
     case WM_LBUTTONUP:
     case WM_RBUTTONUP:
-    //case WM_MOUSEMOVE:
+    case WM_MOUSEMOVE:
     case WM_KEYDOWN:
     case WM_KEYUP:
         if (input_manager_ && client_timer_)

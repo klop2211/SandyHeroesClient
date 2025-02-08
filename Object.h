@@ -33,7 +33,6 @@ public:
 	std::string name() const;
 	XMFLOAT3 velocity() const;
 
-
 	//setter
 	// 변환행렬 및 각 벡터
 	void set_transform_matrix(const XMFLOAT4X4& value);
@@ -58,6 +57,8 @@ public:
 
 	virtual void Update(float elapsed_time);
 
+	void Rotate(float pitch, float yaw, float roll);
+
 protected:
 	// 오브젝트의 변환행렬
 	XMFLOAT4X4 transform_matrix_ = xmath_util_float4x4::Identity();
@@ -72,7 +73,6 @@ protected:
 
 	//물리 관련 변수들
 	XMFLOAT3 velocity_{ 0,0,0 };
-
 
 private:
 	// 오브젝트의 실제 월드 행렬(즉, 상위노드의 변환이 전부 적용된)

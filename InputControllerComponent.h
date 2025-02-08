@@ -19,6 +19,6 @@ public:
 
 protected:
     std::unordered_map<char, bool> is_key_down_;
-
+    POINT mouse_xy_{ 0,0 };
 };
 

@@ -11,6 +11,7 @@ TestControllerComponent::TestControllerComponent(Object* owner)
 	is_key_down_['D'] = false;
 	is_key_down_['Q'] = false;
 	is_key_down_['E'] = false;
+	is_key_down_[VK_LBUTTON] = false;
 
 }
 
@@ -23,6 +24,29 @@ void TestControllerComponent::ProcessInput(UINT message_id, WPARAM w_param, LPAR
 {
 	switch (message_id)
 	{
+	case WM_MOUSEMOVE:
+		if (is_key_down_[VK_LBUTTON])
+		{
+			int x = LOWORD(l_param), y = HIWORD(l_param);
+			owner_->Rotate((y - mouse_xy_.y) * 0.1, (x - mouse_xy_.x) * 0.1, 0.f);
+			mouse_xy_.x = x;
+			mouse_xy_.y = y;
+		}
+		break;
+	case WM_LBUTTONDOWN:
+		if (!is_key_down_[VK_LBUTTON])
+		{
+			is_key_down_[VK_LBUTTON] = true;
+			mouse_xy_.x = LOWORD(l_param);
+			mouse_xy_.y = HIWORD(l_param);
+		}
+		break;
+	case WM_LBUTTONUP:
+		if (is_key_down_[VK_LBUTTON])
+		{
+			is_key_down_[VK_LBUTTON] = false;
+		}
+		break;
 	case WM_KEYDOWN:
 		switch (w_param)
 		{
