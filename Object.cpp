@@ -173,14 +173,14 @@ void Object::AddComponent(Component* component)
 	component_list_.back().reset(component);
 }
 
-Object* Object::DeepCopyObject(Object* parent)
+Object* Object::DeepCopyObject()
 {
 	Object* r_value = new Object(*this);
 
 	if (child_)
-		AddChild(child_->DeepCopyObject(r_value));
+		r_value->AddChild(child_->DeepCopyObject());
 	if (sibling_)
-		AddSibling(sibling_->DeepCopyObject(parent));
+		r_value->AddSibling(sibling_->DeepCopyObject());
 
 	return r_value;
 }

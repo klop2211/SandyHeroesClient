@@ -64,6 +64,9 @@
     <Filter Include="Component\Input">
       <UniqueIdentifier>{c225eaad-b137-44ff-9321-939c464687b6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ModelInfo">
+      <UniqueIdentifier>{0d01a7d5-c82d-4034-8e3d-906d6df2f098}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="targetver.h">
@@ -138,6 +141,12 @@
     <ClInclude Include="TestControllerComponent.h">
       <Filter>Component\Input</Filter>
     </ClInclude>
+    <ClInclude Include="ModelInfo.h">
+      <Filter>ModelInfo</Filter>
+    </ClInclude>
+    <ClInclude Include="SkinnedMesh.h">
+      <Filter>Mesh</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="SandyHeroesClient.cpp">
@@ -197,6 +206,12 @@
     <ClCompile Include="TestControllerComponent.cpp">
       <Filter>Component\Input</Filter>
     </ClCompile>
+    <ClCompile Include="ModelInfo.cpp">
+      <Filter>ModelInfo</Filter>
+    </ClCompile>
+    <ClCompile Include="SkinnedMesh.cpp">
+      <Filter>Mesh</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="SandyHeroesClient.rc">
@@ -214,5 +229,6 @@
   <ItemGroup>
     <FxCompile Include="GlobalValues.hlsl" />
     <FxCompile Include="ColorShader.hlsl" />
+    <FxCompile Include="SkinnedMeshShader.hlsl" />
   </ItemGroup>
 </Project>

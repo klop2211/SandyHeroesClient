@@ -50,7 +50,7 @@ public:
 	void AddSibling(Object* object);
 	void AddComponent(Component* component);
 
-	Object* DeepCopyObject(Object* parent);
+	Object* DeepCopyObject();
 
 	// 노드를 순회하며 world_matrix를 업데이트한다.(최상위 노드의 경우 인자에 nullptr을 넣으면 된다)
 	void UpdateWorldMatrix(const XMFLOAT4X4* const parent_transform); 

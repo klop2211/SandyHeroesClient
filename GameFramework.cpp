@@ -9,6 +9,7 @@
 #include "Mesh.h"
 #include "InputManager.h"
 #include "InputControllerComponent.h"
+#include "ModelInfo.h"
 
 GameFramework* GameFramework::kGameFramework = nullptr;
 
@@ -54,6 +55,8 @@ void GameFramework::Initialize(HINSTANCE hinstance, HWND hwnd)
     d3d_command_queue_->ExecuteCommandLists(1, cmd_list);
 
     FlushCommandQueue();
+
+    //TODO: 여기서 mesh의 업로드 버퍼를 지우는 작업을 추가
 
     client_timer_.reset(new Timer);
     client_timer_->Reset();

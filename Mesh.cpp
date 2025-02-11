@@ -3,6 +3,7 @@
 #include "MeshComponent.h"
 #include "FrameResourceManager.h"
 #include "DescriptorManager.h"
+#include "FrameResource.h"
 
 int Mesh::kCBObjectCurrentIndex = 0;
 
@@ -43,6 +44,36 @@ void Mesh::CreateShaderVariables(ID3D12Device* device, ID3D12GraphicsCommandList
 		vertex_buffer_views_.push_back(vertex_buffer_view);
 	}
 
+	if (uvs_.size())
+	{
+		d3d_uv_buffer_ = d3d_util::CreateDefaultBuffer(
+			device, command_list,
+			uvs_.data(), sizeof(XMFLOAT2) * uvs_.size(),
+			d3d_uv_upload_buffer_);
+
+		D3D12_VERTEX_BUFFER_VIEW vertex_buffer_view{};
+		vertex_buffer_view.BufferLocation = d3d_uv_buffer_->GetGPUVirtualAddress();
+		vertex_buffer_view.SizeInBytes = sizeof(XMFLOAT2) * uvs_.size();
+		vertex_buffer_view.StrideInBytes = sizeof(XMFLOAT2);
+
+		vertex_buffer_views_.push_back(vertex_buffer_view);
+	}
+
+	if (normals_.size())
+	{
+		d3d_normal_buffer_ = d3d_util::CreateDefaultBuffer(
+			device, command_list,
+			normals_.data(), sizeof(XMFLOAT3) * normals_.size(),
+			d3d_normal_upload_buffer_);
+
+		D3D12_VERTEX_BUFFER_VIEW vertex_buffer_view{};
+		vertex_buffer_view.BufferLocation = d3d_normal_buffer_->GetGPUVirtualAddress();
+		vertex_buffer_view.SizeInBytes = sizeof(XMFLOAT3) * normals_.size();
+		vertex_buffer_view.StrideInBytes = sizeof(XMFLOAT3);
+
+		vertex_buffer_views_.push_back(vertex_buffer_view);
+	}
+
 	for (const std::vector<UINT>& index_buffer : indices_array_)
 	{
 		d3d_index_buffers_.emplace_back();
@@ -62,16 +93,8 @@ void Mesh::CreateShaderVariables(ID3D12Device* device, ID3D12GraphicsCommandList
 
 }
 
-void Mesh::Render(ID3D12GraphicsCommandList* command_list, 
-	FrameResourceManager* frame_resource_manager, DescriptorManager* descriptor_manager)
+void Mesh::UpdateConstantBuffer(FrameResource* curr_frame_resource)
 {
-	FrameResource* curr_frame_resource = frame_resource_manager->curr_frame_resource();
-	int curr_frame_resource_index = frame_resource_manager->curr_frame_resource_index();
-	int cb_object_count = frame_resource_manager->object_count();
-
-	//이 메쉬를 사용하는 오브젝트의 CB 시작 인덱스를 저장한다.
-	int cb_object_start_index = kCBObjectCurrentIndex;
-
 	//메쉬 컴포넌트를 활용하여 오브젝트 CB를 업데이트한다.
 	for (MeshComponent* mesh_component : mesh_component_list_)
 	{
@@ -87,6 +110,19 @@ void Mesh::Render(ID3D12GraphicsCommandList* command_list,
 
 		kCBObjectCurrentIndex++;
 	}
+}
+
+void Mesh::Render(ID3D12GraphicsCommandList* command_list, 
+	FrameResourceManager* frame_resource_manager, DescriptorManager* descriptor_manager)
+{
+	FrameResource* curr_frame_resource = frame_resource_manager->curr_frame_resource();
+	int curr_frame_resource_index = frame_resource_manager->curr_frame_resource_index();
+	int cb_object_count = frame_resource_manager->object_count();
+
+	//이 메쉬를 사용하는 오브젝트의 CB 시작 인덱스를 저장한다. 
+	int cb_object_start_index = kCBObjectCurrentIndex;
+
+	UpdateConstantBuffer(curr_frame_resource);
 
 	command_list->IASetPrimitiveTopology(primitive_topology_);
 
@@ -124,6 +160,67 @@ void Mesh::Render(ID3D12GraphicsCommandList* command_list,
 			command_list->DrawInstanced(positions_.size(), 1, 0, 0);
 		}
 	}
+
+}
+
+using namespace file_load_util;
+void Mesh::LoadMeshFromFile(std::ifstream& file)
+{
+	int vertex_count = ReadFromFile<int>(file);
+
+	std::string load_token;
+	
+	ReadStringFromFile(file, load_token);
+	name_ = load_token;
+
+	//position 정보
+	ReadStringFromFile(file, load_token);
+#ifdef _DEBUG
+	PrintDebugStringLoadTokenError(name_, load_token, "<Positions>:");
+#endif // _DEBUG
+
+	positions_.resize(ReadFromFile<int>(file));
+	ReadFromFile<XMFLOAT3>(file, positions_.data(), positions_.size());
+
+	//uv 정보
+	ReadStringFromFile(file, load_token);
+#ifdef _DEBUG
+	PrintDebugStringLoadTokenError(name_, load_token, "<TextureCoords>:");
+#endif // _DEBUG
+
+	uvs_.resize(ReadFromFile<int>(file));
+	ReadFromFile<XMFLOAT2>(file, uvs_.data(), uvs_.size());
+
+	//normal 정보
+	ReadStringFromFile(file, load_token);
+#ifdef _DEBUG
+	PrintDebugStringLoadTokenError(name_, load_token, "<Normals>:");
+#endif // _DEBUG
+
+	normals_.resize(ReadFromFile<int>(file));
+	ReadFromFile<XMFLOAT3>(file, normals_.data(), normals_.size());
+
+	//index 정보
+	ReadStringFromFile(file, load_token);
+#ifdef _DEBUG
+	PrintDebugStringLoadTokenError(name_, load_token, "<SubSets>:");
+#endif // _DEBUG
+
+	indices_array_.resize(ReadFromFile<int>(file));
+	for (auto& indices : indices_array_)
+	{
+		ReadStringFromFile(file, load_token);
+#ifdef _DEBUG
+		PrintDebugStringLoadTokenError(name_, load_token, "<SubSet>:");
+#endif // _DEBUG
+		indices.resize(ReadFromFile<int>(file));
+		ReadFromFile<UINT>(file, indices.data(), indices.size());
+	}
+
+	ReadStringFromFile(file, load_token);
+#ifdef _DEBUG
+	PrintDebugStringLoadTokenError(name_, load_token, "</Mesh>");
+#endif // _DEBUG
 
 }
 

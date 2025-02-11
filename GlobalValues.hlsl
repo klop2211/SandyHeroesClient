@@ -5,6 +5,7 @@ cbuffer ObjectInfo : register(b0)
 }
 
 #define SKINNED_ANIMATION_BONES 128
+#define MAX_BONE_PER_VERTEX 4
 
 cbuffer BoneTransforms : register(b1)
 {

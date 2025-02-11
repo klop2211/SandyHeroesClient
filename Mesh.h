@@ -2,6 +2,7 @@
 
 class MeshComponent;
 class FrameResourceManager;
+struct FrameResource;
 class DescriptorManager;
 
 // 메쉬 정보를 가지는 클래스
@@ -16,10 +17,14 @@ public:
 
 	void AddMeshComponent(MeshComponent* mesh_component);
 
-	void CreateShaderVariables(ID3D12Device* device, ID3D12GraphicsCommandList* command_list);
+	virtual void CreateShaderVariables(ID3D12Device* device, ID3D12GraphicsCommandList* command_list);
+
+	virtual void UpdateConstantBuffer(FrameResource* curr_frame_resource);
 
 	virtual void Render(ID3D12GraphicsCommandList* command_list,
 		FrameResourceManager* frame_resource_manager, DescriptorManager* descriptor_manager);
+
+	void LoadMeshFromFile(std::ifstream& file);
 
 	//getter
 	int shader_type() const;
@@ -43,6 +48,14 @@ protected:
 	std::vector<XMFLOAT4> colors_;
 	ComPtr<ID3D12Resource> d3d_color_buffer_;
 	ComPtr<ID3D12Resource> d3d_color_upload_buffer_;
+
+	std::vector<XMFLOAT2> uvs_;
+	ComPtr<ID3D12Resource> d3d_uv_buffer_;
+	ComPtr<ID3D12Resource> d3d_uv_upload_buffer_;
+
+	std::vector<XMFLOAT3> normals_;
+	ComPtr<ID3D12Resource> d3d_normal_buffer_;
+	ComPtr<ID3D12Resource> d3d_normal_upload_buffer_;
 
 	std::vector<D3D12_VERTEX_BUFFER_VIEW> vertex_buffer_views_;
 

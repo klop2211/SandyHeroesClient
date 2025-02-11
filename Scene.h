@@ -8,6 +8,7 @@ class Mesh;
 class CameraComponent;
 class InputManager;
 class InputControllerComponent;
+class ModelInfo;
 
 class Scene
 {
@@ -31,10 +32,13 @@ public:
 	void UpdateObjectWorldMatrix();
 	void SetInputController(InputControllerComponent* controller);
 
+	static Mesh* FindMesh(const std::string& mesh_name, const std::vector<std::unique_ptr<Mesh>>& meshes);
+
 protected:
 	std::list<std::unique_ptr<Object>> object_list_;
 	std::vector<std::unique_ptr<Shader>> shaders_;
 	std::vector<std::unique_ptr<Mesh>> meshes_;
+	std::vector<std::unique_ptr<ModelInfo>> model_infos_;
 
 	FrameResourceManager* frame_resource_manager_ = nullptr;
 	DescriptorManager* descriptor_manager_ = nullptr;
@@ -45,7 +49,7 @@ protected:
 	int cb_object_capacity_ = 0;
 	int cb_skinned_mesh_object_capacity_ = 0;
 
-	CameraComponent* main_camera_;
+	CameraComponent* main_camera_ = nullptr;
 
 };
 

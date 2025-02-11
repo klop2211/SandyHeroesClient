@@ -22,6 +22,7 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include <fstream>
 
 // DirectX 관련 헤더 파일 및 선언문
 #include <wrl.h>
@@ -176,3 +177,46 @@ inline void operator+=(XMFLOAT3& lhs, const XMFLOAT3& rhs) { lhs = xmath_util_fl
 inline XMFLOAT3 operator-(const XMFLOAT3& lhs, const XMFLOAT3& rhs) { return xmath_util_float3::Subtract(lhs, rhs); }
 inline XMFLOAT3 operator*(const XMFLOAT3& lhs, const float& rhs) { return xmath_util_float3::ScalarProduct(lhs, rhs); }
 inline XMFLOAT4X4 operator*(const XMFLOAT4X4& lhs, const XMFLOAT4X4& rhs) { return xmath_util_float4x4::Multiply(lhs, rhs); }
+
+namespace file_load_util
+{
+#ifdef _DEBUG
+	// 로드 토큰이 잘못되었으면 디버그용 문장을 출력해주는 함수
+	inline void PrintDebugStringLoadTokenError(const std::string& file_name, 
+		const std::string& load_token, const std::string& compare_token)
+	{
+		if (load_token != compare_token)
+		{
+			std::string temp = file_name + "을 로드하는 과정에서 " + load_token + "부분에 문제가 생겼습니다.";
+			std::wstring debug_str;
+			debug_str.assign(temp.begin(), temp.end());
+			OutputDebugString(debug_str.c_str());
+			throw;
+		}
+
+	}
+#endif // DEBUG
+
+	inline BYTE ReadStringFromFile(std::ifstream& file, std::string& str)
+	{
+		BYTE strLength = 0;
+		file.read((char*)&strLength, sizeof(BYTE));
+		str.resize(strLength);
+		file.read(&str[0], strLength);
+		return strLength;
+	}
+
+	template <class T>
+	inline T ReadFromFile(std::ifstream& file)
+	{
+		T rvalue;
+		file.read((char*)&rvalue, sizeof(T));
+		return rvalue;
+	}
+
+	template <class T>
+	inline void ReadFromFile(std::ifstream& file, T* buffer, const int& count)
+	{
+		file.read((char*)buffer, sizeof(T) * count);
+	}
+}
