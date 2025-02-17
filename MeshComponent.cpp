@@ -17,7 +17,8 @@ MeshComponent::MeshComponent(const MeshComponent& other) : Component(other), mes
 
 MeshComponent& MeshComponent::operator=(const MeshComponent& rhs)
 {
-	owner_ = rhs.owner_;
+	//컴포넌트 복제시 owner_는 리셋되어야함
+	owner_ = nullptr;
 	mesh_ = rhs.mesh_;
 	mesh_->AddMeshComponent(this);
 	return *this;
@@ -28,9 +29,14 @@ Component* MeshComponent::GetCopy()
 	return new MeshComponent(*this);
 }
 
-XMFLOAT4X4 MeshComponent::GetOwnerWorld() const
+void MeshComponent::UpdateConstantBuffer(FrameResource* current_frame_resource, int cb_index)
 {
-	return owner_->world_matrix();
+	CBObject object_buffer{};
+	XMStoreFloat4x4(&object_buffer.world_matrix,
+		XMMatrixTranspose(XMLoadFloat4x4(&owner_->world_matrix())));
+
+	UploadBuffer<CBObject>* object_cb = current_frame_resource->cb_object.get();
+	object_cb->CopyData(cb_index, object_buffer);
 }
 
 bool MeshComponent::IsVisible() const

@@ -30,7 +30,7 @@ Object::Object(const Object& other) :
 {
 	id_ = kObjectNextId;
 	++kObjectNextId;
-
+	
 	child_ = nullptr;
 	sibling_ = nullptr;
 
@@ -153,6 +153,7 @@ void Object::set_velocity(const XMFLOAT3& value)
 
 void Object::AddChild(Object* object)
 {
+	object->parent_ = this;
 	if (child_)
 		child_->AddSibling(object);
 	else
@@ -161,6 +162,7 @@ void Object::AddChild(Object* object)
 
 void Object::AddSibling(Object* object)
 {
+	object->parent_ = parent_;
 	if (sibling_)
 		sibling_->AddSibling(object);
 	else
@@ -173,16 +175,29 @@ void Object::AddComponent(Component* component)
 	component_list_.back().reset(component);
 }
 
-Object* Object::DeepCopyObject()
+Object* Object::FindFrame(const std::string& name)
 {
-	Object* r_value = new Object(*this);
+	if(name_ == name)
+		return this;
 
 	if (child_)
-		r_value->AddChild(child_->DeepCopyObject());
+	{
+		Object* found = child_->FindFrame(name);
+		if (found)
+			return found;
+	}
+		
 	if (sibling_)
-		r_value->AddSibling(sibling_->DeepCopyObject());
+		return sibling_->FindFrame(name);
 
-	return r_value;
+	return nullptr;
+}
+
+Object* Object::GetHierarchyRoot()
+{
+	if (parent_)
+		return parent_->GetHierarchyRoot();
+	return this;
 }
 
 void Object::UpdateWorldMatrix(const XMFLOAT4X4* const parent_world)
@@ -212,4 +227,18 @@ void Object::Rotate(float pitch, float yaw, float roll)
 		XMConvertToRadians(pitch), XMConvertToRadians(yaw), XMConvertToRadians(roll));
 
 	XMStoreFloat4x4(&transform_matrix_, rotation * XMLoadFloat4x4(&transform_matrix_));
+}
+
+Object* Object::DeepCopy(Object* value, Object* parent)
+{
+	if (!value)
+		return nullptr;
+
+	Object* copy = new Object(*value);
+	copy->parent_ = parent;
+
+	copy->child_ = DeepCopy(value->child_, copy);
+	copy->sibling_ = DeepCopy(value->sibling_, parent);
+
+	return copy;
 }

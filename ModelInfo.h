@@ -14,6 +14,8 @@ public:
 
 	Object* LoadFrameInfoFromFile(std::ifstream& file, std::vector<std::unique_ptr<Mesh>>& meshes);
 
+	Object* GetInstance();
+
 private:
 	std::string model_name_ = "None";
 

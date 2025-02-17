@@ -19,7 +19,7 @@ struct CBObject
 // 스킨 메쉬를 사용하는 오브젝트의 bone transform 행렬
 struct CBBoneTransform
 {
-	XMFLOAT4X4 bone_transform_matrix[128];
+	XMFLOAT4X4 bone_transform_matrix[kMaxBoneCount];
 };
 
 

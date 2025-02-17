@@ -67,6 +67,9 @@
     <Filter Include="ModelInfo">
       <UniqueIdentifier>{0d01a7d5-c82d-4034-8e3d-906d6df2f098}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shader\SkinnedMeshShader">
+      <UniqueIdentifier>{8907c794-c724-4295-b1bf-c6a145725483}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="targetver.h">
@@ -147,6 +150,12 @@
     <ClInclude Include="SkinnedMesh.h">
       <Filter>Mesh</Filter>
     </ClInclude>
+    <ClInclude Include="SkinnedMeshComponent.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="SkinnedMeshShader.h">
+      <Filter>Shader\SkinnedMeshShader</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="SandyHeroesClient.cpp">
@@ -211,6 +220,12 @@
     </ClCompile>
     <ClCompile Include="SkinnedMesh.cpp">
       <Filter>Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="SkinnedMeshComponent.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="SkinnedMeshShader.cpp">
+      <Filter>Shader\SkinnedMeshShader</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

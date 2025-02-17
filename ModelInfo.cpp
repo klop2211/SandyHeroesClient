@@ -4,6 +4,8 @@
 #include "Mesh.h"
 #include "SkinnedMesh.h"
 #include "MeshComponent.h"
+#include "SkinnedMeshComponent.h"
+#include "Shader.h"
 
 ModelInfo::ModelInfo(const std::string& file_name, std::vector<std::unique_ptr<Mesh>>& meshes)
 {
@@ -72,6 +74,7 @@ Object* ModelInfo::LoadFrameInfoFromFile(std::ifstream& file, std::vector<std::u
 		meshes.back().reset(mesh);
 
 		MeshComponent* mesh_component = new MeshComponent(frame, mesh);
+		mesh->DeleteMeshComponent(mesh_component);	//모델 정보는 그려지면 안되기 때문에 메쉬의 컴포넌트 리스트에서 제외함
 		frame->AddComponent(mesh_component);
 
 		ReadStringFromFile(file, load_token);
@@ -80,10 +83,13 @@ Object* ModelInfo::LoadFrameInfoFromFile(std::ifstream& file, std::vector<std::u
 	{
 		SkinnedMesh* skinned_mesh = new SkinnedMesh;
 		skinned_mesh->LoadSkinnedMeshFromFile(file);
+		skinned_mesh->set_shader_type((int)ShaderType::kShaderTypeSkinnedMesh);
 		meshes.emplace_back();
 		meshes.back().reset(skinned_mesh);
 
-		//TODO: SkinnedMeshComponent 연결이 필요
+		SkinnedMeshComponent* skinned_mesh_component = new SkinnedMeshComponent(frame, skinned_mesh);
+		skinned_mesh->DeleteMeshComponent(skinned_mesh_component);
+		frame->AddComponent(skinned_mesh_component);
 
 		ReadStringFromFile(file, load_token);
 	}
@@ -105,4 +111,9 @@ Object* ModelInfo::LoadFrameInfoFromFile(std::ifstream& file, std::vector<std::u
 
 
 	return frame;
+}
+
+Object* ModelInfo::GetInstance()
+{
+	return Object::DeepCopy(hierarchy_root_);
 }

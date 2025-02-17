@@ -12,6 +12,8 @@
 #include "TestControllerComponent.h"
 #include "InputManager.h"
 #include "ModelInfo.h"
+#include "SkinnedMeshShader.h"
+#include "SkinnedMesh.h"
 
 void TestScene::Initialize(ID3D12Device* device, ID3D12GraphicsCommandList* command_list, 
 	ID3D12RootSignature* root_signature, FrameResourceManager* frame_resource_manager,
@@ -32,12 +34,13 @@ void TestScene::Initialize(ID3D12Device* device, ID3D12GraphicsCommandList* comm
 void TestScene::BuildShader(ID3D12Device* device, ID3D12RootSignature* root_signature)
 {
 	//씬에서 사용하는 쉐이더 개수만큼 예약
-	int shader_count = 1;
+	int shader_count = 2;
 	shaders_.reserve(shader_count);
+	shaders_.push_back(std::make_unique<ColorShader>());
+	shaders_.push_back(std::make_unique<SkinnedMeshShader>());
 
 	for (int i = 0; i < shader_count; ++i)
 	{
-		shaders_.push_back(std::make_unique<ColorShader>());
 		shaders_[i]->CreateShader(device, root_signature);
 	}
 	
@@ -61,7 +64,7 @@ void TestScene::BuildMesh(ID3D12Device* device, ID3D12GraphicsCommandList* comma
 void TestScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* command_list)
 {
 	cb_object_capacity_ = 1000;
-	cb_skinned_mesh_object_capacity_ = 1;
+	cb_skinned_mesh_object_capacity_ = 10;
 
 	//오브젝트를 생성하고
 	Object* cube_object = new Object();
@@ -73,11 +76,16 @@ void TestScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 	object_list_.emplace_back();
 	object_list_.back().reset(cube_object);
 
-	Object* temp = cube_object->DeepCopyObject();
+	Object* temp = model_infos_[0]->GetInstance();
 	temp->set_position_vector(XMFLOAT3{ 2.2, 0, 0 });
 	cube_object->AddChild(temp);
 
-	cube_object->set_position_vector(XMFLOAT3{ 0,0.5,0 });
+	Object* temp1 = Object::DeepCopy(cube_object);
+	object_list_.emplace_back();
+	object_list_.back().reset(temp1);
+
+
+	cube_object->set_position_vector(XMFLOAT3{ 0, 2,0 });
 
 	Object* camera_object = new Object();
 	CameraComponent* camera_component = 
@@ -198,10 +206,11 @@ void TestScene::Render(ID3D12GraphicsCommandList* command_list)
 	int pass_index = descriptor_manager_->cbv_pass_offset() + frame_resource_manager_->curr_frame_resource_index();
 	D3D12_GPU_DESCRIPTOR_HANDLE handle = descriptor_manager_->GetGpuHandle(pass_index);
 
-	command_list->SetGraphicsRootDescriptorTable(3, handle);
+	command_list->SetGraphicsRootDescriptorTable((int)CBShaderRegisterNum::kRenderPass, handle);
 
 	//TODO: 향후 스킨메쉬 클래스 추가시 kCBSkinnedMeshObjectCurrentIndex에 대한 초기화 필요
-	Mesh::kCBObjectCurrentIndex = 0;
+	Mesh::ResetCBObjectCurrentIndex();
+	SkinnedMesh::ResetCBSkinnedMeshObjectCurrentIndex();
 
 	// 단순한 배치 처리 
 	// 씬에서 사용하는 쉐이더가 n개이면 SetPipelineState가 n번 호출된다

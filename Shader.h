@@ -2,7 +2,7 @@
 
 enum class ShaderType
 {
-	kShaderTypeNone = 0, kShaderTypeColor
+	kShaderTypeNone = 0, kShaderTypeColor, kShaderTypeSkinnedMesh
 };
 
 class Shader
@@ -15,8 +15,8 @@ public:
 	virtual D3D12_BLEND_DESC CreateBlendState();
 	virtual D3D12_DEPTH_STENCIL_DESC CreateDepthStencilState();
 
-	virtual D3D12_SHADER_BYTECODE CreateVertexShader(ID3DBlob** ppd3dShaderBlob) = 0;
-	virtual D3D12_SHADER_BYTECODE CreatePixelShader(ID3DBlob** ppd3dShaderBlob) = 0;
+	virtual D3D12_SHADER_BYTECODE CreateVertexShader(ID3DBlob** shader_blob) = 0;
+	virtual D3D12_SHADER_BYTECODE CreatePixelShader(ID3DBlob** shader_blob) = 0;
 
 	D3D12_SHADER_BYTECODE CompileShaderFromFile(WCHAR* file_name, LPCSTR shader_name,
 		LPCSTR shader_profile, ID3DBlob** shader_blob);

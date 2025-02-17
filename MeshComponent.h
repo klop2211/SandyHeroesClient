@@ -16,7 +16,7 @@ public:
 
     virtual Component* GetCopy() override;
 
-    XMFLOAT4X4 GetOwnerWorld() const;
+    virtual void UpdateConstantBuffer(FrameResource* current_frame_resource, int cb_index);
 
     bool IsVisible() const;
 

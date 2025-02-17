@@ -211,18 +211,15 @@ void GameFramework::BuildRootSignature()
     CD3DX12_DESCRIPTOR_RANGE cbv_table1;
     cbv_table1.Init(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1, 1);
 
-    CD3DX12_DESCRIPTOR_RANGE cbv_table2;
-    cbv_table2.Init(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1, 2);
-
     CD3DX12_DESCRIPTOR_RANGE cbv_table3;
     cbv_table3.Init(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1, 3);
 
     CD3DX12_ROOT_PARAMETER root_parameter[4];
 
-    root_parameter[0].InitAsDescriptorTable(1, &cbv_table0);
-    root_parameter[1].InitAsDescriptorTable(1, &cbv_table1);
-    root_parameter[2].InitAsDescriptorTable(1, &cbv_table2);
-    root_parameter[3].InitAsDescriptorTable(1, &cbv_table3);
+    root_parameter[0].InitAsDescriptorTable(1, &cbv_table0); // world matrix
+    root_parameter[1].InitAsDescriptorTable(1, &cbv_table1); // bone transform
+    root_parameter[2].InitAsConstantBufferView(2);           // bone offset (default buffer)
+    root_parameter[3].InitAsDescriptorTable(1, &cbv_table3); // render pass
 
     CD3DX12_ROOT_SIGNATURE_DESC root_sig_desc(4, root_parameter, 0, nullptr,
         D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);

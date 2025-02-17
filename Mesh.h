@@ -16,15 +16,19 @@ public:
 	Mesh& operator=(const Mesh&) = delete;
 
 	void AddMeshComponent(MeshComponent* mesh_component);
+	void DeleteMeshComponent(MeshComponent* mesh_component);
 
 	virtual void CreateShaderVariables(ID3D12Device* device, ID3D12GraphicsCommandList* command_list);
 
+	//이 메쉬를 사용하는 object의 개수만큼 cb를 업데이트
 	virtual void UpdateConstantBuffer(FrameResource* curr_frame_resource);
 
 	virtual void Render(ID3D12GraphicsCommandList* command_list,
 		FrameResourceManager* frame_resource_manager, DescriptorManager* descriptor_manager);
 
 	void LoadMeshFromFile(std::ifstream& file);
+
+	static void ResetCBObjectCurrentIndex();
 
 	//getter
 	int shader_type() const;
@@ -33,9 +37,6 @@ public:
 	//setter
 	void set_shader_type(int value);
 	void set_name(const std::string& name);
-
-	//업데이트 되어야 할 cb의 인덱스를 갖는 변수 Scene 렌더시 0으로 초기화 해야한다.
-	static int kCBObjectCurrentIndex;
 
 protected:
 
@@ -73,5 +74,10 @@ protected:
 
 	// 메쉬가 사용하는 쉐이더의 타입 Shader.h 참고
 	int shader_type_ = 0;
+
+private:
+	//업데이트 되어야 할 cb의 인덱스를 갖는 변수 Scene 렌더시 0으로 초기화 해야한다. (Reset함수로)
+	static int kCBObjectCurrentIndex;
+
 };
 

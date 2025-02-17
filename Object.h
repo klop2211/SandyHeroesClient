@@ -11,7 +11,7 @@ public:
 	Object(const std::string& name);
 	virtual ~Object();
 
-	//복사 생성자(child, sibling의 포인터는 가져오지 않음)
+	//복사 생성자(child, sibling도 복사하는 깊은복사)
 	Object(const Object& other);
 
 	//getter
@@ -50,7 +50,8 @@ public:
 	void AddSibling(Object* object);
 	void AddComponent(Component* component);
 
-	Object* DeepCopyObject();
+	Object* FindFrame(const std::string& name);
+	Object* GetHierarchyRoot();
 
 	// 노드를 순회하며 world_matrix를 업데이트한다.(최상위 노드의 경우 인자에 nullptr을 넣으면 된다)
 	void UpdateWorldMatrix(const XMFLOAT4X4* const parent_transform); 
@@ -59,12 +60,16 @@ public:
 
 	void Rotate(float pitch, float yaw, float roll);
 
+	static Object* DeepCopy(Object* value, Object* parent = nullptr);
+
 protected:
 	// 오브젝트의 변환행렬
 	XMFLOAT4X4 transform_matrix_ = xmath_util_float4x4::Identity();
 
+	Object* parent_ = nullptr;
 	Object* child_ = nullptr;
 	Object* sibling_ = nullptr;
+
 
 	// 오브젝트에 추가된 모든 컴포넌트의 리스트
 	std::list<std::unique_ptr<Component>> component_list_;
