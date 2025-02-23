@@ -13,6 +13,8 @@ struct VertexIn
 struct VertexOut
 {
     float4 position : SV_POSITION;
+    float3 position_w : POSITIONT;
+    float3 normal : NORMAL;
     float2 uv : TEXCOORD;
 };
 
@@ -27,8 +29,11 @@ VertexOut VS(VertexIn v_in)
         vertex_to_world_matrix += v_in.weights[i] * mul(g_bone_offset_matrix[v_in.indices[i]], g_bone_transform_matrix[v_in.indices[i]]);
     }
     
-    v_out.position = mul(mul(mul(float4(v_in.position, 1.f), vertex_to_world_matrix), g_view_matrix), g_projection_matrix);
-    //TODO: 조명 처리 및 텍스처 추가시 normal에 대한 변환 필요
+    v_out.position_w = mul(float4(v_in.position, 1.f), vertex_to_world_matrix).xyz;
+
+    v_out.position = mul(mul(float4(v_out.position_w, 1.f), g_view_matrix), g_projection_matrix);
+    
+    v_out.normal = mul(v_in.normal, (float3x3)vertex_to_world_matrix);
     
     v_out.uv = v_in.uv;
     
@@ -37,5 +42,19 @@ VertexOut VS(VertexIn v_in)
 
 float4 PS(VertexOut p_in) : SV_Target
 {
-    return float4(0, 1, 0, 1);
+    //TODO: 향후 albedo 텍스처를 통해 diffuse albedo 값을 계산할 것이다.
+    float4 diffuse_albedo = float4(0, 1, 0, 1) * g_material.albedo_color;
+    
+    p_in.normal = normalize(p_in.normal);
+    
+    float3 to_eye_vector = normalize(g_camera_position - p_in.position_w);
+    
+    float4 ambient = g_ambient_light * diffuse_albedo;
+    Material mat = { diffuse_albedo, g_material.fresnel_r0, g_material.glossiness };
+    float4 direct_light = ComputeLighting(g_lights, mat, p_in.position_w, p_in.normal, to_eye_vector);
+    
+    float4 result = ambient + direct_light;
+    result.a = diffuse_albedo.a;
+    
+    return result;
 }

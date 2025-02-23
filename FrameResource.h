@@ -2,12 +2,29 @@
 
 #include "UploadBuffer.h"
 
+// 쉐이더에서 사용하는 조명정보를 저장하는 구조체
+struct LightInfo
+{
+	XMFLOAT3 strength;
+	float falloff_start;
+	XMFLOAT3 direction;
+	float falloff_end;
+	XMFLOAT3 position;
+	float spot_power;
+	bool enable;
+	int type;
+	XMFLOAT2 pad;
+};
+
 // 렌더패스 1회에 사용되는 상수 버퍼
 struct CBPass
 {
 	XMFLOAT4X4 view_matrix;
 	XMFLOAT4X4 proj_matrix;
 	XMFLOAT3 camera_position;
+	float pad;
+	XMFLOAT4 ambient_light;
+	LightInfo lights[kMaxLights];
 };
 
 // 일반 메쉬를 사용하는 오브젝트의 상수 버퍼

@@ -33,7 +33,7 @@ D3D12_INPUT_LAYOUT_DESC SkinnedMeshShader::CreateInputLayout()
 D3D12_RASTERIZER_DESC SkinnedMeshShader::CreateRasterizerState()
 {
 	D3D12_RASTERIZER_DESC rasterizer_desc{};
-	rasterizer_desc.FillMode = D3D12_FILL_MODE_WIREFRAME;
+	rasterizer_desc.FillMode = D3D12_FILL_MODE_SOLID;
 	rasterizer_desc.CullMode = D3D12_CULL_MODE_BACK;
 	rasterizer_desc.FrontCounterClockwise = FALSE;
 	rasterizer_desc.DepthBias = 0;

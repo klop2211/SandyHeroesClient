@@ -205,6 +205,16 @@ void TestScene::Render(ID3D12GraphicsCommandList* command_list)
 	cb_pass.proj_matrix = xmath_util_float4x4::TransPose(main_camera_->projection_matrix());
 	cb_pass.camera_position = main_camera_->world_position();
 
+	//TODO: 조명 및 재질 관련 클래스를 생성후 그것을 사용하여 아래 정보 업데이트(현재는 테스트용 하드코딩)
+	cb_pass.ambient_light = XMFLOAT4{ 0.1,0.1,0.1, 1 };
+	cb_pass.lights[0].strength = XMFLOAT3{ 1,1,1 };
+	cb_pass.lights[0].direction = XMFLOAT3{ 1,-1, 0.5 };
+	cb_pass.lights[0].enable = true;
+	cb_pass.lights[0].type = 0;
+
+	for (int i = 1; i < 16; ++i)
+		cb_pass.lights[i].enable = false;
+
 	frame_resource_manager_->curr_frame_resource()->cb_pass.get()->CopyData(0, cb_pass);
 
 	//25.02.23 수정
@@ -213,6 +223,18 @@ void TestScene::Render(ID3D12GraphicsCommandList* command_list)
 		frame_resource_manager_->curr_frame_resource()->cb_pass.get()->Resource()->GetGPUVirtualAddress();
 
 	command_list->SetGraphicsRootConstantBufferView((int)CBShaderRegisterNum::kRenderPass, cb_pass_address);
+
+	struct Material
+	{
+		XMFLOAT4 albedo_color;
+		XMFLOAT3 fresnel_r0;
+		float glossiness;
+	};
+
+	Material mat{ XMFLOAT4{1,1,1,1}, XMFLOAT3{0.04,0.04,0.04}, 0.9 };
+
+	command_list->SetGraphicsRoot32BitConstants((int)CBShaderRegisterNum::kMaterial, 8, (void*)&mat, 0);
+
 
 	Mesh::ResetCBObjectCurrentIndex();
 	SkinnedMesh::ResetCBSkinnedMeshObjectCurrentIndex();

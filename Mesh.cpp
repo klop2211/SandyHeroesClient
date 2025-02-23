@@ -83,6 +83,8 @@ void Mesh::CreateShaderVariables(ID3D12Device* device, ID3D12GraphicsCommandList
 
 	for (const std::vector<UINT>& index_buffer : indices_array_)
 	{
+		if (index_buffer.size() == 0)
+			continue;
 		d3d_index_buffers_.emplace_back();
 		d3d_index_upload_buffers_.emplace_back();
 
@@ -136,16 +138,32 @@ void Mesh::Render(ID3D12GraphicsCommandList* command_list,
 	{
 		for (int i = 0; i < indices_array_.size(); ++i)
 		{
-			command_list->IASetIndexBuffer(&index_buffer_views_[i]);
-			for (int object_index = cb_object_start_index; object_index < kCBObjectCurrentIndex; ++object_index)
-			{		
-				//25.02.23 수정
-				//기존 루트 디스크립터 테이블에서 루트 CBV로 변경
-				D3D12_GPU_VIRTUAL_ADDRESS cb_object_address = 
-					curr_frame_resource->cb_object.get()->Resource()->GetGPUVirtualAddress() + object_index * cb_object_size;
+			if (indices_array_[i].size())
+			{
+				command_list->IASetIndexBuffer(&index_buffer_views_[i]);
+				for (int object_index = cb_object_start_index; object_index < kCBObjectCurrentIndex; ++object_index)
+				{
+					//25.02.23 수정
+					//기존 루트 디스크립터 테이블에서 루트 CBV로 변경
+					D3D12_GPU_VIRTUAL_ADDRESS cb_object_address =
+						curr_frame_resource->cb_object.get()->Resource()->GetGPUVirtualAddress() + object_index * cb_object_size;
 
-				command_list->SetGraphicsRootConstantBufferView((int)CBShaderRegisterNum::kWorldMatrix, cb_object_address);
-				command_list->DrawIndexedInstanced(indices_array_[i].size(), 1, 0, 0, 0);
+					command_list->SetGraphicsRootConstantBufferView((int)CBShaderRegisterNum::kWorldMatrix, cb_object_address);
+					command_list->DrawIndexedInstanced(indices_array_[i].size(), 1, 0, 0, 0);
+				}
+			}
+			else
+			{
+				for (int object_index = cb_object_start_index; object_index < kCBObjectCurrentIndex; ++object_index)
+				{
+					//25.02.23 수정
+					//기존 루트 디스크립터 테이블에서 루트 CBV로 변경
+					D3D12_GPU_VIRTUAL_ADDRESS cb_object_address =
+						curr_frame_resource->cb_object.get()->Resource()->GetGPUVirtualAddress() + object_index * cb_object_size;
+
+					command_list->SetGraphicsRootConstantBufferView((int)CBShaderRegisterNum::kWorldMatrix, cb_object_address);
+					command_list->DrawInstanced(positions_.size(), 1, 0, 0);
+				}
 			}
 		}
 	}

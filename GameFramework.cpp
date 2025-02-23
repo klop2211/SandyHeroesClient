@@ -206,7 +206,7 @@ void GameFramework::CreateRtvAndDsvDescriptorHeaps()
 void GameFramework::BuildRootSignature()
 {
 
-    CD3DX12_ROOT_PARAMETER root_parameter[4];
+    CD3DX12_ROOT_PARAMETER root_parameter[5];
 
     //25.02.23 수정
     //기존 루트 디스크립터 테이블에서 루트 CBV사용으로 변경
@@ -214,8 +214,9 @@ void GameFramework::BuildRootSignature()
     root_parameter[1].InitAsConstantBufferView(1); // bone transform
     root_parameter[2].InitAsConstantBufferView(2); // bone offset (default buffer)
     root_parameter[3].InitAsConstantBufferView(3); // render pass
+    root_parameter[4].InitAsConstants(8, 4); // material
 
-    CD3DX12_ROOT_SIGNATURE_DESC root_sig_desc(4, root_parameter, 0, nullptr,
+    CD3DX12_ROOT_SIGNATURE_DESC root_sig_desc(5, root_parameter, 0, nullptr,
         D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
     ComPtr<ID3DBlob> serialized_root_sig = nullptr;

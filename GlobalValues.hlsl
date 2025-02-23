@@ -1,3 +1,4 @@
+#include "LightingUtil.hlsl"
 
 cbuffer ObjectInfo : register(b0)
 {
@@ -20,8 +21,15 @@ cbuffer BoneOffsets : register(b2)
 // 프레임 당 1번 갱신되는 상수 버퍼
 cbuffer RenderPass : register(b3)
 {
-    matrix g_view_matrix : packoffset(c0);
-    matrix g_projection_matrix : packoffset(c4);
-    float3 g_camera_position : packoffset(c8);
+    matrix g_view_matrix;
+    matrix g_projection_matrix;
+    float3 g_camera_position;
+    float pad;
+    float4 g_ambient_light;
+    Light g_lights[MAX_LIGHTS];
 }
 
+cbuffer Material : register(b4)
+{
+    Material g_material;
+}

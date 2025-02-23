@@ -70,6 +70,9 @@
     <Filter Include="Shader\SkinnedMeshShader">
       <UniqueIdentifier>{8907c794-c724-4295-b1bf-c6a145725483}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Component\SkinnedMesh">
+      <UniqueIdentifier>{1abe438f-5798-44ed-b5a3-c6d476f52c1e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="targetver.h">
@@ -150,11 +153,11 @@
     <ClInclude Include="SkinnedMesh.h">
       <Filter>Mesh</Filter>
     </ClInclude>
-    <ClInclude Include="SkinnedMeshComponent.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
     <ClInclude Include="SkinnedMeshShader.h">
       <Filter>Shader\SkinnedMeshShader</Filter>
+    </ClInclude>
+    <ClInclude Include="SkinnedMeshComponent.h">
+      <Filter>Component\SkinnedMesh</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -221,11 +224,11 @@
     <ClCompile Include="SkinnedMesh.cpp">
       <Filter>Mesh</Filter>
     </ClCompile>
-    <ClCompile Include="SkinnedMeshComponent.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
     <ClCompile Include="SkinnedMeshShader.cpp">
       <Filter>Shader\SkinnedMeshShader</Filter>
+    </ClCompile>
+    <ClCompile Include="SkinnedMeshComponent.cpp">
+      <Filter>Component\SkinnedMesh</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -245,5 +248,6 @@
     <FxCompile Include="GlobalValues.hlsl" />
     <FxCompile Include="ColorShader.hlsl" />
     <FxCompile Include="SkinnedMeshShader.hlsl" />
+    <FxCompile Include="LightingUtil.hlsl" />
   </ItemGroup>
 </Project>

@@ -94,16 +94,32 @@ void SkinnedMesh::Render(ID3D12GraphicsCommandList* command_list,
 	{
 		for (int i = 0; i < indices_array_.size(); ++i)
 		{
-			command_list->IASetIndexBuffer(&index_buffer_views_[i]);
-			for (int object_index = cb_object_start_index; object_index < kCBSkinnedMeshObjectCurrentIndex; ++object_index)
+			if (indices_array_[i].size())
 			{
-				//25.02.23 수정
-				//기존 루트 디스크립터 테이블에서 루트 CBV로 변경
-				D3D12_GPU_VIRTUAL_ADDRESS cb_bone_transform_address =
-					curr_frame_resource->cb_bone_transform.get()->Resource()->GetGPUVirtualAddress() + cb_bone_transform_size * object_index;
+				command_list->IASetIndexBuffer(&index_buffer_views_[i]);
+				for (int object_index = cb_object_start_index; object_index < kCBSkinnedMeshObjectCurrentIndex; ++object_index)
+				{
+					//25.02.23 수정
+					//기존 루트 디스크립터 테이블에서 루트 CBV로 변경
+					D3D12_GPU_VIRTUAL_ADDRESS cb_bone_transform_address =
+						curr_frame_resource->cb_bone_transform.get()->Resource()->GetGPUVirtualAddress() + cb_bone_transform_size * object_index;
 
-				command_list->SetGraphicsRootConstantBufferView((int)CBShaderRegisterNum::kBoneTransform, cb_bone_transform_address);
-				command_list->DrawIndexedInstanced(indices_array_[i].size(), 1, 0, 0, 0);
+					command_list->SetGraphicsRootConstantBufferView((int)CBShaderRegisterNum::kBoneTransform, cb_bone_transform_address);
+					command_list->DrawIndexedInstanced(indices_array_[i].size(), 1, 0, 0, 0);
+				}
+			}
+			else
+			{
+				for (int object_index = cb_object_start_index; object_index < kCBSkinnedMeshObjectCurrentIndex; ++object_index)
+				{
+					//25.02.23 수정
+					//기존 루트 디스크립터 테이블에서 루트 CBV로 변경
+					D3D12_GPU_VIRTUAL_ADDRESS cb_bone_transform_address =
+						curr_frame_resource->cb_bone_transform.get()->Resource()->GetGPUVirtualAddress() + cb_bone_transform_size * object_index;
+
+					command_list->SetGraphicsRootConstantBufferView((int)CBShaderRegisterNum::kBoneTransform, cb_bone_transform_address);
+					command_list->DrawInstanced(positions_.size(), 1, 0, 0);
+				}
 			}
 		}
 	}
