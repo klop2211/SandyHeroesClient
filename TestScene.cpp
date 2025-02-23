@@ -85,7 +85,7 @@ void TestScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 	object_list_.back().reset(temp1);
 
 
-	cube_object->set_position_vector(XMFLOAT3{ 0, 2,0 });
+	cube_object->set_position_vector(XMFLOAT3{ 0, 2, 0 });
 
 	Object* camera_object = new Object();
 	CameraComponent* camera_component = 
@@ -122,73 +122,77 @@ void TestScene::BuildDescriptorHeap(ID3D12Device* device)
 
 void TestScene::BuildConstantBufferViews(ID3D12Device* device)
 {
-	UINT object_cb_size = d3d_util::CalculateConstantBufferSize(sizeof(CBObject));
+	//25.02.23 수정
+	//루트 디스크립터 테이블에서 루트 CBV로 변경함에 따라 
+	//더이상 이 함수를 통해 CBV를 생성하지 않음
 
-	UINT bone_transform_cb_size = d3d_util::CalculateConstantBufferSize(sizeof(CBBoneTransform));
-	UINT bone_transform_offset = descriptor_manager_->cbv_bone_transform_offset();
+	//UINT object_cb_size = d3d_util::CalculateConstantBufferSize(sizeof(CBObject));
 
-	UINT pass_cb_size = d3d_util::CalculateConstantBufferSize(sizeof(CBPass));
+	//UINT bone_transform_cb_size = d3d_util::CalculateConstantBufferSize(sizeof(CBBoneTransform));
+	//UINT bone_transform_offset = descriptor_manager_->cbv_bone_transform_offset();
 
-	//각 프레임리소스별로 cbv가 필요하다
-	for (int frame_index = 0; frame_index < FrameResourceManager::kFrameCount; ++frame_index)
-	{
-		//프레임리소스에서 원하는 상수버퍼의 리소스를 가져온다.
-		ID3D12Resource* object_cb =
-			frame_resource_manager_->GetResource(frame_index)->cb_object->Resource();
+	//UINT pass_cb_size = d3d_util::CalculateConstantBufferSize(sizeof(CBPass));
 
-		D3D12_GPU_VIRTUAL_ADDRESS cb_adress = object_cb->GetGPUVirtualAddress();
-		//모든 오브젝트에 대해 cbv가 필요하다.
-		for (UINT i = 0; i < cb_object_capacity_; ++i)
-		{
-			// 디스크립터 힙 오프셋
-			int heap_index = cb_object_capacity_ * frame_index + i;
-			D3D12_CPU_DESCRIPTOR_HANDLE handle = descriptor_manager_->GetCpuHandle(heap_index);
+	////각 프레임리소스별로 cbv가 필요하다
+	//for (int frame_index = 0; frame_index < FrameResourceManager::kFrameCount; ++frame_index)
+	//{
+	//	//프레임리소스에서 원하는 상수버퍼의 리소스를 가져온다.
+	//	ID3D12Resource* object_cb =
+	//		frame_resource_manager_->GetResource(frame_index)->cb_object->Resource();
 
-			D3D12_CONSTANT_BUFFER_VIEW_DESC cbv_desc{};
-			cbv_desc.BufferLocation = cb_adress;
-			cbv_desc.SizeInBytes = object_cb_size;
+	//	D3D12_GPU_VIRTUAL_ADDRESS cb_adress = object_cb->GetGPUVirtualAddress();
+	//	//모든 오브젝트에 대해 cbv가 필요하다.
+	//	for (UINT i = 0; i < cb_object_capacity_; ++i)
+	//	{
+	//		// 디스크립터 힙 오프셋
+	//		int heap_index = cb_object_capacity_ * frame_index + i;
+	//		D3D12_CPU_DESCRIPTOR_HANDLE handle = descriptor_manager_->GetCpuHandle(heap_index);
 
-			device->CreateConstantBufferView(&cbv_desc, handle);
+	//		D3D12_CONSTANT_BUFFER_VIEW_DESC cbv_desc{};
+	//		cbv_desc.BufferLocation = cb_adress;
+	//		cbv_desc.SizeInBytes = object_cb_size;
 
-			// 다음 오브젝트의 상수버퍼 어드레스
-			cb_adress += object_cb_size;
-		}
+	//		device->CreateConstantBufferView(&cbv_desc, handle);
 
-		// 위 오브젝트와 동일한 방법으로 만들어준다.
-		ID3D12Resource* bone_transform_cb =
-			frame_resource_manager_->GetResource(frame_index)->cb_bone_transform->Resource();
+	//		// 다음 오브젝트의 상수버퍼 어드레스
+	//		cb_adress += object_cb_size;
+	//	}
 
-		cb_adress = bone_transform_cb->GetGPUVirtualAddress();
-		for (UINT i = 0; i < cb_skinned_mesh_object_capacity_; ++i)
-		{
-			int heap_index = descriptor_manager_->cbv_bone_transform_offset() +
-				cb_skinned_mesh_object_capacity_ * frame_index + i;
-			D3D12_CPU_DESCRIPTOR_HANDLE handle = descriptor_manager_->GetCpuHandle(heap_index);
+	//	// 위 오브젝트와 동일한 방법으로 만들어준다.
+	//	ID3D12Resource* bone_transform_cb =
+	//		frame_resource_manager_->GetResource(frame_index)->cb_bone_transform->Resource();
 
-			D3D12_CONSTANT_BUFFER_VIEW_DESC cbv_desc{};
-			cbv_desc.BufferLocation = cb_adress;
-			cbv_desc.SizeInBytes = bone_transform_cb_size;
+	//	cb_adress = bone_transform_cb->GetGPUVirtualAddress();
+	//	for (UINT i = 0; i < cb_skinned_mesh_object_capacity_; ++i)
+	//	{
+	//		int heap_index = descriptor_manager_->cbv_bone_transform_offset() +
+	//			cb_skinned_mesh_object_capacity_ * frame_index + i;
+	//		D3D12_CPU_DESCRIPTOR_HANDLE handle = descriptor_manager_->GetCpuHandle(heap_index);
 
-			device->CreateConstantBufferView(&cbv_desc, handle);
+	//		D3D12_CONSTANT_BUFFER_VIEW_DESC cbv_desc{};
+	//		cbv_desc.BufferLocation = cb_adress;
+	//		cbv_desc.SizeInBytes = bone_transform_cb_size;
 
-			cb_adress += bone_transform_cb_size;
-		}
+	//		device->CreateConstantBufferView(&cbv_desc, handle);
 
-		ID3D12Resource* pass_cb =
-			frame_resource_manager_->GetResource(frame_index)->cb_pass->Resource();
+	//		cb_adress += bone_transform_cb_size;
+	//	}
 
-		cb_adress = pass_cb->GetGPUVirtualAddress();
+	//	ID3D12Resource* pass_cb =
+	//		frame_resource_manager_->GetResource(frame_index)->cb_pass->Resource();
 
-		int heap_index = descriptor_manager_->cbv_pass_offset() + frame_index;
-		D3D12_CPU_DESCRIPTOR_HANDLE handle = descriptor_manager_->GetCpuHandle(heap_index);
+	//	cb_adress = pass_cb->GetGPUVirtualAddress();
 
-		D3D12_CONSTANT_BUFFER_VIEW_DESC cbv_desc{};
-		cbv_desc.BufferLocation = cb_adress;
-		cbv_desc.SizeInBytes = pass_cb_size;
+	//	int heap_index = descriptor_manager_->cbv_pass_offset() + frame_index;
+	//	D3D12_CPU_DESCRIPTOR_HANDLE handle = descriptor_manager_->GetCpuHandle(heap_index);
 
-		device->CreateConstantBufferView(&cbv_desc, handle);
+	//	D3D12_CONSTANT_BUFFER_VIEW_DESC cbv_desc{};
+	//	cbv_desc.BufferLocation = cb_adress;
+	//	cbv_desc.SizeInBytes = pass_cb_size;
 
-	}
+	//	device->CreateConstantBufferView(&cbv_desc, handle);
+
+	//}
 
 }
 
@@ -203,12 +207,13 @@ void TestScene::Render(ID3D12GraphicsCommandList* command_list)
 
 	frame_resource_manager_->curr_frame_resource()->cb_pass.get()->CopyData(0, cb_pass);
 
-	int pass_index = descriptor_manager_->cbv_pass_offset() + frame_resource_manager_->curr_frame_resource_index();
-	D3D12_GPU_DESCRIPTOR_HANDLE handle = descriptor_manager_->GetGpuHandle(pass_index);
+	//25.02.23 수정
+	//기존 루트 디스크립터 테이블에서 루트 CBV로 변경
+	D3D12_GPU_VIRTUAL_ADDRESS cb_pass_address =
+		frame_resource_manager_->curr_frame_resource()->cb_pass.get()->Resource()->GetGPUVirtualAddress();
 
-	command_list->SetGraphicsRootDescriptorTable((int)CBShaderRegisterNum::kRenderPass, handle);
+	command_list->SetGraphicsRootConstantBufferView((int)CBShaderRegisterNum::kRenderPass, cb_pass_address);
 
-	//TODO: 향후 스킨메쉬 클래스 추가시 kCBSkinnedMeshObjectCurrentIndex에 대한 초기화 필요
 	Mesh::ResetCBObjectCurrentIndex();
 	SkinnedMesh::ResetCBSkinnedMeshObjectCurrentIndex();
 

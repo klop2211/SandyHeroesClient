@@ -119,8 +119,7 @@ void Mesh::Render(ID3D12GraphicsCommandList* command_list,
 	FrameResourceManager* frame_resource_manager, DescriptorManager* descriptor_manager)
 {
 	FrameResource* curr_frame_resource = frame_resource_manager->curr_frame_resource();
-	int curr_frame_resource_index = frame_resource_manager->curr_frame_resource_index();
-	int cb_object_count = frame_resource_manager->object_count();
+	UINT cb_object_size = d3d_util::CalculateConstantBufferSize(sizeof(CBObject));
 
 	//이 메쉬를 사용하는 오브젝트의 CB 시작 인덱스를 저장한다. 
 	int cb_object_start_index = kCBObjectCurrentIndex;
@@ -140,12 +139,12 @@ void Mesh::Render(ID3D12GraphicsCommandList* command_list,
 			command_list->IASetIndexBuffer(&index_buffer_views_[i]);
 			for (int object_index = cb_object_start_index; object_index < kCBObjectCurrentIndex; ++object_index)
 			{		
-				// 현 프레임 리소스에 해당하는 오브젝트의 CBV의 오프셋을 계산합니다.
-				UINT cbv_index = curr_frame_resource_index * cb_object_count + object_index;
-				D3D12_GPU_DESCRIPTOR_HANDLE gpu_handle = descriptor_manager->GetGpuHandle(cbv_index);
+				//25.02.23 수정
+				//기존 루트 디스크립터 테이블에서 루트 CBV로 변경
+				D3D12_GPU_VIRTUAL_ADDRESS cb_object_address = 
+					curr_frame_resource->cb_object.get()->Resource()->GetGPUVirtualAddress() + object_index * cb_object_size;
 
-				//TODO: 루트시그너처 작성후 인덱스 0을 enum class 등 상수를 정의하기
-				command_list->SetGraphicsRootDescriptorTable((int)CBShaderRegisterNum::kWorldMatrix, gpu_handle);
+				command_list->SetGraphicsRootConstantBufferView((int)CBShaderRegisterNum::kWorldMatrix, cb_object_address);
 				command_list->DrawIndexedInstanced(indices_array_[i].size(), 1, 0, 0, 0);
 			}
 		}
@@ -154,12 +153,12 @@ void Mesh::Render(ID3D12GraphicsCommandList* command_list,
 	{
 		for (int object_index = cb_object_start_index; object_index < kCBObjectCurrentIndex; ++object_index)
 		{
-			// 현 프레임 리소스에 해당하는 오브젝트의 CBV의 오프셋을 계산합니다.
-			UINT cbv_index = curr_frame_resource_index * cb_object_count + object_index;
-			D3D12_GPU_DESCRIPTOR_HANDLE gpu_handle = descriptor_manager->GetGpuHandle(cbv_index);
+			//25.02.23 수정
+			//기존 루트 디스크립터 테이블에서 루트 CBV로 변경
+			D3D12_GPU_VIRTUAL_ADDRESS cb_object_address =
+				curr_frame_resource->cb_object.get()->Resource()->GetGPUVirtualAddress() + object_index * cb_object_size;
 
-			//TODO: 루트시그너처 작성후 인덱스 0을 enum class 등 상수를 정의하기
-			command_list->SetGraphicsRootDescriptorTable((int)CBShaderRegisterNum::kWorldMatrix, gpu_handle);
+			command_list->SetGraphicsRootConstantBufferView((int)CBShaderRegisterNum::kWorldMatrix, cb_object_address);
 			command_list->DrawInstanced(positions_.size(), 1, 0, 0);
 		}
 	}
