@@ -22,6 +22,7 @@ struct Material
     float4 albedo_color;    
     float3 fresnel_r0;      // 입사각 0도에서 프레넬 반사율
     float glossiness;       // 광택
+    float4 emission_color; // 발산광
 };
 
 //점조명과 스팟조명에 사용하는 감쇠계수 계산함수
@@ -108,8 +109,8 @@ float3 ComputeSpotLight(Light l, Material mat, float3 position, float3 normal, f
     float attenuation = CalcAttenuation(d, l.falloff_start, l.falloff_end);
     light_strength *= attenuation;
 
-    float spotFactor = pow(max(dot(-light_vector, l.direction), 0.0f), l.spot_power);
-    light_strength *= spotFactor;
+    float spot_factor = pow(max(dot(-light_vector, l.direction), 0.0f), l.spot_power);
+    light_strength *= spot_factor;
 
     return BlinnPhongLighting(light_strength, light_vector, normal, to_eye_vector, mat);
 }

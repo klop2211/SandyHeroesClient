@@ -41,7 +41,7 @@ FrameResource* FrameResourceManager::GetResource(int index) const
 }
 
 void FrameResourceManager::ResetFrameResources(ID3D12Device* device, UINT cb_pass_count,
-	UINT cb_object_count, UINT cb_skinned_mesh_object_count)
+	UINT cb_object_count, UINT cb_skinned_mesh_object_count, UINT cb_material_count)
 {
     frame_resources_.clear();
     frame_resources_.reserve(kFrameCount);
@@ -50,12 +50,13 @@ void FrameResourceManager::ResetFrameResources(ID3D12Device* device, UINT cb_pas
     for (int i = 0; i < kFrameCount; ++i)
     {
         frame_resources_.push_back(std::make_unique<FrameResource>(
-            device, cb_pass_count, (UINT)cb_object_count, (UINT)cb_skinned_mesh_object_count));
+            device, cb_pass_count, (UINT)cb_object_count, (UINT)cb_skinned_mesh_object_count, cb_material_count));
     }
 
     pass_count_ = cb_pass_count;
     object_count_ = cb_object_count;
     skinned_mesh_object_count_ = cb_skinned_mesh_object_count;
+    material_count_ = cb_material_count;
 
     curr_frame_resource_ = frame_resources_[curr_frame_resource_index_].get();
 }

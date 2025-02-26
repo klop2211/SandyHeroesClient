@@ -4,6 +4,7 @@
 #include "DescriptorManager.h"
 #include "MeshComponent.h"
 #include "SkinnedMeshComponent.h"
+#include "Material.h"
 
 int SkinnedMesh::kCBSkinnedMeshObjectCurrentIndex = 0;
 
@@ -74,7 +75,7 @@ void SkinnedMesh::Render(ID3D12GraphicsCommandList* command_list,
 	FrameResourceManager* frame_resource_manager, DescriptorManager* descriptor_manager)
 {
 	command_list->SetGraphicsRootConstantBufferView(
-		(int)CBShaderRegisterNum::kBoneOffset, d3d_bone_offset_buffer_->GetGPUVirtualAddress());
+		(int)RootParameterIndex::kBoneOffset, d3d_bone_offset_buffer_->GetGPUVirtualAddress());
 
 	FrameResource* curr_frame_resource = frame_resource_manager->curr_frame_resource();
 	UINT cb_bone_transform_size = d3d_util::CalculateConstantBufferSize(sizeof(CBBoneTransform));
@@ -94,6 +95,7 @@ void SkinnedMesh::Render(ID3D12GraphicsCommandList* command_list,
 	{
 		for (int i = 0; i < indices_array_.size(); ++i)
 		{
+			materials_[i]->UpdateShaderVariables(command_list, curr_frame_resource, descriptor_manager);
 			if (indices_array_[i].size())
 			{
 				command_list->IASetIndexBuffer(&index_buffer_views_[i]);
@@ -104,7 +106,7 @@ void SkinnedMesh::Render(ID3D12GraphicsCommandList* command_list,
 					D3D12_GPU_VIRTUAL_ADDRESS cb_bone_transform_address =
 						curr_frame_resource->cb_bone_transform.get()->Resource()->GetGPUVirtualAddress() + cb_bone_transform_size * object_index;
 
-					command_list->SetGraphicsRootConstantBufferView((int)CBShaderRegisterNum::kBoneTransform, cb_bone_transform_address);
+					command_list->SetGraphicsRootConstantBufferView((int)RootParameterIndex::kBoneTransform, cb_bone_transform_address);
 					command_list->DrawIndexedInstanced(indices_array_[i].size(), 1, 0, 0, 0);
 				}
 			}
@@ -117,7 +119,7 @@ void SkinnedMesh::Render(ID3D12GraphicsCommandList* command_list,
 					D3D12_GPU_VIRTUAL_ADDRESS cb_bone_transform_address =
 						curr_frame_resource->cb_bone_transform.get()->Resource()->GetGPUVirtualAddress() + cb_bone_transform_size * object_index;
 
-					command_list->SetGraphicsRootConstantBufferView((int)CBShaderRegisterNum::kBoneTransform, cb_bone_transform_address);
+					command_list->SetGraphicsRootConstantBufferView((int)RootParameterIndex::kBoneTransform, cb_bone_transform_address);
 					command_list->DrawInstanced(positions_.size(), 1, 0, 0);
 				}
 			}
@@ -132,7 +134,7 @@ void SkinnedMesh::Render(ID3D12GraphicsCommandList* command_list,
 			D3D12_GPU_VIRTUAL_ADDRESS cb_bone_transform_address =
 				curr_frame_resource->cb_bone_transform.get()->Resource()->GetGPUVirtualAddress() + cb_bone_transform_size * object_index;
 
-			command_list->SetGraphicsRootConstantBufferView((int)CBShaderRegisterNum::kBoneTransform, cb_bone_transform_address);
+			command_list->SetGraphicsRootConstantBufferView((int)RootParameterIndex::kBoneTransform, cb_bone_transform_address);
 			command_list->DrawInstanced(positions_.size(), 1, 0, 0);
 		}
 	}

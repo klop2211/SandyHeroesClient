@@ -25,7 +25,7 @@ public:
 
 	// 프레임리소스들을 초기화한다.
 	void ResetFrameResources(ID3D12Device* device, UINT cb_pass_count, 
-		UINT cb_object_count, UINT cb_skinned_mesh_object_count);
+		UINT cb_object_count, UINT cb_skinned_mesh_object_count, UINT cb_material_count);
 
 	//프레임리소드들을 순환 시킨다 (즉, 다음 프레임리소스에 대한 업데이트 시작)
 	void CirculateFrameResource(ID3D12Fence* fence);
@@ -48,6 +48,7 @@ private:
 	int pass_count_ = 0;
 	int object_count_ = 0;
 	int skinned_mesh_object_count_ = 0;
+	int material_count_ = 0;
 
 };
 

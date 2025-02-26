@@ -4,7 +4,7 @@
 
 SkinnedMeshShader::SkinnedMeshShader()
 {
-	shader_type_ = ShaderType::kShaderTypeSkinnedMesh;
+	shader_type_ = ShaderType::kSkinnedMesh;
 }
 
 D3D12_INPUT_LAYOUT_DESC SkinnedMeshShader::CreateInputLayout()

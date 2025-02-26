@@ -43,17 +43,18 @@ VertexOut VS(VertexIn v_in)
 float4 PS(VertexOut p_in) : SV_Target
 {
     //TODO: 향후 albedo 텍스처를 통해 diffuse albedo 값을 계산할 것이다.
-    float4 diffuse_albedo = float4(0, 1, 0, 1) * g_material.albedo_color;
+    float4 diffuse_albedo = float4(0.5, 0.5, 0.5, 1) * g_material.albedo_color;
     
     p_in.normal = normalize(p_in.normal);
     
     float3 to_eye_vector = normalize(g_camera_position - p_in.position_w);
     
     float4 ambient = g_ambient_light * diffuse_albedo;
-    Material mat = { diffuse_albedo, g_material.fresnel_r0, g_material.glossiness };
+    Material mat = { diffuse_albedo, g_material.fresnel_r0, g_material.glossiness, g_material.emission_color };
     float4 direct_light = ComputeLighting(g_lights, mat, p_in.position_w, p_in.normal, to_eye_vector);
     
-    float4 result = ambient + direct_light;
+    
+    float4 result = ambient + direct_light + float4(g_material.emission_color, 1.f);
     result.a = diffuse_albedo.a;
     
     return result;

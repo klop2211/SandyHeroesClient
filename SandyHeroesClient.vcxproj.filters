@@ -73,6 +73,9 @@
     <Filter Include="Component\SkinnedMesh">
       <UniqueIdentifier>{1abe438f-5798-44ed-b5a3-c6d476f52c1e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Material">
+      <UniqueIdentifier>{ebd8e96b-5f5b-429c-8633-9f62894b49eb}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="targetver.h">
@@ -159,6 +162,18 @@
     <ClInclude Include="SkinnedMeshComponent.h">
       <Filter>Component\SkinnedMesh</Filter>
     </ClInclude>
+    <ClInclude Include="DDSTextureLoader.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Material.h">
+      <Filter>Material</Filter>
+    </ClInclude>
+    <ClInclude Include="StandardMeshShader.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="StandardSkinnedMeshShader.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="SandyHeroesClient.cpp">
@@ -230,6 +245,18 @@
     <ClCompile Include="SkinnedMeshComponent.cpp">
       <Filter>Component\SkinnedMesh</Filter>
     </ClCompile>
+    <ClCompile Include="DDSTextureLoader.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="Material.cpp">
+      <Filter>Material</Filter>
+    </ClCompile>
+    <ClCompile Include="StandardMeshShader.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="StandardSkinnedMeshShader.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="SandyHeroesClient.rc">
@@ -249,5 +276,6 @@
     <FxCompile Include="ColorShader.hlsl" />
     <FxCompile Include="SkinnedMeshShader.hlsl" />
     <FxCompile Include="LightingUtil.hlsl" />
+    <FxCompile Include="StandardShader.hlsl" />
   </ItemGroup>
 </Project>

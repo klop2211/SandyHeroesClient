@@ -4,6 +4,7 @@
 #include "FrameResourceManager.h"
 #include "DescriptorManager.h"
 #include "FrameResource.h"
+#include "Material.h"
 
 int Mesh::kCBObjectCurrentIndex = 0;
 
@@ -17,6 +18,11 @@ void Mesh::DeleteMeshComponent(MeshComponent* mesh_component)
 	auto& delete_target = std::find(mesh_component_list_.begin(), mesh_component_list_.end(), mesh_component);
 
 	mesh_component_list_.erase(delete_target);
+}
+
+void Mesh::AddMaterial(Material* material)
+{
+	materials_.push_back(material);
 }
 
 void Mesh::CreateShaderVariables(ID3D12Device* device, ID3D12GraphicsCommandList* command_list)
@@ -138,6 +144,8 @@ void Mesh::Render(ID3D12GraphicsCommandList* command_list,
 	{
 		for (int i = 0; i < indices_array_.size(); ++i)
 		{
+			//머터리얼은 각 서브메쉬에 적용되는 순서대로 저장되어있다.
+			materials_[i]->UpdateShaderVariables(command_list, curr_frame_resource, descriptor_manager);
 			if (indices_array_[i].size())
 			{
 				command_list->IASetIndexBuffer(&index_buffer_views_[i]);
@@ -148,7 +156,7 @@ void Mesh::Render(ID3D12GraphicsCommandList* command_list,
 					D3D12_GPU_VIRTUAL_ADDRESS cb_object_address =
 						curr_frame_resource->cb_object.get()->Resource()->GetGPUVirtualAddress() + object_index * cb_object_size;
 
-					command_list->SetGraphicsRootConstantBufferView((int)CBShaderRegisterNum::kWorldMatrix, cb_object_address);
+					command_list->SetGraphicsRootConstantBufferView((int)RootParameterIndex::kWorldMatrix, cb_object_address);
 					command_list->DrawIndexedInstanced(indices_array_[i].size(), 1, 0, 0, 0);
 				}
 			}
@@ -161,7 +169,7 @@ void Mesh::Render(ID3D12GraphicsCommandList* command_list,
 					D3D12_GPU_VIRTUAL_ADDRESS cb_object_address =
 						curr_frame_resource->cb_object.get()->Resource()->GetGPUVirtualAddress() + object_index * cb_object_size;
 
-					command_list->SetGraphicsRootConstantBufferView((int)CBShaderRegisterNum::kWorldMatrix, cb_object_address);
+					command_list->SetGraphicsRootConstantBufferView((int)RootParameterIndex::kWorldMatrix, cb_object_address);
 					command_list->DrawInstanced(positions_.size(), 1, 0, 0);
 				}
 			}
@@ -176,7 +184,7 @@ void Mesh::Render(ID3D12GraphicsCommandList* command_list,
 			D3D12_GPU_VIRTUAL_ADDRESS cb_object_address =
 				curr_frame_resource->cb_object.get()->Resource()->GetGPUVirtualAddress() + object_index * cb_object_size;
 
-			command_list->SetGraphicsRootConstantBufferView((int)CBShaderRegisterNum::kWorldMatrix, cb_object_address);
+			command_list->SetGraphicsRootConstantBufferView((int)RootParameterIndex::kWorldMatrix, cb_object_address);
 			command_list->DrawInstanced(positions_.size(), 1, 0, 0);
 		}
 	}

@@ -6,10 +6,12 @@
 #include "MeshComponent.h"
 #include "SkinnedMeshComponent.h"
 #include "Shader.h"
+#include "Material.h"
 
-ModelInfo::ModelInfo(const std::string& file_name, std::vector<std::unique_ptr<Mesh>>& meshes)
+ModelInfo::ModelInfo(const std::string& file_name, std::vector<std::unique_ptr<Mesh>>& meshes,
+	std::vector<std::unique_ptr<Material>>& materials)
 {
-	LoadModelInfoFromFile(file_name, meshes);
+	LoadModelInfoFromFile(file_name, meshes, materials);
 }
 
 ModelInfo::~ModelInfo()
@@ -19,7 +21,8 @@ ModelInfo::~ModelInfo()
 }
 
 using namespace file_load_util;
-void ModelInfo::LoadModelInfoFromFile(const std::string& file_name, std::vector<std::unique_ptr<Mesh>>& meshes)
+void ModelInfo::LoadModelInfoFromFile(const std::string& file_name, std::vector<std::unique_ptr<Mesh>>& meshes,
+	std::vector<std::unique_ptr<Material>>& materials)
 {
 	size_t last_slash = file_name.find_last_of("/\\");
 	size_t last_dot = file_name.find_last_of('.');
@@ -34,7 +37,7 @@ void ModelInfo::LoadModelInfoFromFile(const std::string& file_name, std::vector<
 	PrintDebugStringLoadTokenError(model_name_, load_token, "<Hierarchy>:");
 #endif //_DEBUG
 
-	hierarchy_root_ = LoadFrameInfoFromFile(model_file, meshes);
+	hierarchy_root_ = LoadFrameInfoFromFile(model_file, meshes, materials);
 
 	ReadStringFromFile(model_file, load_token);
 #ifdef _DEBUG
@@ -43,7 +46,8 @@ void ModelInfo::LoadModelInfoFromFile(const std::string& file_name, std::vector<
 
 }
 
-Object* ModelInfo::LoadFrameInfoFromFile(std::ifstream& file, std::vector<std::unique_ptr<Mesh>>& meshes)
+Object* ModelInfo::LoadFrameInfoFromFile(std::ifstream& file, std::vector<std::unique_ptr<Mesh>>& meshes,
+	std::vector<std::unique_ptr<Material>>& materials)
 {
 	std::string load_token;
 
@@ -70,6 +74,8 @@ Object* ModelInfo::LoadFrameInfoFromFile(std::ifstream& file, std::vector<std::u
 	{
 		Mesh* mesh = new Mesh;
 		mesh->LoadMeshFromFile(file);
+		mesh->set_shader_type((int)ShaderType::kStandardMesh);
+
 		meshes.emplace_back();
 		meshes.back().reset(mesh);
 
@@ -78,12 +84,34 @@ Object* ModelInfo::LoadFrameInfoFromFile(std::ifstream& file, std::vector<std::u
 		frame->AddComponent(mesh_component);
 
 		ReadStringFromFile(file, load_token);
+
+#ifdef _DEBUG
+		PrintDebugStringLoadTokenError(model_name_, load_token, "<Materials>:");
+#endif //_DEBUG
+		int material_count = ReadFromFile<int>(file);
+		for (int i = 0; i < material_count; ++i)
+		{
+			Material* material = new Material();
+			material->LoadMaterialFromFile(file);
+			materials.emplace_back();
+			materials.back().reset(material);
+
+			mesh->AddMaterial(material);
+		}
+		ReadStringFromFile(file, load_token);
+
+#ifdef _DEBUG
+		PrintDebugStringLoadTokenError(model_name_, load_token, "</Materials>");
+#endif //_DEBUG
+
+		ReadStringFromFile(file, load_token);
+
 	}
 	else if (load_token == "<SkinningInfo>:")
 	{
 		SkinnedMesh* skinned_mesh = new SkinnedMesh;
 		skinned_mesh->LoadSkinnedMeshFromFile(file);
-		skinned_mesh->set_shader_type((int)ShaderType::kShaderTypeSkinnedMesh);
+		skinned_mesh->set_shader_type((int)ShaderType::kStandardSkinnedMesh);
 		meshes.emplace_back();
 		meshes.back().reset(skinned_mesh);
 
@@ -92,6 +120,28 @@ Object* ModelInfo::LoadFrameInfoFromFile(std::ifstream& file, std::vector<std::u
 		frame->AddComponent(skinned_mesh_component);
 
 		ReadStringFromFile(file, load_token);
+
+#ifdef _DEBUG
+		PrintDebugStringLoadTokenError(model_name_, load_token, "<Materials>:");
+#endif //_DEBUG
+		int material_count = ReadFromFile<int>(file);
+		for (int i = 0; i < material_count; ++i)
+		{
+			Material* material = new Material();
+			material->LoadMaterialFromFile(file);
+			materials.emplace_back();
+			materials.back().reset(material);
+
+			skinned_mesh->AddMaterial(material);
+		}
+		ReadStringFromFile(file, load_token);
+
+#ifdef _DEBUG
+		PrintDebugStringLoadTokenError(model_name_, load_token, "</Materials>");
+#endif //_DEBUG
+
+		ReadStringFromFile(file, load_token);
+
 	}
 	
 	if (load_token == "<Children>:")
@@ -99,7 +149,7 @@ Object* ModelInfo::LoadFrameInfoFromFile(std::ifstream& file, std::vector<std::u
 		int child_count = ReadFromFile<int>(file);
 		for (int i = 0; i < child_count; ++i)
 		{
-			frame->AddChild(LoadFrameInfoFromFile(file, meshes));
+			frame->AddChild(LoadFrameInfoFromFile(file, meshes, materials));
 		}
 
 		ReadStringFromFile(file, load_token);

@@ -14,6 +14,9 @@
 #include "ModelInfo.h"
 #include "SkinnedMeshShader.h"
 #include "SkinnedMesh.h"
+#include "Material.h"
+#include "StandardMeshShader.h"
+#include "StandardSkinnedMeshShader.h"
 
 void TestScene::Initialize(ID3D12Device* device, ID3D12GraphicsCommandList* command_list, 
 	ID3D12RootSignature* root_signature, FrameResourceManager* frame_resource_manager,
@@ -25,10 +28,12 @@ void TestScene::Initialize(ID3D12Device* device, ID3D12GraphicsCommandList* comm
 
 	BuildShader(device, root_signature);
 	BuildMesh(device, command_list);
+	BuildMaterial(device, command_list);
 	BuildObject(device, command_list);
 	BuildFrameResources(device);
 	BuildDescriptorHeap(device);
 	BuildConstantBufferViews(device);
+	BuildShaderResourceViews(device);
 }
 
 void TestScene::BuildShader(ID3D12Device* device, ID3D12RootSignature* root_signature)
@@ -36,8 +41,8 @@ void TestScene::BuildShader(ID3D12Device* device, ID3D12RootSignature* root_sign
 	//씬에서 사용하는 쉐이더 개수만큼 예약
 	int shader_count = 2;
 	shaders_.reserve(shader_count);
-	shaders_.push_back(std::make_unique<ColorShader>());
-	shaders_.push_back(std::make_unique<SkinnedMeshShader>());
+	shaders_.push_back(std::make_unique<StandardMeshShader>());
+	shaders_.push_back(std::make_unique<StandardSkinnedMeshShader>());
 
 	for (int i = 0; i < shader_count; ++i)
 	{
@@ -48,12 +53,12 @@ void TestScene::BuildShader(ID3D12Device* device, ID3D12RootSignature* root_sign
 
 void TestScene::BuildMesh(ID3D12Device* device, ID3D12GraphicsCommandList* command_list)
 {
-	meshes_.reserve(1);
+	meshes_.reserve(2);
 	meshes_.push_back(std::make_unique<CubeMesh>(XMFLOAT4(0, 1, 0, 1)));
 	meshes_[0].get()->set_name("green_cube");
 
 	model_infos_.reserve(1);
-	model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/Ellen.bin", meshes_));
+	model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/Ellen.bin", meshes_, materials_));
 
 	for (const std::unique_ptr<Mesh>& mesh : meshes_)
 	{
@@ -61,31 +66,39 @@ void TestScene::BuildMesh(ID3D12Device* device, ID3D12GraphicsCommandList* comma
 	}
 }
 
+void TestScene::BuildMaterial(ID3D12Device* device, ID3D12GraphicsCommandList* command_list)
+{
+	int frame_resource_index = 0;
+	for (std::unique_ptr<Material>& material : materials_)
+	{
+		material->CreateShaderVariables(device, command_list);
+		material->set_frame_resource_index(frame_resource_index);
+		++frame_resource_index;
+	}
+}
+
 void TestScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* command_list)
 {
+	//TODO: 각 메쉬의 컴포넌트 연결 개수를 파악하면 아래 수치를 디테일하게 설정할 수 있을것 같다..
 	cb_object_capacity_ = 1000;
-	cb_skinned_mesh_object_capacity_ = 10;
+	cb_skinned_mesh_object_capacity_ = 100;
 
-	//오브젝트를 생성하고
-	Object* cube_object = new Object();
-	Mesh* green_cube = Scene::FindMesh("green_cube", meshes_);
-	//메쉬컴포넌트를 원하는 오브젝트와 메쉬를 넣어 생성한다.
-	MeshComponent* cube_component = new MeshComponent(cube_object, green_cube);
-	cube_object->AddComponent(cube_component);
-	//이를 씬의 오브젝트리스트에 추가
-	object_list_.emplace_back();
-	object_list_.back().reset(cube_object);
+
+	////오브젝트를 생성하고
+	//Object* cube_object = new Object();
+	//Mesh* green_cube = Scene::FindMesh("green_cube", meshes_);
+	////메쉬컴포넌트를 원하는 오브젝트와 메쉬를 넣어 생성한다.
+	//MeshComponent* cube_component = new MeshComponent(cube_object, green_cube);
+	//cube_object->AddComponent(cube_component);
+	////이를 씬의 오브젝트리스트에 추가
+	//object_list_.emplace_back();
+	//object_list_.back().reset(cube_object);
 
 	Object* temp = model_infos_[0]->GetInstance();
-	temp->set_position_vector(XMFLOAT3{ 2.2, 0, 0 });
-	cube_object->AddChild(temp);
-
-	Object* temp1 = Object::DeepCopy(cube_object);
+	temp->set_position_vector(XMFLOAT3{ 0, 0, 0.1 });
 	object_list_.emplace_back();
-	object_list_.back().reset(temp1);
+	object_list_.back().reset(temp);
 
-
-	cube_object->set_position_vector(XMFLOAT3{ 0, 2, 0 });
 
 	Object* camera_object = new Object();
 	CameraComponent* camera_component = 
@@ -109,15 +122,13 @@ void TestScene::BuildFrameResources(ID3D12Device* device)
 {
 	frame_resource_manager_->ResetFrameResources(device, 1,
 		cb_object_capacity_, 
-		cb_skinned_mesh_object_capacity_);
+		cb_skinned_mesh_object_capacity_, materials_.size());
 }
 
 void TestScene::BuildDescriptorHeap(ID3D12Device* device)
 {
 	descriptor_manager_->ResetDescriptorHeap(device, 
-		cb_object_capacity_, 
-		cb_skinned_mesh_object_capacity_,
-		FrameResourceManager::kFrameCount);
+		Material::GetTextureCount());
 }
 
 void TestScene::BuildConstantBufferViews(ID3D12Device* device)
@@ -196,6 +207,15 @@ void TestScene::BuildConstantBufferViews(ID3D12Device* device)
 
 }
 
+void TestScene::BuildShaderResourceViews(ID3D12Device* device)
+{
+	int heap_index = descriptor_manager_->srv_offset();
+	for (std::unique_ptr<Material>& material : materials_)
+	{
+		heap_index = material->CreateShaderResourceViews(device, descriptor_manager_, heap_index);
+	}
+}
+
 void TestScene::Render(ID3D12GraphicsCommandList* command_list)
 {
 	main_camera_->UpdateCameraInfo();
@@ -208,7 +228,7 @@ void TestScene::Render(ID3D12GraphicsCommandList* command_list)
 	//TODO: 조명 및 재질 관련 클래스를 생성후 그것을 사용하여 아래 정보 업데이트(현재는 테스트용 하드코딩)
 	cb_pass.ambient_light = XMFLOAT4{ 0.1,0.1,0.1, 1 };
 	cb_pass.lights[0].strength = XMFLOAT3{ 1,1,1 };
-	cb_pass.lights[0].direction = XMFLOAT3{ 1,-1, 0.5 };
+	cb_pass.lights[0].direction = XMFLOAT3{ 1,-1, -0.5 };
 	cb_pass.lights[0].enable = true;
 	cb_pass.lights[0].type = 0;
 
@@ -222,19 +242,7 @@ void TestScene::Render(ID3D12GraphicsCommandList* command_list)
 	D3D12_GPU_VIRTUAL_ADDRESS cb_pass_address =
 		frame_resource_manager_->curr_frame_resource()->cb_pass.get()->Resource()->GetGPUVirtualAddress();
 
-	command_list->SetGraphicsRootConstantBufferView((int)CBShaderRegisterNum::kRenderPass, cb_pass_address);
-
-	struct Material
-	{
-		XMFLOAT4 albedo_color;
-		XMFLOAT3 fresnel_r0;
-		float glossiness;
-	};
-
-	Material mat{ XMFLOAT4{1,1,1,1}, XMFLOAT3{0.04,0.04,0.04}, 0.9 };
-
-	command_list->SetGraphicsRoot32BitConstants((int)CBShaderRegisterNum::kMaterial, 8, (void*)&mat, 0);
-
+	command_list->SetGraphicsRootConstantBufferView((int)RootParameterIndex::kRenderPass, cb_pass_address);
 
 	Mesh::ResetCBObjectCurrentIndex();
 	SkinnedMesh::ResetCBSkinnedMeshObjectCurrentIndex();

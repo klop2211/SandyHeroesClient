@@ -14,10 +14,12 @@ public:
 		DescriptorManager* descriptor_manager, InputManager* input_manager) override;
 	virtual void BuildShader(ID3D12Device* device, ID3D12RootSignature* root_signature) override;
 	virtual void BuildMesh(ID3D12Device* device, ID3D12GraphicsCommandList* command_list) override;
+	virtual void BuildMaterial(ID3D12Device* device, ID3D12GraphicsCommandList* command_list) override;
 	virtual void BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* command_list) override;
 	virtual void BuildFrameResources(ID3D12Device* device) override;
 	virtual void BuildDescriptorHeap(ID3D12Device* device) override;
 	virtual void BuildConstantBufferViews(ID3D12Device* device) override;
+	virtual void BuildShaderResourceViews(ID3D12Device* device) override;
 
 	virtual void Render(ID3D12GraphicsCommandList* command_list) override;
 

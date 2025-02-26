@@ -54,7 +54,8 @@ const UINT kDefaultRefreshRate = 60;
 const int kMaxBoneCount = 128; //skinned mesh의 본 최대 개수
 const int kMaxLights = 16;		// 조명처리의 최대 개수
 
-enum class CBShaderRegisterNum{ kWorldMatrix = 0, kBoneTransform, kBoneOffset, kRenderPass, kMaterial};
+enum class RootParameterIndex{ kWorldMatrix = 0, kBoneTransform, kBoneOffset, kRenderPass, 
+	kMaterial, kAlbedoMap, kSpecGlosMap, kMetalGlosMap, kEmissionMap};
 
 // 유틸 함수
 namespace d3d_util

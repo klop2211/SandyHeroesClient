@@ -4,6 +4,7 @@ class MeshComponent;
 class FrameResourceManager;
 struct FrameResource;
 class DescriptorManager;
+class Material;
 
 // 메쉬 정보를 가지는 클래스
 class Mesh
@@ -17,6 +18,8 @@ public:
 
 	void AddMeshComponent(MeshComponent* mesh_component);
 	void DeleteMeshComponent(MeshComponent* mesh_component);
+
+	void AddMaterial(Material* material);
 
 	virtual void CreateShaderVariables(ID3D12Device* device, ID3D12GraphicsCommandList* command_list);
 
@@ -39,6 +42,7 @@ public:
 	void set_name(const std::string& name);
 
 protected:
+	std::vector<Material*> materials_;
 
 	D3D12_PRIMITIVE_TOPOLOGY primitive_topology_ = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 

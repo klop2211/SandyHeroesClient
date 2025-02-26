@@ -4,7 +4,7 @@
 
 CubeMesh::CubeMesh(const XMFLOAT4& color)
 {
-	shader_type_ = (int)ShaderType::kShaderTypeColor;
+	shader_type_ = (int)ShaderType::kColor;
 
 	// Á¤Á¡ 8°³
 	positions_.reserve(8);

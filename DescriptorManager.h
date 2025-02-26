@@ -16,9 +16,9 @@ public:
 	//getter
 	UINT cbv_bone_transform_offset() const;
 	UINT cbv_pass_offset() const;
+	UINT srv_offset() const;
 
-	void ResetDescriptorHeap(ID3D12Device* device, 
-		int object_count, int skinned_mesh_object_count, int frame_resource_count);
+	void ResetDescriptorHeap(ID3D12Device* device, int texture_count);
 
 	ID3D12DescriptorHeap* GetDescriptorHeap() const;
 
@@ -30,11 +30,13 @@ public:
 private:
 	static DescriptorManager* kDescriptorManager;
 
-	ComPtr<ID3D12DescriptorHeap> d3d_cbv_heap_ = nullptr;
+	ComPtr<ID3D12DescriptorHeap> d3d_cbv_srv_uav_heap_ = nullptr;
 
 	// 각 상수버퍼뷰의 오프셋
 	UINT cbv_bone_transform_offset_ = 0;
 	UINT cbv_pass_offset_ = 0; 
+
+	UINT srv_offset_ = 0;
 	
 
 };

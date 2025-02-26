@@ -2,7 +2,7 @@
 
 enum class ShaderType
 {
-	kShaderTypeNone = 0, kShaderTypeColor, kShaderTypeSkinnedMesh
+	kNone = 0, kColor, kSkinnedMesh, kStandardMesh, kStandardSkinnedMesh
 };
 
 class Shader
@@ -30,6 +30,6 @@ public:
 protected:
 	ComPtr<ID3D12PipelineState> d3d_pipeline_state_;
 
-	ShaderType shader_type_ = ShaderType::kShaderTypeNone;
+	ShaderType shader_type_ = ShaderType::kNone;
 };
 

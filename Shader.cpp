@@ -70,7 +70,8 @@ D3D12_SHADER_BYTECODE Shader::CompileShaderFromFile(WCHAR* file_name, LPCSTR sha
 #endif
 
 	ID3DBlob* pd3dErrorBlob = NULL;
-	HRESULT hResult = ::D3DCompileFromFile(file_name, NULL, D3D_COMPILE_STANDARD_FILE_INCLUDE, shader_name, shader_profile, nCompileFlags, 0, shader_blob, &pd3dErrorBlob);
+	HRESULT hResult = ::D3DCompileFromFile(file_name, NULL, D3D_COMPILE_STANDARD_FILE_INCLUDE, 
+		shader_name, shader_profile, nCompileFlags, 0, shader_blob, &pd3dErrorBlob);
 	//char *pErrorString = (char *)pd3dErrorBlob->GetBufferPointer();
 
 	D3D12_SHADER_BYTECODE d3dShaderByteCode;

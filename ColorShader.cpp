@@ -3,7 +3,7 @@
 
 ColorShader::ColorShader() 
 {
-	shader_type_ = ShaderType::kShaderTypeColor;
+	shader_type_ = ShaderType::kColor;
 }
 
 D3D12_INPUT_LAYOUT_DESC ColorShader::CreateInputLayout()

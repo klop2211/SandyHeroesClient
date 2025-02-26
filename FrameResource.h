@@ -39,13 +39,22 @@ struct CBBoneTransform
 	XMFLOAT4X4 bone_transform_matrix[kMaxBoneCount];
 };
 
+struct CBMaterial
+{
+	XMFLOAT4 albedo_color;
+	XMFLOAT3 fresnel_r0;
+	float glossiness;
+	XMFLOAT4 emission_color;
+	int texture_mask;
+};
+
 
 // 게임에서 한 프레임에 사용하는 리소스에 대한 구조체
 struct FrameResource
 {
 public:
 	FrameResource(ID3D12Device* device, UINT pass_count,
-		UINT object_count, UINT skinned_mesh_object_count)
+		UINT object_count, UINT skinned_mesh_object_count, UINT material_count)
 	{
 		device->CreateCommandAllocator(
 			D3D12_COMMAND_LIST_TYPE_DIRECT,
@@ -54,6 +63,7 @@ public:
 		cb_pass = std::make_unique<UploadBuffer<CBPass>>(device, pass_count, true);
 		cb_object = std::make_unique<UploadBuffer<CBObject>>(device, object_count, true);
 		cb_bone_transform = std::make_unique<UploadBuffer<CBBoneTransform>>(device, skinned_mesh_object_count, true);
+		cb_material = std::make_unique<UploadBuffer<CBMaterial>>(device, material_count, true);
 	}
 	FrameResource(const FrameResource& rhs) = delete;
 	FrameResource& operator=(const FrameResource& rhs) = delete;
@@ -64,6 +74,7 @@ public:
 	std::unique_ptr<UploadBuffer<CBPass>> cb_pass;
 	std::unique_ptr<UploadBuffer<CBObject>> cb_object;
 	std::unique_ptr<UploadBuffer<CBBoneTransform>> cb_bone_transform;
+	std::unique_ptr<UploadBuffer<CBMaterial>> cb_material;
 
 	UINT fence = 0;
 };

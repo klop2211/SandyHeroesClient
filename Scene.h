@@ -9,6 +9,7 @@ class CameraComponent;
 class InputManager;
 class InputControllerComponent;
 class ModelInfo;
+class Material;
 
 class Scene
 {
@@ -21,10 +22,12 @@ public:
 		DescriptorManager* descriptor_manager, InputManager* input_manager) = 0;
 	virtual void BuildShader(ID3D12Device* device, ID3D12RootSignature* root_signature) = 0;
 	virtual void BuildMesh(ID3D12Device* device, ID3D12GraphicsCommandList* command_list) = 0;
+	virtual void BuildMaterial(ID3D12Device* device, ID3D12GraphicsCommandList* command_list) = 0;
 	virtual void BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* command_list) = 0;
 	virtual void BuildFrameResources(ID3D12Device* device) = 0;
 	virtual void BuildDescriptorHeap(ID3D12Device* device) = 0;
 	virtual void BuildConstantBufferViews(ID3D12Device* device) = 0;
+	virtual void BuildShaderResourceViews(ID3D12Device* device) = 0;
 	virtual void Render(ID3D12GraphicsCommandList* command_list) = 0;
 
 	virtual void Update(float elapsed_time) = 0;
@@ -39,6 +42,7 @@ protected:
 	std::vector<std::unique_ptr<Shader>> shaders_;
 	std::vector<std::unique_ptr<Mesh>> meshes_;
 	std::vector<std::unique_ptr<ModelInfo>> model_infos_;
+	std::vector<std::unique_ptr<Material>> materials_;
 
 	FrameResourceManager* frame_resource_manager_ = nullptr;
 	DescriptorManager* descriptor_manager_ = nullptr;
