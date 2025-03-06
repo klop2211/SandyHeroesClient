@@ -48,11 +48,11 @@ using Microsoft::WRL::ComPtr;
 using namespace DirectX;
 
 // 상수값
-const int kDefaultFrameBufferWidth = 1366;
-const int kDefaultFrameBufferHeight = 768;
-const UINT kDefaultRefreshRate = 60;
-const int kMaxBoneCount = 128; //skinned mesh의 본 최대 개수
-const int kMaxLights = 16;		// 조명처리의 최대 개수
+constexpr int kDefaultFrameBufferWidth = 1366;
+constexpr int kDefaultFrameBufferHeight = 768;
+constexpr UINT kDefaultRefreshRate = 60;
+constexpr int kMaxBoneCount = 128; //skinned mesh의 본 최대 개수
+constexpr int kMaxLights = 16;		// 조명처리의 최대 개수
 
 enum class RootParameterIndex{ kWorldMatrix = 0, kBoneTransform, kBoneOffset, kRenderPass, 
 	kMaterial, kAlbedoMap, kSpecGlosMap, kMetalGlosMap, kEmissionMap};
@@ -174,6 +174,30 @@ namespace xmath_util_float4x4
 		XMStoreFloat4x4(&r_value, XMMatrixTranspose(XMLoadFloat4x4(&matrix)));
 		return r_value;
 	}
+
+	inline XMFLOAT4X4 ScalarProduct(const XMFLOAT4X4& matrix, float scalar)
+	{
+		XMFLOAT4X4 r_value;
+		XMStoreFloat4x4(&r_value, XMLoadFloat4x4(&matrix) * scalar);
+		return r_value;
+	}
+
+	inline XMFLOAT4X4 Interpolate(const XMFLOAT4X4& matrix1, const XMFLOAT4X4& matrix2, float t)
+	{
+		XMFLOAT4X4 r_value;
+		XMVECTOR s1, r1, t1;
+		XMVECTOR s2, r2, t2;
+		XMMatrixDecompose(&s1, &r1, &t1, XMLoadFloat4x4(&matrix1));
+		XMMatrixDecompose(&s2, &r2, &t2, XMLoadFloat4x4(&matrix2));
+		XMVECTOR S = XMVectorLerp(s1, s2, t);
+		XMVECTOR R = XMQuaternionSlerp(r1, r2, t);
+		XMVECTOR T = XMVectorLerp(t1, t2, t);
+
+		XMStoreFloat4x4(&r_value, XMMatrixAffineTransformation(S, XMVectorZero(), R, T));
+		return r_value;
+	}
+
+
 }
 
 // xmf 관련 연산자 오버로딩

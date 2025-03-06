@@ -76,6 +76,9 @@
     <Filter Include="Material">
       <UniqueIdentifier>{ebd8e96b-5f5b-429c-8633-9f62894b49eb}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shader\Standard">
+      <UniqueIdentifier>{5f21cb53-108b-40c9-a02d-661285dca773}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="targetver.h">
@@ -169,9 +172,18 @@
       <Filter>Material</Filter>
     </ClInclude>
     <ClInclude Include="StandardMeshShader.h">
-      <Filter>헤더 파일</Filter>
+      <Filter>Shader\Standard</Filter>
     </ClInclude>
     <ClInclude Include="StandardSkinnedMeshShader.h">
+      <Filter>Shader\Standard</Filter>
+    </ClInclude>
+    <ClInclude Include="AnimationSet.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="AnimatorComponent.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="AnimationTrack.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>
@@ -252,9 +264,18 @@
       <Filter>Material</Filter>
     </ClCompile>
     <ClCompile Include="StandardMeshShader.cpp">
-      <Filter>소스 파일</Filter>
+      <Filter>Shader\Standard</Filter>
     </ClCompile>
     <ClCompile Include="StandardSkinnedMeshShader.cpp">
+      <Filter>Shader\Standard</Filter>
+    </ClCompile>
+    <ClCompile Include="AnimationSet.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="AnimatorComponent.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="AnimationTrack.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>

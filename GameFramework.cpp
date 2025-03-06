@@ -11,6 +11,7 @@
 #include "InputControllerComponent.h"
 #include "ModelInfo.h"
 #include "Material.h"
+#include "AnimationSet.h"
 
 GameFramework* GameFramework::kGameFramework = nullptr;
 

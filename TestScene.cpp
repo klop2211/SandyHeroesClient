@@ -17,6 +17,7 @@
 #include "Material.h"
 #include "StandardMeshShader.h"
 #include "StandardSkinnedMeshShader.h"
+#include "AnimationSet.h"
 
 void TestScene::Initialize(ID3D12Device* device, ID3D12GraphicsCommandList* command_list, 
 	ID3D12RootSignature* root_signature, FrameResourceManager* frame_resource_manager,
@@ -95,7 +96,7 @@ void TestScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 	//object_list_.back().reset(cube_object);
 
 	Object* temp = model_infos_[0]->GetInstance();
-	temp->set_position_vector(XMFLOAT3{ 0, 0, 0.1 });
+	temp->set_position_vector(XMFLOAT3{ 0, 0, 0 });
 	object_list_.emplace_back();
 	object_list_.back().reset(temp);
 
@@ -109,7 +110,7 @@ void TestScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 	//메인 컨트롤러로 설정
 	input_manager_->set_main_controller(controller);
 	camera_object->AddComponent(controller);
-	camera_object->set_position_vector(XMFLOAT3(0, 0, -5));
+	camera_object->set_position_vector(XMFLOAT3(0, 1.7, -1));
 
 	object_list_.emplace_back();
 	object_list_.back().reset(camera_object);

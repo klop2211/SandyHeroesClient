@@ -7,6 +7,8 @@
 #include "SkinnedMeshComponent.h"
 #include "Shader.h"
 #include "Material.h"
+#include "AnimationSet.h"
+#include "AnimatorComponent.h"
 
 ModelInfo::ModelInfo(const std::string& file_name, std::vector<std::unique_ptr<Mesh>>& meshes,
 	std::vector<std::unique_ptr<Material>>& materials)
@@ -42,6 +44,26 @@ void ModelInfo::LoadModelInfoFromFile(const std::string& file_name, std::vector<
 	ReadStringFromFile(model_file, load_token);
 #ifdef _DEBUG
 	PrintDebugStringLoadTokenError(model_name_, load_token, "</Hierarchy>");
+#endif //_DEBUG
+
+	if (model_file.peek() == EOF)
+	{
+		return;
+	}
+
+	ReadStringFromFile(model_file, load_token);
+#ifdef _DEBUG
+	PrintDebugStringLoadTokenError(model_name_, load_token, "<Animation>:");
+#endif //_DEBUG
+
+	ReadStringFromFile(model_file, load_token);
+	root_bone_name_ = load_token;
+
+	LoadAnimationInfoFromFile(model_file);
+
+	ReadStringFromFile(model_file, load_token);
+#ifdef _DEBUG
+	PrintDebugStringLoadTokenError(model_name_, load_token, "</Animation>");
 #endif //_DEBUG
 
 }
@@ -93,6 +115,11 @@ Object* ModelInfo::LoadFrameInfoFromFile(std::ifstream& file, std::vector<std::u
 		{
 			Material* material = new Material();
 			material->LoadMaterialFromFile(file);
+
+			//TODO: Material에 name 추가 및 모델정보 추출시 재질의 이름도 함께 추출하여 중복검사.
+			/*std::find_if(materials.begin(), materials.end(), [](const std::unique_ptr<Material>& mat) {
+				return mat.get().name
+				})*/
 			materials.emplace_back();
 			materials.back().reset(material);
 
@@ -163,7 +190,60 @@ Object* ModelInfo::LoadFrameInfoFromFile(std::ifstream& file, std::vector<std::u
 	return frame;
 }
 
+void ModelInfo::LoadAnimationInfoFromFile(std::ifstream& file)
+{
+	std::string load_token;
+
+	ReadStringFromFile(file, load_token);
+#ifdef _DEBUG
+	PrintDebugStringLoadTokenError(model_name_, load_token, "<AnimationSets>:");
+#endif //_DEBUG
+
+	int animation_set_count = ReadFromFile<int>(file);
+	animation_sets_.resize(animation_set_count);
+
+	ReadStringFromFile(file, load_token);
+#ifdef _DEBUG
+	PrintDebugStringLoadTokenError(model_name_, load_token, "<FrameNames>:");
+#endif //_DEBUG
+
+	int frame_count = ReadFromFile<int>(file);
+	frame_names_.resize(frame_count);
+	for (std::string& name : frame_names_)
+	{
+		ReadStringFromFile(file, load_token);
+		name = load_token;
+	}
+
+
+	for (std::unique_ptr<AnimationSet>& animation_set : animation_sets_)
+	{
+		ReadStringFromFile(file, load_token);
+#ifdef _DEBUG
+		PrintDebugStringLoadTokenError(model_name_, load_token, "<AnimationSet>:");
+#endif //_DEBUG
+
+		ReadFromFile<int>(file); //index
+
+		animation_set = std::make_unique<AnimationSet>();
+		animation_set->LoadAnimationSetFromFile(file, frame_count);
+	}
+
+	ReadStringFromFile(file, load_token);
+#ifdef _DEBUG
+	PrintDebugStringLoadTokenError(model_name_, load_token, "</AnimationSets>");
+#endif //_DEBUG
+
+}
+
 Object* ModelInfo::GetInstance()
 {
-	return Object::DeepCopy(hierarchy_root_);
+	Object* r_value = Object::DeepCopy(hierarchy_root_);
+	if (animation_sets_.size())
+	{
+		AnimatorComponent* animator = new AnimatorComponent(r_value, animation_sets_, frame_names_, root_bone_name_);
+		r_value->AddComponent(animator);
+	}
+
+	return r_value;
 }

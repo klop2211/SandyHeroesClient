@@ -135,6 +135,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="AnimationSet.h" />
+    <ClInclude Include="AnimationTrack.h" />
+    <ClInclude Include="AnimatorComponent.h" />
     <ClInclude Include="CameraComponent.h" />
     <ClInclude Include="ColorShader.h" />
     <ClInclude Include="Component.h" />
@@ -169,6 +172,9 @@
     <ClInclude Include="UploadBuffer.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AnimationSet.cpp" />
+    <ClCompile Include="AnimationTrack.cpp" />
+    <ClCompile Include="AnimatorComponent.cpp" />
     <ClCompile Include="CameraComponent.cpp" />
     <ClCompile Include="ColorShader.cpp" />
     <ClCompile Include="Component.cpp" />
