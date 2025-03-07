@@ -9,6 +9,7 @@
 #include "Material.h"
 #include "AnimationSet.h"
 #include "AnimatorComponent.h"
+#include "ASTest.h"
 
 ModelInfo::ModelInfo(const std::string& file_name, std::vector<std::unique_ptr<Mesh>>& meshes,
 	std::vector<std::unique_ptr<Material>>& materials)
@@ -241,7 +242,7 @@ Object* ModelInfo::GetInstance()
 	Object* r_value = Object::DeepCopy(hierarchy_root_);
 	if (animation_sets_.size())
 	{
-		AnimatorComponent* animator = new AnimatorComponent(r_value, animation_sets_, frame_names_, root_bone_name_);
+		AnimatorComponent* animator = new AnimatorComponent(r_value, animation_sets_, frame_names_, root_bone_name_, new ASTest);
 		r_value->AddComponent(animator);
 	}
 

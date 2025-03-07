@@ -101,20 +101,22 @@ void TestScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 	object_list_.back().reset(temp);
 
 	Object* temp1 = Object::DeepCopy(temp);
-	temp1->set_position_vector(XMFLOAT3{ 10, 0, 0 });
+	temp1->set_position_vector(XMFLOAT3{ 0.6, 0, 0 });
 	object_list_.emplace_back();
 	object_list_.back().reset(temp1);
+
+	//인풋 처리 컨트롤러 생성
+	TestControllerComponent* controller = new TestControllerComponent(temp);
+	//메인 컨트롤러로 설정
+	input_manager_->set_main_controller(controller);
+	temp->AddComponent(controller);
 
 
 	Object* camera_object = new Object();
 	CameraComponent* camera_component = 
 		new CameraComponent(camera_object, 0.3, 10000, 
 			(float)kDefaultFrameBufferWidth / (float)kDefaultFrameBufferHeight, 58);
-	//인풋 처리 컨트롤러 생성
-	TestControllerComponent* controller = new TestControllerComponent(camera_object);
-	//메인 컨트롤러로 설정
-	input_manager_->set_main_controller(controller);
-	camera_object->AddComponent(controller);
+
 	camera_object->set_position_vector(XMFLOAT3(0, 1.7, -1));
 
 	object_list_.emplace_back();

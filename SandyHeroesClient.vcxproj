@@ -136,8 +136,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="AnimationSet.h" />
+    <ClInclude Include="AnimationState.h" />
     <ClInclude Include="AnimationTrack.h" />
     <ClInclude Include="AnimatorComponent.h" />
+    <ClInclude Include="ASTest.h" />
     <ClInclude Include="CameraComponent.h" />
     <ClInclude Include="ColorShader.h" />
     <ClInclude Include="Component.h" />
@@ -173,8 +175,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AnimationSet.cpp" />
+    <ClCompile Include="AnimationState.cpp" />
     <ClCompile Include="AnimationTrack.cpp" />
     <ClCompile Include="AnimatorComponent.cpp" />
+    <ClCompile Include="ASTest.cpp" />
     <ClCompile Include="CameraComponent.cpp" />
     <ClCompile Include="ColorShader.cpp" />
     <ClCompile Include="Component.cpp" />

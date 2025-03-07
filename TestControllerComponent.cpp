@@ -75,7 +75,8 @@ void TestControllerComponent::ProcessInput(UINT message_id, WPARAM w_param, LPAR
 		case 'D':
 			if (!is_key_down_['D'])
 			{
-				owner_->set_velocity(owner_->velocity() - XMFLOAT3(0, 0, 1));
+				is_key_down_['D'] = true;
+				owner_->set_velocity(owner_->velocity() + XMFLOAT3(1, 0, 0));
 			}
 			break;
 		case 'Q':
@@ -124,7 +125,7 @@ void TestControllerComponent::ProcessInput(UINT message_id, WPARAM w_param, LPAR
 			if (is_key_down_['D'])
 			{
 				is_key_down_['D'] = false;
-				owner_->set_velocity(owner_->velocity() + XMFLOAT3(0, 0, 1));
+				owner_->set_velocity(owner_->velocity() - XMFLOAT3(1, 0, 0));
 			}
 			break;
 		case 'Q':

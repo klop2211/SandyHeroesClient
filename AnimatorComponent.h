@@ -2,6 +2,7 @@
 #include "Component.h"
 #include "AnimationTrack.h"
 
+class AnimationState;
 
 //오브젝트에 애니메이션을 적용하는 컴포넌트
 class AnimatorComponent :
@@ -11,7 +12,8 @@ public:
     AnimatorComponent(Object* owner,
         const std::vector<std::unique_ptr<AnimationSet>>& animation_sets,
         const std::vector<std::string>& frame_names,
-        const std::string& root_bone_name);
+        const std::string& root_bone_name,
+        AnimationState* animation_state);
     
     AnimatorComponent(const AnimatorComponent& other);
     ~AnimatorComponent() {}
@@ -22,6 +24,8 @@ public:
     void AttachBoneFrames();
 
 private:
+    std::unique_ptr<AnimationState> animation_state_;
+    
     float track_index_ = 0;
 
     //적용할 애니메이션 목록

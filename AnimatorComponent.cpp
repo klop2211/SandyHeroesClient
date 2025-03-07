@@ -3,11 +3,13 @@
 #include "Object.h"
 #include "AnimationSet.h"
 #include "AnimationTrack.h"
+#include "AnimationState.h"
 
 AnimatorComponent::AnimatorComponent(Object* owner, 
 	const std::vector<std::unique_ptr<AnimationSet>>& animation_sets, 
 	const std::vector<std::string>& frame_names,
-	const std::string& root_bone_name) : Component(owner)
+	const std::string& root_bone_name,
+	AnimationState* animation_state) : Component(owner)
 {
 	animation_tracks_.reserve(animation_sets.size());
 	for (int i = 0; i < animation_sets.size(); ++i)
@@ -16,11 +18,13 @@ AnimatorComponent::AnimatorComponent(Object* owner,
 	}
 	frame_names_ = frame_names;
 	root_bone_name_ = root_bone_name;
+	animation_state_.reset(animation_state);
 }
 
 AnimatorComponent::AnimatorComponent(const AnimatorComponent& other) : Component(other), 
 	animation_tracks_(other.animation_tracks_), frame_names_(other.frame_names_), root_bone_name_(other.root_bone_name_)
 {
+	animation_state_.reset(other.animation_state_->GetCopy());
 }
 
 Component* AnimatorComponent::GetCopy()
@@ -33,7 +37,7 @@ void AnimatorComponent::Update(float elapsed_time)
 	if (!is_attached_bone_frames_)
 		AttachBoneFrames();
 
-	int track_state = 0; //TODO: 애니메이션 상태머신 추가
+	int track_state = animation_state_->Run(owner_, animation_tracks_[track_index_].is_end()); 
 
 	if (track_state != track_index_)
 	{

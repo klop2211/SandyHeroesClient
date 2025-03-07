@@ -58,6 +58,12 @@ enum class RootParameterIndex{ kWorldMatrix = 0, kBoneTransform, kBoneOffset, kR
 	kMaterial, kAlbedoMap, kSpecGlosMap, kMetalGlosMap, kEmissionMap};
 
 // 유틸 함수
+
+inline bool IsZero(float value, float epsilon = std::numeric_limits<float>::epsilon() * 100)
+{
+	return std::fabs(value) < epsilon;
+}
+
 namespace d3d_util
 {
 	// 업로드 버퍼를 이용하여 디폴트버퍼 생성
@@ -116,6 +122,13 @@ namespace xmath_util_float3
 		XMFLOAT3 r_value;
 		XMStoreFloat3(&r_value, XMVector3Normalize(XMLoadFloat3(&vector)));
 		return r_value;
+	}
+
+	inline float Length(const XMFLOAT3& vector)
+	{
+		XMFLOAT3 r_value;
+		XMStoreFloat3(&r_value, XMVector3Length(XMLoadFloat3(&vector)));
+		return r_value.x;
 	}
 
 }
