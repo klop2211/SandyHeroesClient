@@ -18,9 +18,9 @@ AnimatorComponent::AnimatorComponent(Object* owner,
 	root_bone_name_ = root_bone_name;
 }
 
-AnimatorComponent::AnimatorComponent(const AnimatorComponent& other) : Component(other)
+AnimatorComponent::AnimatorComponent(const AnimatorComponent& other) : Component(other), 
+	animation_tracks_(other.animation_tracks_), frame_names_(other.frame_names_), root_bone_name_(other.root_bone_name_)
 {
-	animation_tracks_ = other.animation_tracks_;
 }
 
 Component* AnimatorComponent::GetCopy()

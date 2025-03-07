@@ -100,6 +100,11 @@ void TestScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 	object_list_.emplace_back();
 	object_list_.back().reset(temp);
 
+	Object* temp1 = Object::DeepCopy(temp);
+	temp1->set_position_vector(XMFLOAT3{ 10, 0, 0 });
+	object_list_.emplace_back();
+	object_list_.back().reset(temp1);
+
 
 	Object* camera_object = new Object();
 	CameraComponent* camera_component = 
