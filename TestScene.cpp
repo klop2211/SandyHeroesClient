@@ -226,7 +226,7 @@ void TestScene::Render(ID3D12GraphicsCommandList* command_list)
 	cb_pass.proj_matrix = xmath_util_float4x4::TransPose(main_camera_->projection_matrix());
 	cb_pass.camera_position = main_camera_->world_position();
 
-	//TODO: 조명 및 재질 관련 클래스를 생성후 그것을 사용하여 아래 정보 업데이트(현재는 테스트용 하드코딩)
+	//TODO: 조명 관련 클래스를 생성후 그것을 사용하여 아래 정보 업데이트(현재는 테스트용 하드코딩)
 	cb_pass.ambient_light = XMFLOAT4{ 0.1,0.1,0.1, 1 };
 	cb_pass.lights[0].strength = XMFLOAT3{ 1,1,1 };
 	cb_pass.lights[0].direction = XMFLOAT3{ 1,-1, -0.5 };
