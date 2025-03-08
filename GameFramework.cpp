@@ -58,7 +58,7 @@ void GameFramework::Initialize(HINSTANCE hinstance, HWND hwnd)
 
     FlushCommandQueue();
 
-    //TODO: 여기서 mesh의 업로드 버퍼를 지우는 작업을 추가
+    scene_->ReleaseMeshUploadBuffer();
 
     client_timer_.reset(new Timer);
     client_timer_->Reset();

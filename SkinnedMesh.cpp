@@ -51,6 +51,17 @@ void SkinnedMesh::CreateShaderVariables(ID3D12Device* device, ID3D12GraphicsComm
 	}
 }
 
+void SkinnedMesh::ReleaseUploadBuffer()
+{
+	Mesh::ReleaseUploadBuffer();
+	if (d3d_bone_offset_upload_buffer_)
+		d3d_bone_offset_upload_buffer_.Reset();
+	if (d3d_bone_index_upload_buffer_)
+		d3d_bone_index_upload_buffer_.Reset();
+	if (d3d_bone_weight_upload_buffer_)
+		d3d_bone_weight_upload_buffer_.Reset();
+}
+
 void SkinnedMesh::UpdateConstantBuffer(FrameResource* curr_frame_resource)
 {
 	//메쉬 컴포넌트를 활용하여 오브젝트 CB를 업데이트한다.

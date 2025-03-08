@@ -108,6 +108,23 @@ void Mesh::CreateShaderVariables(ID3D12Device* device, ID3D12GraphicsCommandList
 
 }
 
+void Mesh::ReleaseUploadBuffer()
+{
+	if (d3d_position_upload_buffer_)
+		d3d_position_upload_buffer_.Reset();
+	if (d3d_color_upload_buffer_)
+		d3d_color_upload_buffer_.Reset();
+	if (d3d_uv_upload_buffer_)
+		d3d_uv_upload_buffer_.Reset();
+	if (d3d_normal_upload_buffer_)
+		d3d_normal_upload_buffer_.Reset();
+	for (ComPtr<ID3D12Resource>& upload_buffer : d3d_index_upload_buffers_)
+	{
+		upload_buffer.Reset();
+	}
+
+}
+
 void Mesh::UpdateConstantBuffer(FrameResource* curr_frame_resource)
 {
 	//메쉬 컴포넌트를 활용하여 오브젝트 CB를 업데이트한다.

@@ -23,6 +23,8 @@ public:
 
 	virtual void CreateShaderVariables(ID3D12Device* device, ID3D12GraphicsCommandList* command_list);
 
+	virtual void ReleaseUploadBuffer();
+
 	//이 메쉬를 사용하는 object의 개수만큼 cb를 업데이트
 	virtual void UpdateConstantBuffer(FrameResource* curr_frame_resource);
 
@@ -47,20 +49,20 @@ protected:
 	D3D12_PRIMITIVE_TOPOLOGY primitive_topology_ = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 
 	std::vector<XMFLOAT3> positions_;
-	ComPtr<ID3D12Resource> d3d_position_buffer_;
-	ComPtr<ID3D12Resource> d3d_position_upload_buffer_;
+	ComPtr<ID3D12Resource> d3d_position_buffer_ = nullptr;
+	ComPtr<ID3D12Resource> d3d_position_upload_buffer_ = nullptr;
 
 	std::vector<XMFLOAT4> colors_;
-	ComPtr<ID3D12Resource> d3d_color_buffer_;
-	ComPtr<ID3D12Resource> d3d_color_upload_buffer_;
+	ComPtr<ID3D12Resource> d3d_color_buffer_ = nullptr;
+	ComPtr<ID3D12Resource> d3d_color_upload_buffer_ = nullptr;
 
 	std::vector<XMFLOAT2> uvs_;
-	ComPtr<ID3D12Resource> d3d_uv_buffer_;
-	ComPtr<ID3D12Resource> d3d_uv_upload_buffer_;
+	ComPtr<ID3D12Resource> d3d_uv_buffer_ = nullptr;
+	ComPtr<ID3D12Resource> d3d_uv_upload_buffer_ = nullptr;
 
 	std::vector<XMFLOAT3> normals_;
-	ComPtr<ID3D12Resource> d3d_normal_buffer_;
-	ComPtr<ID3D12Resource> d3d_normal_upload_buffer_;
+	ComPtr<ID3D12Resource> d3d_normal_buffer_ = nullptr;
+	ComPtr<ID3D12Resource> d3d_normal_upload_buffer_ = nullptr;
 
 	std::vector<D3D12_VERTEX_BUFFER_VIEW> vertex_buffer_views_;
 

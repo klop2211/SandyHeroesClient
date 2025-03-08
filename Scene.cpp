@@ -35,3 +35,11 @@ Mesh* Scene::FindMesh(const std::string& mesh_name, const std::vector<std::uniqu
 
 	return nullptr;
 }
+
+void Scene::ReleaseMeshUploadBuffer()
+{
+	for (std::unique_ptr<Mesh>& mesh : meshes_)
+	{
+		mesh->ReleaseUploadBuffer();
+	}
+}

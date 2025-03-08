@@ -28,6 +28,9 @@ public:
 	virtual void BuildDescriptorHeap(ID3D12Device* device) = 0;
 	virtual void BuildConstantBufferViews(ID3D12Device* device) = 0;
 	virtual void BuildShaderResourceViews(ID3D12Device* device) = 0;
+
+	void ReleaseMeshUploadBuffer();
+
 	virtual void Render(ID3D12GraphicsCommandList* command_list) = 0;
 
 	virtual bool ProcessInput(UINT id, WPARAM w_param, LPARAM l_param, float time) = 0;
