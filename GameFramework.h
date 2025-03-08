@@ -1,5 +1,6 @@
 #pragma once
 
+
 class Timer;
 class Scene;
 class FrameResourceManager;
@@ -22,6 +23,9 @@ public:
 	void BuildRootSignature();
 
 	void OnResize();
+
+	void ProcessInput();
+	void ProcessInput(UINT id, WPARAM w_param, LPARAM l_param, float time);
 
 	void FrameAdvance();
 

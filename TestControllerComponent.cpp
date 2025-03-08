@@ -20,7 +20,7 @@ Component* TestControllerComponent::GetCopy()
 	return new TestControllerComponent(*this);
 }
 
-void TestControllerComponent::ProcessInput(UINT message_id, WPARAM w_param, LPARAM l_param, float message_time)
+bool TestControllerComponent::ProcessInput(UINT message_id, WPARAM w_param, LPARAM l_param, float message_time)
 {
 	switch (message_id)
 	{
@@ -94,6 +94,7 @@ void TestControllerComponent::ProcessInput(UINT message_id, WPARAM w_param, LPAR
 			}
 			break;
 		default:
+			return false;
 			break;
 		}
 		break;
@@ -143,10 +144,14 @@ void TestControllerComponent::ProcessInput(UINT message_id, WPARAM w_param, LPAR
 			}
 			break;
 		default:
+			return false;
 			break;
 		}
 		break;
 	default:
+		return false;
 		break;
 	}
+
+	return true;
 }

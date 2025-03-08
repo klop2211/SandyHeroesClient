@@ -12,6 +12,7 @@
 #include "Material.h"
 #include "AnimationSet.h"
 
+
 void Scene::UpdateObjectWorldMatrix()
 {
 	for (const std::unique_ptr<Object>& object : object_list_)
@@ -20,10 +21,6 @@ void Scene::UpdateObjectWorldMatrix()
 	}
 }
 
-void Scene::SetInputController(InputControllerComponent* controller)
-{
-	input_manager_->set_main_controller(controller);
-}
 
 Mesh* Scene::FindMesh(const std::string& mesh_name, const std::vector<std::unique_ptr<Mesh>>& meshes)
 {

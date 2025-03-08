@@ -50,7 +50,7 @@ void GameFramework::Initialize(HINSTANCE hinstance, HWND hwnd)
     //씬 생성 및 초기화
     scene_ = std::make_unique<TestScene>();
     scene_->Initialize(d3d_device_.Get(), d3d_command_list_.Get(), d3d_root_signature_.Get(), 
-        frame_resource_manager_.get(), descriptor_manager_.get(), input_manager_.get());
+        frame_resource_manager_.get(), descriptor_manager_.get());
 
     d3d_command_list_->Close();
     ID3D12CommandList* cmd_list[] = { d3d_command_list_.Get() };
@@ -355,12 +355,40 @@ void GameFramework::OnResize()
     scissor_rect_ = { 0, 0, client_width_, client_height_ };
 }
 
+void GameFramework::ProcessInput()
+{
+    while (!input_manager_->IsEmpty())
+    {
+        InputMessage message = input_manager_->DeQueueInputMessage(client_timer_->PlayTime());
+        ProcessInput(message.id, message.w_param, message.l_param, message.time);
+    }
+}
+
+void GameFramework::ProcessInput(UINT id, WPARAM w_param, LPARAM l_param, float time)
+{
+    //먼저 Scene에서 인풋을 처리하는지 확인한다
+    if (scene_)
+    {
+        if (scene_->ProcessInput(id, w_param, l_param, time))
+            return;
+    }
+    switch (id)
+    {
+    case WM_KEYDOWN:
+        if (w_param == VK_ESCAPE)
+            PostQuitMessage(0);
+        break;
+    default:
+        break;
+    }
+}
+
 void GameFramework::FrameAdvance()
 {
     client_timer_->Tick();
 
     //인풋 처리
-    input_manager_->Update();
+    ProcessInput();
 
     //업데이트
     scene_->Update(client_timer_->ElapsedTime());
@@ -462,8 +490,7 @@ LRESULT GameFramework::ProcessWindowMessage(HWND h_wnd, UINT message_id, WPARAM 
     case WM_MOUSEMOVE:
     case WM_KEYDOWN:
     case WM_KEYUP:
-        if (input_manager_ && client_timer_)
-            input_manager_->AddInputMessage(message_id, w_param, l_param, client_timer_->TotalTime());
+        input_manager_->EnQueueInputMessage(message_id, w_param, l_param, client_timer_->PlayTime());
         break;
     default:
         break;

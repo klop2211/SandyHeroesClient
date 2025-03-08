@@ -17,16 +17,17 @@ public:
 	InputManager();
 	~InputManager() {}
 
-	void AddInputMessage(UINT message_id, WPARAM w_param, LPARAM l_param, float message_time);
+	void EnQueueInputMessage(UINT message_id, WPARAM w_param, LPARAM l_param, float message_time);
+	InputMessage DeQueueInputMessage(float play_time);
 
-	void Update();
-
-	void set_main_controller(InputControllerComponent* controller);
+	bool IsEmpty();
+	bool IsFull();
 
 private:
 	static InputManager* kInputManager;
 
-	static const UINT kMaxInputMessage = 1000;
+	static constexpr UINT kMaxInputMessage = 1000;
+	static constexpr float kExpirationDateInputMessage = 2.f; // 인풋 메시지의 유효기간(단위: 초)
 
 	std::array<InputMessage, kMaxInputMessage> message_buffer_;
 
@@ -34,9 +35,6 @@ private:
 	int head_ = 0;
 	//메시지가 추가되는 위치 인덱스
 	int tail_ = 0;
-
-	// 현재 사용중인 컨트롤러
-	InputControllerComponent* main_controller_ = nullptr;
 
 };
 

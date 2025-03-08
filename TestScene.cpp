@@ -21,11 +21,10 @@
 
 void TestScene::Initialize(ID3D12Device* device, ID3D12GraphicsCommandList* command_list, 
 	ID3D12RootSignature* root_signature, FrameResourceManager* frame_resource_manager,
-	DescriptorManager* descriptor_manager, InputManager* input_manager)
+	DescriptorManager* descriptor_manager)
 {
 	frame_resource_manager_ = frame_resource_manager;
 	descriptor_manager_ = descriptor_manager;
-	input_manager_ = input_manager;
 
 	BuildShader(device, root_signature);
 	BuildMesh(device, command_list);
@@ -108,7 +107,7 @@ void TestScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 	//인풋 처리 컨트롤러 생성
 	TestControllerComponent* controller = new TestControllerComponent(temp);
 	//메인 컨트롤러로 설정
-	input_manager_->set_main_controller(controller);
+	main_input_controller_ = controller;
 	temp->AddComponent(controller);
 
 
@@ -270,6 +269,22 @@ void TestScene::Render(ID3D12GraphicsCommandList* command_list)
 		}
 
 	}
+}
+
+bool TestScene::ProcessInput(UINT id, WPARAM w_param, LPARAM l_param, float time)
+{
+	if (main_input_controller_)
+	{
+		if (main_input_controller_->ProcessInput(id, w_param, l_param, time))
+			return true;
+	}
+	switch (id)
+	{
+	default:
+		return false;
+		break;
+	}
+	return true;
 }
 
 void TestScene::Update(float elapsed_time)

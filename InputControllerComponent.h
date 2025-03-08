@@ -2,8 +2,7 @@
 #include "Component.h"
 
 // 인풋을 처리하는 컨트롤러의 상위 클래스
-// 이 클래스를 상속받아 인풋매니저에 메인 컨트롤러로 등록하면 
-// ProcessInput 함수에서 인풋을 처리할 수 있다.
+// 이 클래스를 상속받아 ProcessInput 함수에서 인풋을 처리할 수 있다.
 class InputControllerComponent :
     public Component
 {
@@ -15,7 +14,7 @@ public:
 
     virtual Component* GetCopy() = 0;
 
-    virtual void ProcessInput(UINT message_id, WPARAM w_param, LPARAM l_param, float message_time) = 0;
+    virtual bool ProcessInput(UINT message_id, WPARAM w_param, LPARAM l_param, float message_time) = 0;
 
 protected:
     std::unordered_map<char, bool> is_key_down_;

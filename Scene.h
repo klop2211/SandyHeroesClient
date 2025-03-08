@@ -19,7 +19,7 @@ public:
 
 	virtual void Initialize(ID3D12Device* device, ID3D12GraphicsCommandList* command_list, 
 		ID3D12RootSignature* root_signature, FrameResourceManager* frame_resource_manager,
-		DescriptorManager* descriptor_manager, InputManager* input_manager) = 0;
+		DescriptorManager* descriptor_manager) = 0;
 	virtual void BuildShader(ID3D12Device* device, ID3D12RootSignature* root_signature) = 0;
 	virtual void BuildMesh(ID3D12Device* device, ID3D12GraphicsCommandList* command_list) = 0;
 	virtual void BuildMaterial(ID3D12Device* device, ID3D12GraphicsCommandList* command_list) = 0;
@@ -30,10 +30,11 @@ public:
 	virtual void BuildShaderResourceViews(ID3D12Device* device) = 0;
 	virtual void Render(ID3D12GraphicsCommandList* command_list) = 0;
 
+	virtual bool ProcessInput(UINT id, WPARAM w_param, LPARAM l_param, float time) = 0;
+
 	virtual void Update(float elapsed_time) = 0;
 
 	void UpdateObjectWorldMatrix();
-	void SetInputController(InputControllerComponent* controller);
 
 	static Mesh* FindMesh(const std::string& mesh_name, const std::vector<std::unique_ptr<Mesh>>& meshes);
 
@@ -46,7 +47,6 @@ protected:
 
 	FrameResourceManager* frame_resource_manager_ = nullptr;
 	DescriptorManager* descriptor_manager_ = nullptr;
-	InputManager* input_manager_ = nullptr;
 
 	// 일반 메쉬를 사용하는 오브젝트의 최대 용량
 	// 이 용량만큼 상수버퍼가 gpu에 만들어진다.
@@ -54,6 +54,7 @@ protected:
 	int cb_skinned_mesh_object_capacity_ = 0;
 
 	CameraComponent* main_camera_ = nullptr;
+	InputControllerComponent* main_input_controller_ = nullptr;
 
 };
 

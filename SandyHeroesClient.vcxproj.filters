@@ -13,17 +13,11 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="GameFramework">
-      <UniqueIdentifier>{8650f60f-2d28-4a04-8c83-5a6f343323b7}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Object">
       <UniqueIdentifier>{1ad6dd00-9a2f-486d-95cc-455ae6269e3c}</UniqueIdentifier>
     </Filter>
     <Filter Include="Timer">
       <UniqueIdentifier>{18d56895-b4f5-433b-b3fd-6837df7fb1ca}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Scene">
-      <UniqueIdentifier>{7fb82dd8-c53f-4508-b745-e52a6e7b874d}</UniqueIdentifier>
     </Filter>
     <Filter Include="Component">
       <UniqueIdentifier>{eb13979b-95cf-4b8c-9af3-95f6b3521ad1}</UniqueIdentifier>
@@ -36,9 +30,6 @@
     </Filter>
     <Filter Include="Mesh">
       <UniqueIdentifier>{7275f89b-6016-4a00-aee4-df8a76907ee8}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Scene\TestScene">
-      <UniqueIdentifier>{9067d95c-12fd-4805-add0-fa632b158c81}</UniqueIdentifier>
     </Filter>
     <Filter Include="Mesh\Cube">
       <UniqueIdentifier>{96e9464c-3e60-43fb-b9dc-c2a3b97bbcee}</UniqueIdentifier>
@@ -84,6 +75,15 @@
     </Filter>
     <Filter Include="Component\Animator">
       <UniqueIdentifier>{022fb1bb-77bc-4d27-9781-00ec0a98feb2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scene">
+      <UniqueIdentifier>{7fb82dd8-c53f-4508-b745-e52a6e7b874d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scene\TestScene">
+      <UniqueIdentifier>{9067d95c-12fd-4805-add0-fa632b158c81}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameFramework">
+      <UniqueIdentifier>{8650f60f-2d28-4a04-8c83-5a6f343323b7}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

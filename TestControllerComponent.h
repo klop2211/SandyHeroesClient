@@ -11,7 +11,7 @@ public:
 
     virtual Component* GetCopy();
 
-    virtual void ProcessInput(UINT message_id, WPARAM w_param, LPARAM l_param, float message_time) override;
+    virtual bool ProcessInput(UINT message_id, WPARAM w_param, LPARAM l_param, float message_time) override;
 
 };
 

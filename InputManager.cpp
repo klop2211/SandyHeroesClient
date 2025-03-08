@@ -10,10 +10,10 @@ InputManager::InputManager()
 	kInputManager = nullptr;
 }
 
-void InputManager::AddInputMessage(UINT message_id, WPARAM w_param, LPARAM l_param, float message_time)
+void InputManager::EnQueueInputMessage(UINT message_id, WPARAM w_param, LPARAM l_param, float message_time)
 {
-	//추가하더라도 아직 버퍼에 공간이 남았는지 체크
-	assert((tail_ + 1) % kMaxInputMessage != head_);
+	if (IsFull())
+		return;
 
 	message_buffer_[tail_].id = message_id;
 	message_buffer_[tail_].w_param = w_param;
@@ -22,20 +22,29 @@ void InputManager::AddInputMessage(UINT message_id, WPARAM w_param, LPARAM l_par
 	tail_ = (tail_ + 1) % kMaxInputMessage;
 }
 
-void InputManager::Update()
+InputMessage InputManager::DeQueueInputMessage(float play_time)
 {
-	if (!main_controller_ || head_ == tail_)
-		return;
-	// 누적된 인풋 메시지 처리
-	for (int i = head_; i != tail_; i = (i + 1) % kMaxInputMessage)
+	if(IsEmpty())
+		return InputMessage();
+
+	InputMessage input_message = message_buffer_[head_];
+	head_ = (head_ + 1) % kMaxInputMessage;
+	while (play_time - input_message.time > kExpirationDateInputMessage)
 	{
-		const InputMessage& m = message_buffer_[i];
-		main_controller_->ProcessInput(m.id, m.w_param, m.l_param, m.time);
+		if (IsEmpty())
+			return InputMessage();
+		input_message = message_buffer_[head_];
+		head_ = (head_ + 1) % kMaxInputMessage;
 	}
-	head_ = tail_;
+	return input_message;
 }
 
-void InputManager::set_main_controller(InputControllerComponent* controller)
+bool InputManager::IsEmpty()
 {
-	main_controller_ = controller;
+	return head_ == tail_;
+}
+
+bool InputManager::IsFull()
+{
+	return (tail_ + 1) % kMaxInputMessage == head_;
 }
