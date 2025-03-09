@@ -64,6 +64,14 @@ protected:
 	ComPtr<ID3D12Resource> d3d_normal_buffer_ = nullptr;
 	ComPtr<ID3D12Resource> d3d_normal_upload_buffer_ = nullptr;
 
+	std::vector<XMFLOAT3> tangents_;
+	ComPtr<ID3D12Resource> d3d_tangent_buffer_ = nullptr;
+	ComPtr<ID3D12Resource> d3d_tangent_upload_buffer_ = nullptr;
+
+	std::vector<XMFLOAT3> bi_tangents_;
+	ComPtr<ID3D12Resource> d3d_bi_tangent_buffer_ = nullptr;
+	ComPtr<ID3D12Resource> d3d_bi_tangent_upload_buffer_ = nullptr;
+
 	std::vector<D3D12_VERTEX_BUFFER_VIEW> vertex_buffer_views_;
 
 	//대부분의 메쉬는 1개의 인덱스 버퍼를 사용하지만 

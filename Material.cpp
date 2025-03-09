@@ -60,6 +60,11 @@ void Material::UpdateShaderVariables(ID3D12GraphicsCommandList* command_list,
 			texture_mask |= kTextureMaskEmission;
 			texture_root_index = (int)RootParameterIndex::kEmissionMap;
 			break;
+		case TextureType::kNormalMap:
+			texture_mask |= kTextureMaskNormal;
+			texture_root_index = (int)RootParameterIndex::kNormalMap;
+			break;
+
 		default:
 			break;
 		}
@@ -184,6 +189,18 @@ void Material::LoadMaterialFromFile(std::ifstream& file)
 			}
 			ReadStringFromFile(file, load_token);
 		}
+		if (load_token == "<NormalMap>:")
+		{
+			ReadStringFromFile(file, load_token);
+			if (load_token != "null")
+			{
+				texture_list_.push_back(std::make_unique<Texture>());
+				texture_list_.back()->name = load_token;
+				texture_list_.back()->type = TextureType::kNormalMap;
+			}
+			ReadStringFromFile(file, load_token);
+		}
+
 		if (load_token == "<EmissionMap>:")
 		{
 			ReadStringFromFile(file, load_token);

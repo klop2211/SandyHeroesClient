@@ -33,6 +33,7 @@ cbuffer RenderPass : register(b3)
 #define TEXTURE_MASK_SPECGLOS (1 << 1)
 #define TEXTURE_MASK_METALGLOS (1 << 2)
 #define TEXTURE_MASK_EMISSION (1 << 3)
+#define TEXTURE_MASK_NORMAL (1 << 4)
 
 cbuffer Material : register(b4)
 {
@@ -44,5 +45,6 @@ Texture2D g_albedo_map : register(t0);
 Texture2D g_spec_glos_map : register(t1);
 Texture2D g_metal_glos_map : register(t2);
 Texture2D g_emission_map : register(t3);
+Texture2D g_normal_map : register(t4);
 
 SamplerState g_anisotropic_warp : register(s0);

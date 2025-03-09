@@ -87,6 +87,36 @@ void Mesh::CreateShaderVariables(ID3D12Device* device, ID3D12GraphicsCommandList
 		vertex_buffer_views_.push_back(vertex_buffer_view);
 	}
 
+	if (tangents_.size())
+	{
+		d3d_tangent_buffer_ = d3d_util::CreateDefaultBuffer(
+			device, command_list,
+			tangents_.data(), sizeof(XMFLOAT3) * tangents_.size(),
+			d3d_tangent_upload_buffer_);
+
+		D3D12_VERTEX_BUFFER_VIEW vertex_buffer_view{};
+		vertex_buffer_view.BufferLocation = d3d_tangent_buffer_->GetGPUVirtualAddress();
+		vertex_buffer_view.SizeInBytes = sizeof(XMFLOAT3) * tangents_.size();
+		vertex_buffer_view.StrideInBytes = sizeof(XMFLOAT3);
+
+		vertex_buffer_views_.push_back(vertex_buffer_view);
+	}
+
+	if (bi_tangents_.size())
+	{
+		d3d_bi_tangent_buffer_ = d3d_util::CreateDefaultBuffer(
+			device, command_list,
+			bi_tangents_.data(), sizeof(XMFLOAT3) * bi_tangents_.size(),
+			d3d_bi_tangent_upload_buffer_);
+
+		D3D12_VERTEX_BUFFER_VIEW vertex_buffer_view{};
+		vertex_buffer_view.BufferLocation = d3d_bi_tangent_buffer_->GetGPUVirtualAddress();
+		vertex_buffer_view.SizeInBytes = sizeof(XMFLOAT3) * bi_tangents_.size();
+		vertex_buffer_view.StrideInBytes = sizeof(XMFLOAT3);
+
+		vertex_buffer_views_.push_back(vertex_buffer_view);
+	}
+
 	for (const std::vector<UINT>& index_buffer : indices_array_)
 	{
 		if (index_buffer.size() == 0)
@@ -118,6 +148,11 @@ void Mesh::ReleaseUploadBuffer()
 		d3d_uv_upload_buffer_.Reset();
 	if (d3d_normal_upload_buffer_)
 		d3d_normal_upload_buffer_.Reset();
+	if (d3d_tangent_upload_buffer_)
+		d3d_tangent_upload_buffer_.Reset();
+	if (d3d_bi_tangent_upload_buffer_)
+		d3d_bi_tangent_upload_buffer_.Reset();
+
 	for (ComPtr<ID3D12Resource>& upload_buffer : d3d_index_upload_buffers_)
 	{
 		upload_buffer.Reset();
@@ -244,6 +279,15 @@ void Mesh::LoadMeshFromFile(std::ifstream& file)
 
 	normals_.resize(ReadFromFile<int>(file));
 	ReadFromFile<XMFLOAT3>(file, normals_.data(), normals_.size());
+
+	//tangent 정보
+	ReadStringFromFile(file, load_token);
+#ifdef _DEBUG
+	PrintDebugStringLoadTokenError(name_, load_token, "<Tangents>:");
+#endif // _DEBUG
+
+	tangents_.resize(ReadFromFile<int>(file));
+	ReadFromFile<XMFLOAT3>(file, tangents_.data(), tangents_.size());
 
 	//index 정보
 	ReadStringFromFile(file, load_token);

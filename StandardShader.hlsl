@@ -5,6 +5,7 @@ struct MeshVertexIn
     float3 position : POSITION;
     float2 uv : TEXCOORD;
     float3 normal : NORMAL;
+    float3 tangent : TANGENT;
 };
 
 struct SkinnedMeshVertexIn
@@ -12,6 +13,7 @@ struct SkinnedMeshVertexIn
     float3 position : POSITION;
     float2 uv : TEXCOORD;
     float3 normal : NORMAL;
+    float3 tangent : TANGENT;
     int4 indices : BONEINDEX;
     float4 weights : BONEWEIGHT;
 };
@@ -19,8 +21,9 @@ struct SkinnedMeshVertexIn
 struct VertexOut
 {
     float4 position : SV_POSITION;
-    float3 position_w : POSITIONT;
-    float3 normal : NORMAL;
+    float3 position_w : POSITION;
+    float3 normal_w : NORMAL;
+    float3 tangent_w : TANGENT;
     float2 uv : TEXCOORD;
 };
 
@@ -31,8 +34,10 @@ VertexOut MeshVS(MeshVertexIn v_in)
     v_out.position_w = mul(float4(v_in.position, 1.f), g_world_matrix).xyz;
     v_out.position = mul(mul(float4(v_out.position_w, 1.f), g_view_matrix), g_projection_matrix);
         
-    v_out.normal = mul(v_in.normal, (float3x3)g_world_matrix);
-    
+    //비균등 비례가 월드행렬에 있다면 월드행렬의 역전치 행렬로 변환해야함!
+    v_out.normal_w = mul(v_in.normal, (float3x3)g_world_matrix);
+    v_out.tangent_w = mul(v_in.tangent, (float3x3) g_world_matrix);
+
     v_out.uv = v_in.uv;
 
     return v_out;
@@ -54,8 +59,9 @@ VertexOut SkinnedMeshVS(SkinnedMeshVertexIn v_in)
 
     v_out.position = mul(mul(float4(v_out.position_w, 1.f), g_view_matrix), g_projection_matrix);
     
-    v_out.normal = mul(v_in.normal, (float3x3) vertex_to_world_matrix);
-    
+    v_out.normal_w = mul(v_in.normal, (float3x3) vertex_to_world_matrix);
+    v_out.tangent_w = mul(v_in.tangent, (float3x3) vertex_to_world_matrix);
+
     v_out.uv = v_in.uv;
     
     return v_out;
@@ -91,14 +97,24 @@ float4 PS(VertexOut p_in) : SV_Target
     {
         emission_color = g_emission_map.Sample(g_anisotropic_warp, p_in.uv);
     }
-    
-    p_in.normal = normalize(p_in.normal);
+       
+    p_in.normal_w = normalize(p_in.normal_w);
+    if(g_texture_mask & TEXTURE_MASK_NORMAL)
+    {
+        float4 normal_sample = g_normal_map.Sample(g_anisotropic_warp, p_in.uv);
+        float3 T = normalize(p_in.tangent_w - dot(p_in.tangent_w, p_in.normal_w) * p_in.normal_w);
+        float3 B = cross(p_in.normal_w, T);
+        float3x3 tbn = { T, B, p_in.normal_w };
+        normal_sample.rgb = 2.f * normal_sample.rgb - 1.f;
+        p_in.normal_w = mul(normal_sample.rgb, tbn);
+
+    }
     
     float3 to_eye_vector = normalize(g_camera_position - p_in.position_w);
     
     float4 ambient = g_ambient_light * diffuse_albedo;
     Material mat = { diffuse_albedo, fresnel_r0, glossiness, emission_color };
-    float4 direct_light = ComputeLighting(g_lights, mat, p_in.position_w, p_in.normal, to_eye_vector);
+    float4 direct_light = ComputeLighting(g_lights, mat, p_in.position_w, p_in.normal_w, to_eye_vector);
     
     
     float4 result = ambient + direct_light + emission_color;

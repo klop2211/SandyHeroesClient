@@ -207,13 +207,14 @@ void GameFramework::CreateRtvAndDsvDescriptorHeaps()
 
 void GameFramework::BuildRootSignature()
 {
-    CD3DX12_DESCRIPTOR_RANGE descriptor_range[4];
+    CD3DX12_DESCRIPTOR_RANGE descriptor_range[5];
     descriptor_range[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0); //albedo
     descriptor_range[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 1); //spec gloss
     descriptor_range[2].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 2); //metal gloss
     descriptor_range[3].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 3); //emission
+    descriptor_range[4].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 4); //normal
 
-    CD3DX12_ROOT_PARAMETER root_parameter[9];
+    CD3DX12_ROOT_PARAMETER root_parameter[10];
 
     //25.02.23 수정
     //기존 루트 디스크립터 테이블에서 루트 CBV사용으로 변경
@@ -226,11 +227,12 @@ void GameFramework::BuildRootSignature()
     root_parameter[6].InitAsDescriptorTable(1, &descriptor_range[1], D3D12_SHADER_VISIBILITY_PIXEL);
     root_parameter[7].InitAsDescriptorTable(1, &descriptor_range[2], D3D12_SHADER_VISIBILITY_PIXEL);
     root_parameter[8].InitAsDescriptorTable(1, &descriptor_range[3], D3D12_SHADER_VISIBILITY_PIXEL);
+    root_parameter[9].InitAsDescriptorTable(1, &descriptor_range[4], D3D12_SHADER_VISIBILITY_PIXEL);
 
     //비등방 필터링 warp 모드 샘플러
     CD3DX12_STATIC_SAMPLER_DESC aniso_warp{ 0 };
 
-    CD3DX12_ROOT_SIGNATURE_DESC root_sig_desc(9, root_parameter, 1, &aniso_warp,
+    CD3DX12_ROOT_SIGNATURE_DESC root_sig_desc(10, root_parameter, 1, &aniso_warp,
         D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
     ComPtr<ID3DBlob> serialized_root_sig = nullptr;

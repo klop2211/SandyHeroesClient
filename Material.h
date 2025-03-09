@@ -7,8 +7,9 @@ constexpr int kTextureMaskAlbedo(1 << 0);
 constexpr int kTextureMaskSpecGlos(1 << 1);
 constexpr int kTextureMaskMetalGlos(1 << 2);
 constexpr int kTextureMaskEmission(1 << 3);
+constexpr int kTextureMaskNormal(1 << 4);
 
-enum class TextureType{ kAlbedoMap, kSpecGlossMap, kMetallicGlossMap, kEmissionMap };
+enum class TextureType{ kAlbedoMap, kSpecGlossMap, kMetallicGlossMap, kEmissionMap, kNormalMap };
 
 struct Texture
 {
