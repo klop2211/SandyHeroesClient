@@ -54,7 +54,6 @@ bool TestControllerComponent::ProcessInput(UINT message_id, WPARAM w_param, LPAR
 			if (!is_key_down_['W'])
 			{
 				is_key_down_['W'] = true;
-				owner_->set_velocity(owner_->velocity() + XMFLOAT3(0, 0, 1));
 					
 			}
 			break;
@@ -62,35 +61,30 @@ bool TestControllerComponent::ProcessInput(UINT message_id, WPARAM w_param, LPAR
 			if (!is_key_down_['A'])
 			{
 				is_key_down_['A'] = true;
-				owner_->set_velocity(owner_->velocity() + XMFLOAT3(-1, 0, 0));
 			}
 			break;
 		case 'S':
 			if (!is_key_down_['S'])
 			{
 				is_key_down_['S'] = true;
-				owner_->set_velocity(owner_->velocity() + XMFLOAT3(0, 0, -1));
 			}
 			break;
 		case 'D':
 			if (!is_key_down_['D'])
 			{
 				is_key_down_['D'] = true;
-				owner_->set_velocity(owner_->velocity() + XMFLOAT3(1, 0, 0));
 			}
 			break;
 		case 'Q':
 			if (!is_key_down_['Q'])
 			{
 				is_key_down_['Q'] = true;
-				owner_->set_velocity(owner_->velocity() + XMFLOAT3(0, -1, 0));
 			}
 			break;
 		case 'E':
 			if (!is_key_down_['E'])
 			{
 				is_key_down_['E'] = true;
-				owner_->set_velocity(owner_->velocity() + XMFLOAT3(0, 1, 0));
 			}
 			break;
 		default:
@@ -105,42 +99,36 @@ bool TestControllerComponent::ProcessInput(UINT message_id, WPARAM w_param, LPAR
 			if (is_key_down_['W'])
 			{
 				is_key_down_['W'] = false;
-				owner_->set_velocity(owner_->velocity() - XMFLOAT3(0, 0, 1));
 			}
 			break;
 		case 'A':
 			if (is_key_down_['A'])
 			{
 				is_key_down_['A'] = false;
-				owner_->set_velocity(owner_->velocity() + XMFLOAT3(1, 0, 0));
 			}
 			break;
 		case 'S':
 			if (is_key_down_['S'])
 			{
 				is_key_down_['S'] = false;
-				owner_->set_velocity(owner_->velocity() + XMFLOAT3(0, 0, 1));
 			}
 			break;
 		case 'D':
 			if (is_key_down_['D'])
 			{
 				is_key_down_['D'] = false;
-				owner_->set_velocity(owner_->velocity() - XMFLOAT3(1, 0, 0));
 			}
 			break;
 		case 'Q':
 			if (is_key_down_['Q'])
 			{
 				is_key_down_['Q'] = false;
-				owner_->set_velocity(owner_->velocity() + XMFLOAT3(0, 1, 0));
 			}
 			break;
 		case 'E':
 			if (is_key_down_['E'])
 			{
 				is_key_down_['E'] = false;
-				owner_->set_velocity(owner_->velocity() + XMFLOAT3(0, -1, 0));
 			}
 			break;
 		default:
@@ -154,4 +142,19 @@ bool TestControllerComponent::ProcessInput(UINT message_id, WPARAM w_param, LPAR
 	}
 
 	return true;
+}
+
+void TestControllerComponent::Update(float elapsed_time)
+{
+	XMFLOAT3 velocity{ 0,0,0 };
+	XMFLOAT3 look = owner_->look_vector();
+	XMFLOAT3 right = owner_->right_vector();
+	XMFLOAT3 up{ 0,1,0 };
+	if (is_key_down_['W']) velocity += look;
+	if (is_key_down_['S']) velocity -= look;
+	if (is_key_down_['A']) velocity -= right;
+	if (is_key_down_['D']) velocity += right;
+	if (is_key_down_['E']) velocity += up;
+	if (is_key_down_['Q']) velocity -= up;
+	owner_->set_velocity(velocity);
 }

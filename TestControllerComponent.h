@@ -13,5 +13,7 @@ public:
 
     virtual bool ProcessInput(UINT message_id, WPARAM w_param, LPARAM l_param, float message_time) override;
 
+    virtual void Update(float elapsed_time);
+
 };
 
