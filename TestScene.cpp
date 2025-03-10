@@ -58,7 +58,7 @@ void TestScene::BuildMesh(ID3D12Device* device, ID3D12GraphicsCommandList* comma
 	meshes_[0].get()->set_name("green_cube");
 
 	model_infos_.reserve(1);
-	model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/Ellen.bin", meshes_, materials_));
+	model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/Golem_Earth.bin", meshes_, materials_));
 
 	for (const std::unique_ptr<Mesh>& mesh : meshes_)
 	{
@@ -99,16 +99,10 @@ void TestScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 	object_list_.emplace_back();
 	object_list_.back().reset(temp);
 
-	Object* temp1 = Object::DeepCopy(temp);
-	temp1->set_position_vector(XMFLOAT3{ 0.6, 0, 0 });
-	object_list_.emplace_back();
-	object_list_.back().reset(temp1);
-
-	//인풋 처리 컨트롤러 생성
-	TestControllerComponent* controller = new TestControllerComponent(temp);
-	//메인 컨트롤러로 설정
-	main_input_controller_ = controller;
-	temp->AddComponent(controller);
+	//Object* temp1 = Object::DeepCopy(temp);
+	//temp1->set_position_vector(XMFLOAT3{ 0.6, 0, 0 });
+	//object_list_.emplace_back();
+	//object_list_.back().reset(temp1);
 
 
 	Object* camera_object = new Object();
@@ -116,6 +110,11 @@ void TestScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 		new CameraComponent(camera_object, 0.3, 10000, 
 			(float)kDefaultFrameBufferWidth / (float)kDefaultFrameBufferHeight, 58);
 
+	//인풋 처리 컨트롤러 생성
+	TestControllerComponent* controller = new TestControllerComponent(camera_object);
+	//메인 컨트롤러로 설정
+	main_input_controller_ = controller;
+	camera_object->AddComponent(controller);
 	camera_object->set_position_vector(XMFLOAT3(0, 1.7, -1));
 
 	object_list_.emplace_back();
