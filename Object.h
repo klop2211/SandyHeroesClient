@@ -62,6 +62,17 @@ public:
 
 	static Object* DeepCopy(Object* value, Object* parent = nullptr);
 
+	template<class T>
+	static T* GetComponent(Object* object)
+	{
+		for (auto& component : object->component_list_)
+		{
+			if (dynamic_cast<T*>(component.get()))
+				return static_cast<T*>(component.get());
+		}
+		return nullptr;
+	}
+
 protected:
 	// 오브젝트의 변환행렬
 	XMFLOAT4X4 transform_matrix_ = xmath_util_float4x4::Identity();
