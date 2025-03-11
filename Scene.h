@@ -19,15 +19,15 @@ public:
 
 	virtual void Initialize(ID3D12Device* device, ID3D12GraphicsCommandList* command_list, 
 		ID3D12RootSignature* root_signature, FrameResourceManager* frame_resource_manager,
-		DescriptorManager* descriptor_manager) = 0;
+		DescriptorManager* descriptor_manager);
 	virtual void BuildShader(ID3D12Device* device, ID3D12RootSignature* root_signature) = 0;
 	virtual void BuildMesh(ID3D12Device* device, ID3D12GraphicsCommandList* command_list) = 0;
-	virtual void BuildMaterial(ID3D12Device* device, ID3D12GraphicsCommandList* command_list) = 0;
+	virtual void BuildMaterial(ID3D12Device* device, ID3D12GraphicsCommandList* command_list);
 	virtual void BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* command_list) = 0;
-	virtual void BuildFrameResources(ID3D12Device* device) = 0;
-	virtual void BuildDescriptorHeap(ID3D12Device* device) = 0;
-	virtual void BuildConstantBufferViews(ID3D12Device* device) = 0;
-	virtual void BuildShaderResourceViews(ID3D12Device* device) = 0;
+	virtual void BuildFrameResources(ID3D12Device* device);
+	virtual void BuildDescriptorHeap(ID3D12Device* device);
+	virtual void BuildConstantBufferViews(ID3D12Device* device) {};
+	virtual void BuildShaderResourceViews(ID3D12Device* device);
 
 	void ReleaseMeshUploadBuffer();
 

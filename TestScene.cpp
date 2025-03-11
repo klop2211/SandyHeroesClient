@@ -66,17 +66,6 @@ void TestScene::BuildMesh(ID3D12Device* device, ID3D12GraphicsCommandList* comma
 	}
 }
 
-void TestScene::BuildMaterial(ID3D12Device* device, ID3D12GraphicsCommandList* command_list)
-{
-	int frame_resource_index = 0;
-	for (std::unique_ptr<Material>& material : materials_)
-	{
-		material->CreateShaderVariables(device, command_list);
-		material->set_frame_resource_index(frame_resource_index);
-		++frame_resource_index;
-	}
-}
-
 void TestScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* command_list)
 {
 	//TODO: 각 메쉬의 컴포넌트 연결 개수를 파악하면 아래 수치를 디테일하게 설정할 수 있을것 같다..
@@ -122,19 +111,6 @@ void TestScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 	
 	main_camera_ = camera_component;
 
-}
-
-void TestScene::BuildFrameResources(ID3D12Device* device)
-{
-	frame_resource_manager_->ResetFrameResources(device, 1,
-		cb_object_capacity_, 
-		cb_skinned_mesh_object_capacity_, materials_.size());
-}
-
-void TestScene::BuildDescriptorHeap(ID3D12Device* device)
-{
-	descriptor_manager_->ResetDescriptorHeap(device, 
-		Material::GetTextureCount());
 }
 
 void TestScene::BuildConstantBufferViews(ID3D12Device* device)
@@ -213,15 +189,6 @@ void TestScene::BuildConstantBufferViews(ID3D12Device* device)
 
 }
 
-void TestScene::BuildShaderResourceViews(ID3D12Device* device)
-{
-	int heap_index = descriptor_manager_->srv_offset();
-	for (std::unique_ptr<Material>& material : materials_)
-	{
-		heap_index = material->CreateShaderResourceViews(device, descriptor_manager_, heap_index);
-	}
-}
-
 void TestScene::Render(ID3D12GraphicsCommandList* command_list)
 {
 	main_camera_->UpdateCameraInfo();
@@ -283,7 +250,6 @@ bool TestScene::ProcessInput(UINT id, WPARAM w_param, LPARAM l_param, float time
 		return false;
 		break;
 	}
-	return true;
 }
 
 void TestScene::Update(float elapsed_time)
