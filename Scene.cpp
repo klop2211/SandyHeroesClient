@@ -21,6 +21,20 @@ void Scene::UpdateObjectWorldMatrix()
 	}
 }
 
+Object* Scene::FindObject(const std::string& object_name)
+{
+	auto it = std::find_if(object_list_.begin(), object_list_.end(), [&object_name](const std::unique_ptr<Object>& object) {
+		return object.get()->name() == object_name;
+		});
+
+	if (it != object_list_.end())
+	{
+		return (*it).get();
+	}
+
+	return nullptr;
+}
+
 
 Mesh* Scene::FindMesh(const std::string& mesh_name, const std::vector<std::unique_ptr<Mesh>>& meshes)
 {

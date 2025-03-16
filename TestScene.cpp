@@ -95,9 +95,12 @@ void TestScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 
 
 	Object* camera_object = new Object();
+	camera_object->set_name("CAMERA_1");
 	CameraComponent* camera_component = 
 		new CameraComponent(camera_object, 0.3, 10000, 
 			(float)kDefaultFrameBufferWidth / (float)kDefaultFrameBufferHeight, 58);
+	camera_object->AddComponent(camera_component);
+	main_camera_ = camera_component;
 
 	//인풋 처리 컨트롤러 생성
 	TestControllerComponent* controller = new TestControllerComponent(camera_object);
@@ -108,8 +111,19 @@ void TestScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 
 	object_list_.emplace_back();
 	object_list_.back().reset(camera_object);
-	
-	main_camera_ = camera_component;
+
+	camera_object = new Object;
+	camera_object->set_name("CAMERA_2");
+	controller = new TestControllerComponent(camera_object);
+	camera_component =
+		new CameraComponent(camera_object, 0.3, 10000,
+			(float)kDefaultFrameBufferWidth / (float)kDefaultFrameBufferHeight, 58);
+	camera_object->AddComponent(controller);
+	camera_object->AddComponent(camera_component);
+	object_list_.emplace_back();
+	object_list_.back().reset(camera_object);
+
+
 
 }
 
@@ -246,6 +260,31 @@ bool TestScene::ProcessInput(UINT id, WPARAM w_param, LPARAM l_param, float time
 	}
 	switch (id)
 	{
+	case WM_KEYDOWN:
+		// 카메라 전환 테스트
+		if (w_param == 'K')
+		{
+			//바꿀 카메라 오브젝트를 찾고
+			Object* camera = FindObject("CAMERA_2");
+
+			//그 오브젝트의 카메라와 컨트롤러를 씬으로 가져온다
+			CameraComponent* new_camera = Object::GetComponent<CameraComponent>(camera);
+			if (new_camera) // nullptr 방지
+			{
+				main_camera_ = new_camera;
+			}
+			main_input_controller_ = Object::GetComponent<InputControllerComponent>(camera);
+		}
+		if (w_param == 'L')
+		{
+			//바꿀 카메라 오브젝트를 찾고
+			Object* camera = FindObject("CAMERA_1");
+			//그 오브젝트의 카메라와 컨트롤러를 씬으로 가져온다
+			main_camera_ = Object::GetComponent<CameraComponent>(camera);
+			main_input_controller_ = Object::GetComponent<TestControllerComponent>(camera);
+		}
+		break;
+
 	default:
 		return false;
 		break;
