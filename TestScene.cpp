@@ -58,7 +58,7 @@ void TestScene::BuildMesh(ID3D12Device* device, ID3D12GraphicsCommandList* comma
 	meshes_[0].get()->set_name("green_cube");
 
 	model_infos_.reserve(3);
-	model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/Golem_Earth.bin", meshes_, materials_));
+	//model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/Base.bin", meshes_, materials_));
 
 	BuildScene();
 
@@ -71,8 +71,8 @@ void TestScene::BuildMesh(ID3D12Device* device, ID3D12GraphicsCommandList* comma
 void TestScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* command_list)
 {
 	//TODO: 각 메쉬의 컴포넌트 연결 개수를 파악하면 아래 수치를 디테일하게 설정할 수 있을것 같다..
-	cb_object_capacity_ = 1000;
-	cb_skinned_mesh_object_capacity_ = 100;
+	cb_object_capacity_ = 10000;
+	cb_skinned_mesh_object_capacity_ = 10000;
 
 
 	////오브젝트를 생성하고
