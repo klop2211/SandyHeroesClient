@@ -23,6 +23,11 @@ ModelInfo::~ModelInfo()
 		delete hierarchy_root_;
 }
 
+std::string ModelInfo::model_name() const
+{
+	return model_name_;
+}
+
 using namespace file_load_util;
 void ModelInfo::LoadModelInfoFromFile(const std::string& file_name, std::vector<std::unique_ptr<Mesh>>& meshes,
 	std::vector<std::unique_ptr<Material>>& materials)
@@ -41,6 +46,8 @@ void ModelInfo::LoadModelInfoFromFile(const std::string& file_name, std::vector<
 #endif //_DEBUG
 
 	hierarchy_root_ = LoadFrameInfoFromFile(model_file, meshes, materials);
+
+	hierarchy_root_->set_position_vector(0, 0, 0); //모델 정보는 0 0 0에 위치
 
 	ReadStringFromFile(model_file, load_token);
 #ifdef _DEBUG

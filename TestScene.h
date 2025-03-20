@@ -16,6 +16,7 @@ public:
 	virtual void BuildMesh(ID3D12Device* device, ID3D12GraphicsCommandList* command_list) override;
 	virtual void BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* command_list) override;
 	virtual void BuildConstantBufferViews(ID3D12Device* device) override;
+	void BuildScene();
 
 	virtual void Render(ID3D12GraphicsCommandList* command_list) override;
 

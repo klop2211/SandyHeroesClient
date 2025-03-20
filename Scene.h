@@ -40,6 +40,7 @@ public:
 	void UpdateObjectWorldMatrix();
 
 	Object* FindObject(const std::string& object_name);
+	ModelInfo* FindModelInfo(const std::string& name);
 
 	static Mesh* FindMesh(const std::string& mesh_name, const std::vector<std::unique_ptr<Mesh>>& meshes);
 

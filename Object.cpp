@@ -120,6 +120,11 @@ void Object::set_position_vector(const XMFLOAT3& value)
 	transform_matrix_._43 = value.z;
 }
 
+void Object::set_position_vector(float x, float y, float z)
+{
+	set_position_vector(XMFLOAT3{ x,y,z });
+}
+
 void Object::set_look_vector(const XMFLOAT3& value)
 {
 	transform_matrix_._31 = value.x;

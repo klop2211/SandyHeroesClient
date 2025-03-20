@@ -57,8 +57,10 @@ void TestScene::BuildMesh(ID3D12Device* device, ID3D12GraphicsCommandList* comma
 	meshes_.push_back(std::make_unique<CubeMesh>(XMFLOAT4(0, 1, 0, 1)));
 	meshes_[0].get()->set_name("green_cube");
 
-	model_infos_.reserve(1);
+	model_infos_.reserve(3);
 	model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/Golem_Earth.bin", meshes_, materials_));
+
+	BuildScene();
 
 	for (const std::unique_ptr<Mesh>& mesh : meshes_)
 	{
@@ -200,6 +202,44 @@ void TestScene::BuildConstantBufferViews(ID3D12Device* device)
 	//	device->CreateConstantBufferView(&cbv_desc, handle);
 
 	//}
+
+}
+
+using namespace file_load_util;
+void TestScene::BuildScene()
+{
+	std::ifstream scene_file{ "./Resource/Model/Scene.bin", std::ios::binary };
+
+	int root_object_count = ReadFromFile<int>(scene_file);
+
+	std::string load_token; 
+
+	for (int i = 0; i < root_object_count; ++i)
+	{
+		ReadStringFromFile(scene_file, load_token);
+		if (load_token[0] == '@')
+		{
+			load_token.erase(0, 1);
+			object_list_.emplace_back();
+			object_list_.back().reset(FindModelInfo(load_token)->GetInstance());
+
+			ReadStringFromFile(scene_file, load_token);
+			XMFLOAT4X4 transfrom = ReadFromFile<XMFLOAT4X4>(scene_file);
+			object_list_.back()->set_transform_matrix(transfrom);
+		}
+		else
+		{
+			model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/" + load_token + ".bin", meshes_, materials_));
+
+			object_list_.emplace_back();
+			object_list_.back().reset(model_infos_.back()->GetInstance());
+
+			ReadStringFromFile(scene_file, load_token); // <Transfrom>
+			XMFLOAT4X4 transfrom = ReadFromFile<XMFLOAT4X4>(scene_file);
+			object_list_.back()->set_transform_matrix(transfrom);
+
+		}
+	}
 
 }
 
