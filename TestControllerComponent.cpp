@@ -147,14 +147,15 @@ bool TestControllerComponent::ProcessInput(UINT message_id, WPARAM w_param, LPAR
 void TestControllerComponent::Update(float elapsed_time)
 {
 	XMFLOAT3 velocity{ 0,0,0 };
+	float speed = 10;
 	XMFLOAT3 look = owner_->look_vector();
 	XMFLOAT3 right = owner_->right_vector();
 	XMFLOAT3 up{ 0,1,0 };
-	if (is_key_down_['W']) velocity += look;
-	if (is_key_down_['S']) velocity -= look;
-	if (is_key_down_['A']) velocity -= right;
-	if (is_key_down_['D']) velocity += right;
-	if (is_key_down_['E']) velocity += up;
-	if (is_key_down_['Q']) velocity -= up;
+	if (is_key_down_['W']) velocity += look * speed;
+	if (is_key_down_['S']) velocity -= look * speed;
+	if (is_key_down_['A']) velocity -= right * speed;
+	if (is_key_down_['D']) velocity += right * speed;
+	if (is_key_down_['E']) velocity += up * speed;
+	if (is_key_down_['Q']) velocity -= up * speed;
 	owner_->set_velocity(velocity);
 }
