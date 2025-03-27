@@ -249,6 +249,7 @@ Object* ModelInfo::GetInstance()
 	Object* r_value = Object::DeepCopy(hierarchy_root_);
 	if (animation_sets_.size())
 	{
+		//TODO: 모델 종류에 따라 알맞은 AS 클래스 분배가 필요
 		AnimatorComponent* animator = new AnimatorComponent(r_value, animation_sets_, frame_names_, root_bone_name_, new ASTest);
 		r_value->AddComponent(animator);
 	}

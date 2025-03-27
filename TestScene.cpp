@@ -18,6 +18,7 @@
 #include "StandardMeshShader.h"
 #include "StandardSkinnedMeshShader.h"
 #include "AnimationSet.h"
+#include "FPSControllerComponent.h"
 
 void TestScene::Initialize(ID3D12Device* device, ID3D12GraphicsCommandList* command_list, 
 	ID3D12RootSignature* root_signature, FrameResourceManager* frame_resource_manager,
@@ -58,7 +59,7 @@ void TestScene::BuildMesh(ID3D12Device* device, ID3D12GraphicsCommandList* comma
 	meshes_[0].get()->set_name("green_cube");
 
 	model_infos_.reserve(3);
-	//model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/Base.bin", meshes_, materials_));
+	model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/Dog00.bin", meshes_, materials_));
 
 	BuildScene();
 
@@ -74,29 +75,19 @@ void TestScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 	cb_object_capacity_ = 10000;
 	cb_skinned_mesh_object_capacity_ = 10000;
 
-
-	////오브젝트를 생성하고
-	//Object* cube_object = new Object();
-	//Mesh* green_cube = Scene::FindMesh("green_cube", meshes_);
-	////메쉬컴포넌트를 원하는 오브젝트와 메쉬를 넣어 생성한다.
-	//MeshComponent* cube_component = new MeshComponent(cube_object, green_cube);
-	//cube_object->AddComponent(cube_component);
-	////이를 씬의 오브젝트리스트에 추가
-	//object_list_.emplace_back();
-	//object_list_.back().reset(cube_object);
-
 	Object* temp = model_infos_[0]->GetInstance();
+	Object* head_bone = temp->FindFrame("HeadEnd_M");
 	temp->set_position_vector(XMFLOAT3{ 0, 0, 0 });
 	object_list_.emplace_back();
 	object_list_.back().reset(temp);
-
-	//Object* temp1 = Object::DeepCopy(temp);
-	//temp1->set_position_vector(XMFLOAT3{ 0.6, 0, 0 });
-	//object_list_.emplace_back();
-	//object_list_.back().reset(temp1);
-
-
+	FPSControllerComponent* fps_controller = new FPSControllerComponent(temp);
+	//TODO: 머리 프레임 이름을 모델 출력시 추출하여 사용하기
+	fps_controller->set_head_bone(head_bone);
+	temp->AddComponent(fps_controller);
+	//메인 컨트롤러로 설정
+	main_input_controller_ = fps_controller;
 	Object* camera_object = new Object();
+	head_bone->AddChild(camera_object);
 	camera_object->set_name("CAMERA_1");
 	CameraComponent* camera_component = 
 		new CameraComponent(camera_object, 0.3, 10000, 
@@ -104,24 +95,16 @@ void TestScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 	camera_object->AddComponent(camera_component);
 	main_camera_ = camera_component;
 
-	//인풋 처리 컨트롤러 생성
-	TestControllerComponent* controller = new TestControllerComponent(camera_object);
-	//메인 컨트롤러로 설정
-	main_input_controller_ = controller;
-	camera_object->AddComponent(controller);
-	camera_object->set_position_vector(XMFLOAT3(0, 1.7, -1));
-
-	object_list_.emplace_back();
-	object_list_.back().reset(camera_object);
 
 	camera_object = new Object;
 	camera_object->set_name("CAMERA_2");
-	controller = new TestControllerComponent(camera_object);
 	camera_component =
 		new CameraComponent(camera_object, 0.3, 10000,
 			(float)kDefaultFrameBufferWidth / (float)kDefaultFrameBufferHeight, 58);
-	camera_object->AddComponent(controller);
+	TestControllerComponent* controller = new TestControllerComponent(camera_object);
 	camera_object->AddComponent(camera_component);
+	camera_object->AddComponent(controller);
+
 	object_list_.emplace_back();
 	object_list_.back().reset(camera_object);
 
@@ -318,10 +301,10 @@ bool TestScene::ProcessInput(UINT id, WPARAM w_param, LPARAM l_param, float time
 		if (w_param == 'L')
 		{
 			//바꿀 카메라 오브젝트를 찾고
-			Object* camera = FindObject("CAMERA_1");
+			Object* camera = FindObject("Dog00");
 			//그 오브젝트의 카메라와 컨트롤러를 씬으로 가져온다
-			main_camera_ = Object::GetComponent<CameraComponent>(camera);
-			main_input_controller_ = Object::GetComponent<TestControllerComponent>(camera);
+			
+			main_input_controller_ = Object::GetComponent<FPSControllerComponent>(camera);
 		}
 		break;
 

@@ -198,6 +198,9 @@
     <ClInclude Include="ASTest.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="FPSControllerComponent.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="SandyHeroesClient.cpp">
@@ -294,6 +297,9 @@
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="ASTest.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="FPSControllerComponent.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
