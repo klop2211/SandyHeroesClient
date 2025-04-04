@@ -13,6 +13,8 @@ public:
 		std::vector<std::unique_ptr<Material>>& materials);
 	~ModelInfo();
 
+	std::string model_name() const;
+
 	void LoadModelInfoFromFile(const std::string& file_name, std::vector<std::unique_ptr<Mesh>>& meshes,
 		std::vector<std::unique_ptr<Material>>& materials);
 

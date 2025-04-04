@@ -253,63 +253,45 @@ void Mesh::LoadMeshFromFile(std::ifstream& file)
 	ReadStringFromFile(file, load_token);
 	name_ = load_token;
 
-	//position 정보
 	ReadStringFromFile(file, load_token);
-#ifdef _DEBUG
-	PrintDebugStringLoadTokenError(name_, load_token, "<Positions>:");
-#endif // _DEBUG
-
-	positions_.resize(ReadFromFile<int>(file));
-	ReadFromFile<XMFLOAT3>(file, positions_.data(), positions_.size());
-
-	//uv 정보
-	ReadStringFromFile(file, load_token);
-#ifdef _DEBUG
-	PrintDebugStringLoadTokenError(name_, load_token, "<TextureCoords>:");
-#endif // _DEBUG
-
-	uvs_.resize(ReadFromFile<int>(file));
-	ReadFromFile<XMFLOAT2>(file, uvs_.data(), uvs_.size());
-
-	//normal 정보
-	ReadStringFromFile(file, load_token);
-#ifdef _DEBUG
-	PrintDebugStringLoadTokenError(name_, load_token, "<Normals>:");
-#endif // _DEBUG
-
-	normals_.resize(ReadFromFile<int>(file));
-	ReadFromFile<XMFLOAT3>(file, normals_.data(), normals_.size());
-
-	//tangent 정보
-	ReadStringFromFile(file, load_token);
-#ifdef _DEBUG
-	PrintDebugStringLoadTokenError(name_, load_token, "<Tangents>:");
-#endif // _DEBUG
-
-	tangents_.resize(ReadFromFile<int>(file));
-	ReadFromFile<XMFLOAT3>(file, tangents_.data(), tangents_.size());
-
-	//index 정보
-	ReadStringFromFile(file, load_token);
-#ifdef _DEBUG
-	PrintDebugStringLoadTokenError(name_, load_token, "<SubSets>:");
-#endif // _DEBUG
-
-	indices_array_.resize(ReadFromFile<int>(file));
-	for (auto& indices : indices_array_)
+	while (load_token != "</Mesh>")
 	{
-		ReadStringFromFile(file, load_token);
+		if (load_token == "<Positions>:")
+		{
+			positions_.resize(ReadFromFile<int>(file));
+			ReadFromFile<XMFLOAT3>(file, positions_.data(), positions_.size());
+		}
+		else if (load_token == "<TextureCoords>:")
+		{
+			uvs_.resize(ReadFromFile<int>(file));
+			ReadFromFile<XMFLOAT2>(file, uvs_.data(), uvs_.size());
+		}
+		else if (load_token == "<Normals>:")
+		{
+			normals_.resize(ReadFromFile<int>(file));
+			ReadFromFile<XMFLOAT3>(file, normals_.data(), normals_.size());
+		}
+		else if (load_token == "<Tangents>:")
+		{
+			tangents_.resize(ReadFromFile<int>(file));
+			ReadFromFile<XMFLOAT3>(file, tangents_.data(), tangents_.size());
+		}
+		else if (load_token == "<SubSets>:")
+		{
+			indices_array_.resize(ReadFromFile<int>(file));
+			for (auto& indices : indices_array_)
+			{
+				ReadStringFromFile(file, load_token);
 #ifdef _DEBUG
-		PrintDebugStringLoadTokenError(name_, load_token, "<SubSet>:");
+				PrintDebugStringLoadTokenError(name_, load_token, "<SubSet>:");
 #endif // _DEBUG
-		indices.resize(ReadFromFile<int>(file));
-		ReadFromFile<UINT>(file, indices.data(), indices.size());
+				indices.resize(ReadFromFile<int>(file));
+				ReadFromFile<UINT>(file, indices.data(), indices.size());
+			}
+		}
+		ReadStringFromFile(file, load_token);
 	}
 
-	ReadStringFromFile(file, load_token);
-#ifdef _DEBUG
-	PrintDebugStringLoadTokenError(name_, load_token, "</Mesh>");
-#endif // _DEBUG
 
 }
 

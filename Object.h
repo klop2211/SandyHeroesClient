@@ -37,6 +37,7 @@ public:
 	// 변환행렬 및 각 벡터
 	void set_transform_matrix(const XMFLOAT4X4& value);
 	void set_position_vector(const XMFLOAT3& value);
+	void set_position_vector(float x, float y, float z);
 	void set_look_vector(const XMFLOAT3& value);
 	void set_right_vector(const XMFLOAT3& value);
 	void set_up_vector(const XMFLOAT3& value);

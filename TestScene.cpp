@@ -18,6 +18,7 @@
 #include "StandardMeshShader.h"
 #include "StandardSkinnedMeshShader.h"
 #include "AnimationSet.h"
+#include "FPSControllerComponent.h"
 
 void TestScene::Initialize(ID3D12Device* device, ID3D12GraphicsCommandList* command_list, 
 	ID3D12RootSignature* root_signature, FrameResourceManager* frame_resource_manager,
@@ -57,8 +58,10 @@ void TestScene::BuildMesh(ID3D12Device* device, ID3D12GraphicsCommandList* comma
 	meshes_.push_back(std::make_unique<CubeMesh>(XMFLOAT4(0, 1, 0, 1)));
 	meshes_[0].get()->set_name("green_cube");
 
-	model_infos_.reserve(1);
-	model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/Golem_Earth.bin", meshes_, materials_));
+	model_infos_.reserve(3);
+	model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/Dog00.bin", meshes_, materials_));
+
+	BuildScene();
 
 	for (const std::unique_ptr<Mesh>& mesh : meshes_)
 	{
@@ -69,47 +72,43 @@ void TestScene::BuildMesh(ID3D12Device* device, ID3D12GraphicsCommandList* comma
 void TestScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* command_list)
 {
 	//TODO: 각 메쉬의 컴포넌트 연결 개수를 파악하면 아래 수치를 디테일하게 설정할 수 있을것 같다..
-	cb_object_capacity_ = 1000;
-	cb_skinned_mesh_object_capacity_ = 100;
-
-
-	////오브젝트를 생성하고
-	//Object* cube_object = new Object();
-	//Mesh* green_cube = Scene::FindMesh("green_cube", meshes_);
-	////메쉬컴포넌트를 원하는 오브젝트와 메쉬를 넣어 생성한다.
-	//MeshComponent* cube_component = new MeshComponent(cube_object, green_cube);
-	//cube_object->AddComponent(cube_component);
-	////이를 씬의 오브젝트리스트에 추가
-	//object_list_.emplace_back();
-	//object_list_.back().reset(cube_object);
+	cb_object_capacity_ = 10000;
+	cb_skinned_mesh_object_capacity_ = 10000;
 
 	Object* temp = model_infos_[0]->GetInstance();
+	Object* head_bone = temp->FindFrame("HeadEnd_M");
 	temp->set_position_vector(XMFLOAT3{ 0, 0, 0 });
 	object_list_.emplace_back();
 	object_list_.back().reset(temp);
-
-	//Object* temp1 = Object::DeepCopy(temp);
-	//temp1->set_position_vector(XMFLOAT3{ 0.6, 0, 0 });
-	//object_list_.emplace_back();
-	//object_list_.back().reset(temp1);
-
-
+	FPSControllerComponent* fps_controller = new FPSControllerComponent(temp);
+	//TODO: 머리 프레임 이름을 모델 출력시 추출하여 사용하기
+	fps_controller->set_head_bone(head_bone);
+	temp->AddComponent(fps_controller);
+	//메인 컨트롤러로 설정
+	main_input_controller_ = fps_controller;
 	Object* camera_object = new Object();
+	head_bone->AddChild(camera_object);
+	camera_object->set_name("CAMERA_1");
 	CameraComponent* camera_component = 
 		new CameraComponent(camera_object, 0.3, 10000, 
 			(float)kDefaultFrameBufferWidth / (float)kDefaultFrameBufferHeight, 58);
+	camera_object->AddComponent(camera_component);
+	main_camera_ = camera_component;
 
-	//인풋 처리 컨트롤러 생성
+
+	camera_object = new Object;
+	camera_object->set_name("CAMERA_2");
+	camera_component =
+		new CameraComponent(camera_object, 0.3, 10000,
+			(float)kDefaultFrameBufferWidth / (float)kDefaultFrameBufferHeight, 58);
 	TestControllerComponent* controller = new TestControllerComponent(camera_object);
-	//메인 컨트롤러로 설정
-	main_input_controller_ = controller;
+	camera_object->AddComponent(camera_component);
 	camera_object->AddComponent(controller);
-	camera_object->set_position_vector(XMFLOAT3(0, 1.7, -1));
 
 	object_list_.emplace_back();
 	object_list_.back().reset(camera_object);
-	
-	main_camera_ = camera_component;
+
+
 
 }
 
@@ -189,6 +188,44 @@ void TestScene::BuildConstantBufferViews(ID3D12Device* device)
 
 }
 
+using namespace file_load_util;
+void TestScene::BuildScene()
+{
+	std::ifstream scene_file{ "./Resource/Model/Scene.bin", std::ios::binary };
+
+	int root_object_count = ReadFromFile<int>(scene_file);
+
+	std::string load_token; 
+
+	for (int i = 0; i < root_object_count; ++i)
+	{
+		ReadStringFromFile(scene_file, load_token);
+		if (load_token[0] == '@')
+		{
+			load_token.erase(0, 1);
+			object_list_.emplace_back();
+			object_list_.back().reset(FindModelInfo(load_token)->GetInstance());
+
+			ReadStringFromFile(scene_file, load_token);
+			XMFLOAT4X4 transfrom = ReadFromFile<XMFLOAT4X4>(scene_file);
+			object_list_.back()->set_transform_matrix(transfrom);
+		}
+		else
+		{
+			model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/" + load_token + ".bin", meshes_, materials_));
+
+			object_list_.emplace_back();
+			object_list_.back().reset(model_infos_.back()->GetInstance());
+
+			ReadStringFromFile(scene_file, load_token); // <Transfrom>
+			XMFLOAT4X4 transfrom = ReadFromFile<XMFLOAT4X4>(scene_file);
+			object_list_.back()->set_transform_matrix(transfrom);
+
+		}
+	}
+
+}
+
 void TestScene::Render(ID3D12GraphicsCommandList* command_list)
 {
 	main_camera_->UpdateCameraInfo();
@@ -246,6 +283,31 @@ bool TestScene::ProcessInput(UINT id, WPARAM w_param, LPARAM l_param, float time
 	}
 	switch (id)
 	{
+	case WM_KEYDOWN:
+		// 카메라 전환 테스트
+		if (w_param == 'K')
+		{
+			//바꿀 카메라 오브젝트를 찾고
+			Object* camera = FindObject("CAMERA_2");
+
+			//그 오브젝트의 카메라와 컨트롤러를 씬으로 가져온다
+			CameraComponent* new_camera = Object::GetComponent<CameraComponent>(camera);
+			if (new_camera) // nullptr 방지
+			{
+				main_camera_ = new_camera;
+			}
+			main_input_controller_ = Object::GetComponent<InputControllerComponent>(camera);
+		}
+		if (w_param == 'L')
+		{
+			//바꿀 카메라 오브젝트를 찾고
+			Object* camera = FindObject("Dog00");
+			//그 오브젝트의 카메라와 컨트롤러를 씬으로 가져온다
+			
+			main_input_controller_ = Object::GetComponent<FPSControllerComponent>(camera);
+		}
+		break;
+
 	default:
 		return false;
 		break;

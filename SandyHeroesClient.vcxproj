@@ -147,6 +147,7 @@
     <ClInclude Include="d3dx12.h" />
     <ClInclude Include="DDSTextureLoader.h" />
     <ClInclude Include="DescriptorManager.h" />
+    <ClInclude Include="FPSControllerComponent.h" />
     <ClInclude Include="FrameResource.h" />
     <ClInclude Include="FrameResourceManager.h" />
     <ClInclude Include="GameFramework.h" />
@@ -185,6 +186,7 @@
     <ClCompile Include="CubeMesh.cpp" />
     <ClCompile Include="DDSTextureLoader.cpp" />
     <ClCompile Include="DescriptorManager.cpp" />
+    <ClCompile Include="FPSControllerComponent.cpp" />
     <ClCompile Include="FrameResourceManager.cpp" />
     <ClCompile Include="GameFramework.cpp" />
     <ClCompile Include="InputControllerComponent.cpp" />
