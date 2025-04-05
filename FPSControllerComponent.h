@@ -14,10 +14,22 @@ public:
 
     virtual void Update(float elapsed_time) override;
 
-    void set_head_bone(Object* head_bone);
+    void set_camera_object(Object* value);
 
 private:
-    Object* head_bone_ = nullptr;
+    Object* camera_object_ = nullptr;
 
+    // 점프키가 눌렸고 owner가 지면위에 있다면 점프를 실행
+    bool is_jumpkey_pressed_ = false;
+    float jump_speed_ = 10.f;
+
+    float y_axis_velocity_ = 0.f;       // y축에 대한 속도
+    float gravity_ = 20.f;
+
+    bool is_dash_pressed_ = false;
+    float dash_cool_delta_time_ = 0.f;          // 대쉬 쿨타임 측정을 위한 변수
+    float dash_cool_time_ = 0.f;                // 대쉬 쿨타임
+    XMFLOAT3 dash_velocity_{ 0,0,0 };           // 대쉬 속도(실제 적용되는 "속도"임)
+    XMFLOAT3 dash_before_position_{ 0,0,0 };    // 대쉬 시작위치
 };
 
