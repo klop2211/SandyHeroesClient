@@ -68,3 +68,14 @@ void AnimatorComponent::AttachBoneFrames()
 	}
 	root_bone_frame_ = owner_->FindFrame(root_bone_name_);
 }
+
+
+void AnimatorComponent::set_animation_state(AnimationState* value)
+{
+	animation_state_.reset(value);
+}
+
+AnimationState* AnimatorComponent::animation_state() const
+{
+	return animation_state_.get();
+}

@@ -32,6 +32,8 @@ public:
 	UINT id() const;
 	std::string name() const;
 	XMFLOAT3 velocity() const;
+	Object* child() const;
+	Object* sibling() const;
 
 	//setter
 	// 변환행렬 및 각 벡터
@@ -72,6 +74,70 @@ public:
 				return static_cast<T*>(component.get());
 		}
 		return nullptr;
+	}
+
+	template<class T>
+	static std::list<T*> GetComponents(Object* object)
+	{
+		std::list<T*> r_value;
+		for (auto& component : object->component_list_)
+		{
+			if (dynamic_cast<T*>(component.get()))
+			{
+				r_value.push_back(static_cast<T*>(component.get()));
+			}
+		}
+		return r_value;
+	}
+
+	template<class T>
+	static T* GetComponentInChildren(Object* object)
+	{
+		T* component = GetComponent<T>(object);
+		if (component)
+			return component;
+
+		if (object->sibling_)
+		{
+			component = GetComponentInChildren<T>(object->sibling_);
+			if (component)
+				return component;
+		}
+		if (object->child_)
+			return GetComponentInChildren<T>(object->child_);
+
+		return nullptr;
+	}
+
+	template<class T>
+	static std::list<T*> GetComponentsInChildren(Object* object)
+	{
+		std::list<T*> component_list = GetCompnents<T>(object);
+		std::list<T*> r_value;
+
+		for (T* component : component_list)
+		{
+			r_value.push_back(component);
+		}
+
+		if (object->sibling_)
+		{
+			component_list = GetComponentsInChildren<T>(object->sibling_);
+			for (T* component : component_list)
+			{
+				r_value.push_back(component);
+			}
+		}
+		if (object->child_)
+		{
+			component_list = GetComponentsInChildren<T>(object->child_);
+			for (T* component : component_list)
+			{
+				r_value.push_back(component);
+			}
+		}
+
+		return r_value;
 	}
 
 protected:

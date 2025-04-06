@@ -23,6 +23,9 @@ public:
 
     void AttachBoneFrames();
 
+    void set_animation_state(AnimationState* value);
+    AnimationState* animation_state() const;
+
 private:
     std::unique_ptr<AnimationState> animation_state_;
     

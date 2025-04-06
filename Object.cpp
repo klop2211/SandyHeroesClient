@@ -108,6 +108,16 @@ XMFLOAT3 Object::velocity() const
 	return velocity_;
 }
 
+Object* Object::child() const
+{
+	return child_;
+}
+
+Object* Object::sibling() const
+{
+	return sibling_;
+}
+
 void Object::set_transform_matrix(const XMFLOAT4X4& value)
 {
 	transform_matrix_ = value;

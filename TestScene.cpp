@@ -19,6 +19,9 @@
 #include "StandardSkinnedMeshShader.h"
 #include "AnimationSet.h"
 #include "FPSControllerComponent.h"
+#include "AnimatorComponent.h"
+#include "PlayerAnimationState.h"
+#include "AnimatorComponent.h"
 
 void TestScene::Initialize(ID3D12Device* device, ID3D12GraphicsCommandList* command_list, 
 	ID3D12RootSignature* root_signature, FrameResourceManager* frame_resource_manager,
@@ -75,25 +78,33 @@ void TestScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 	cb_object_capacity_ = 10000;
 	cb_skinned_mesh_object_capacity_ = 10000;
 
+	//모델 오브젝트 배치
 	Object* temp = model_infos_[0]->GetInstance();
-	Object* head_bone = temp->FindFrame("HeadEnd_M");
-	temp->set_position_vector(XMFLOAT3{ 0, 0, 0 });
-	object_list_.emplace_back();
-	object_list_.back().reset(temp);
+	temp->set_position_vector(XMFLOAT3{ 0, 2, 0 });
+	AnimatorComponent* animator = Object::GetComponent<AnimatorComponent>(temp);
+	animator->set_animation_state(new PlayerAnimationState);
+
+	//FPS 조작용 컨트롤러 설정
 	FPSControllerComponent* fps_controller = new FPSControllerComponent(temp);
-	//TODO: 머리 프레임 이름을 모델 출력시 추출하여 사용하기
-	fps_controller->set_head_bone(head_bone);
 	temp->AddComponent(fps_controller);
 	//메인 컨트롤러로 설정
 	main_input_controller_ = fps_controller;
+
+	//카메라 설정
 	Object* camera_object = new Object();
-	head_bone->AddChild(camera_object);
+	temp->AddChild(camera_object);
+	fps_controller->set_camera_object(camera_object);
+	camera_object->set_position_vector(0, 0.75, 0); // 플레이어 캐릭터의 키가 150인것을 고려하여 머리위치에 배치
 	camera_object->set_name("CAMERA_1");
 	CameraComponent* camera_component = 
 		new CameraComponent(camera_object, 0.3, 10000, 
 			(float)kDefaultFrameBufferWidth / (float)kDefaultFrameBufferHeight, 58);
 	camera_object->AddComponent(camera_component);
 	main_camera_ = camera_component;
+
+	//씬 리스트에 추가
+	object_list_.emplace_back();
+	object_list_.back().reset(temp);
 
 
 	camera_object = new Object;
@@ -303,7 +314,11 @@ bool TestScene::ProcessInput(UINT id, WPARAM w_param, LPARAM l_param, float time
 			//바꿀 카메라 오브젝트를 찾고
 			Object* camera = FindObject("Dog00");
 			//그 오브젝트의 카메라와 컨트롤러를 씬으로 가져온다
-			
+			CameraComponent* new_camera = Object::GetComponentInChildren<CameraComponent>(camera);
+			if (new_camera) // nullptr 방지
+			{
+				main_camera_ = new_camera;
+			}
 			main_input_controller_ = Object::GetComponent<FPSControllerComponent>(camera);
 		}
 		break;
