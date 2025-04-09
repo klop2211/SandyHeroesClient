@@ -28,12 +28,22 @@ bool FPSControllerComponent::ProcessInput(UINT message_id, WPARAM w_param, LPARA
 	{
 		POINT mouse_cursor_pos;
 		GetCursorPos(&mouse_cursor_pos);
-		owner_->Rotate(0, (mouse_cursor_pos.x - mouse_xy_.x) * 0.1, 0.f);
+
+		RECT client_rect;
+		GetClientRect(client_wnd_, &client_rect);
+
+		POINT center;
+		center.x = (client_rect.right - client_rect.left) / 2;
+		center.y = (client_rect.bottom - client_rect.top) / 2;
+
+		ClientToScreen(client_wnd_, &center);
+
+		owner_->Rotate(0, (mouse_cursor_pos.x - center.x) * 0.1, 0.f);
 		if (camera_object_)
 		{
-			camera_object_->Rotate((mouse_cursor_pos.y - mouse_xy_.y) * 0.1, 0, 0);
+			camera_object_->Rotate((mouse_cursor_pos.y - center.y) * 0.1, 0, 0);
 		}
-		SetCursorPos(mouse_xy_.x, mouse_xy_.y);
+		SetCursorPos(center.x, center.y);
 	}
 		break;
 	case WM_KEYDOWN:

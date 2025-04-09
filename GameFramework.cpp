@@ -50,7 +50,7 @@ void GameFramework::Initialize(HINSTANCE hinstance, HWND hwnd)
     //씬 생성 및 초기화
     scene_ = std::make_unique<TestScene>();
     scene_->Initialize(d3d_device_.Get(), d3d_command_list_.Get(), d3d_root_signature_.Get(), 
-        frame_resource_manager_.get(), descriptor_manager_.get());
+        this);
 
     d3d_command_list_->Close();
     ID3D12CommandList* cmd_list[] = { d3d_command_list_.Get() };
@@ -498,4 +498,19 @@ LRESULT GameFramework::ProcessWindowMessage(HWND h_wnd, UINT message_id, WPARAM 
         break;
     }
     return 0;
+}
+
+FrameResourceManager* GameFramework::frame_resource_manager() const
+{
+    return frame_resource_manager_.get();
+}
+
+DescriptorManager* GameFramework::descriptor_manager() const
+{
+    return descriptor_manager_.get();
+}
+
+HWND GameFramework::main_wnd() const
+{
+    return main_wnd_;
 }

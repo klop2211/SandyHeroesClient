@@ -5,3 +5,8 @@ InputControllerComponent::InputControllerComponent(Object* owner) : Component(ow
 {
 
 }
+
+void InputControllerComponent::set_client_wnd(HWND value)
+{
+	client_wnd_ = value;
+}
