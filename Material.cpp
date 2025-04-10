@@ -9,9 +9,24 @@ using namespace file_load_util;
 const std::string Material::kTextureFilePath = "./Resource/Model/Texture/DDS/";
 int Material::kTextureCount = 0;
 
+std::string Material::name() const
+{
+	return name_;
+}
+
 void Material::set_frame_resource_index(int value)
 {
 	frame_resource_index_ = value;
+}
+
+void Material::set_albedo_color(float r, float g, float b, float a)
+{
+	set_albedo_color(XMFLOAT4{ r, g, b, a });
+}
+
+void Material::set_albedo_color(XMFLOAT4 value)
+{
+	albedo_color_ = value;
 }
 
 void Material::CreateShaderVariables(ID3D12Device* device, ID3D12GraphicsCommandList* command_list)
@@ -117,6 +132,8 @@ void Material::LoadMaterialFromFile(std::ifstream& file)
 	if (load_token == "<Material>:")
 	{
 		ReadFromFile<int>(file); // 머터리얼 인덱스
+		ReadStringFromFile(file, load_token);
+		name_ = load_token;
 
 		ReadStringFromFile(file, load_token);
 

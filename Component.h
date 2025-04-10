@@ -16,6 +16,7 @@ public:
 	virtual ~Component() {}
 
 	void set_owner(Object* owner);
+	Object* owner() const;
 
 	/*
 	컴포넌트의 복사본을 리턴(이 클래스를 상속받는 클래스에서 반드시 작성해야한다.)

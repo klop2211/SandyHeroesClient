@@ -14,3 +14,8 @@ void Component::set_owner(Object* owner)
 {
 	owner_ = owner;
 }
+
+Object* Component::owner() const
+{
+	return owner_;
+}

@@ -38,6 +38,7 @@ public:
 	//getter
 	int shader_type() const;
 	std::string name() const;
+	const std::list<MeshComponent*>& mesh_component_list() const;
 
 	//setter
 	void set_shader_type(int value);
@@ -76,12 +77,14 @@ protected:
 
 	//대부분의 메쉬는 1개의 인덱스 버퍼를 사용하지만 
 	//일부 메쉬의 경우 정점을 공유한채로 인덱스 버퍼가 여러개인 경우가 있음
-	std::vector<std::vector<UINT>> indices_array_;
+	std::vector<std::vector<UINT>> indices_array_;					
 	std::vector<ComPtr<ID3D12Resource>> d3d_index_buffers_;
 	std::vector<ComPtr<ID3D12Resource>> d3d_index_upload_buffers_;
 	std::vector<D3D12_INDEX_BUFFER_VIEW> index_buffer_views_;
 
 	std::string name_ = "None";
+
+	BoundingBox bounds_{};
 
 	// 이 메쉬를 참조중인 컴포넌트 리스트
 	std::list<MeshComponent*> mesh_component_list_;

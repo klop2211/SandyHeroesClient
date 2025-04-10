@@ -27,8 +27,13 @@ public:
     Material() {}
     ~Material() {}
 
+    //getter
+    std::string name() const;
+
     //setter
     void set_frame_resource_index(int value);
+    void set_albedo_color(float r, float g, float b, float a);
+    void set_albedo_color(XMFLOAT4 value);
 
     // 머터리얼을 사용하는 데 필요한 텍스처 로드
     void CreateShaderVariables(ID3D12Device* device, ID3D12GraphicsCommandList* command_list);
@@ -59,6 +64,7 @@ private:
     float glossiness_{ 0.2 };
     XMFLOAT4 emission_color_{ 0,0,0,1 };
     
+    std::string name_{ "None" };
 
 };
 

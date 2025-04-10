@@ -10,6 +10,7 @@
 #include "AnimationSet.h"
 #include "AnimatorComponent.h"
 #include "ASTest.h"
+#include "Scene.h"
 
 ModelInfo::ModelInfo(const std::string& file_name, std::vector<std::unique_ptr<Mesh>>& meshes,
 	std::vector<std::unique_ptr<Material>>& materials)
@@ -106,8 +107,17 @@ Object* ModelInfo::LoadFrameInfoFromFile(std::ifstream& file, std::vector<std::u
 		mesh->LoadMeshFromFile(file);
 		mesh->set_shader_type((int)ShaderType::kStandardMesh);
 
-		meshes.emplace_back();
-		meshes.back().reset(mesh);
+		Mesh* find_mesh = Scene::FindMesh(mesh->name(), meshes);
+		if (find_mesh)
+		{
+			delete mesh;
+			mesh = find_mesh;
+		}
+		else
+		{
+			meshes.emplace_back();
+			meshes.back().reset(mesh);
+		}
 
 		MeshComponent* mesh_component = new MeshComponent(frame, mesh);
 		mesh->DeleteMeshComponent(mesh_component);	//모델 정보는 그려지면 안되기 때문에 메쉬의 컴포넌트 리스트에서 제외함
@@ -124,12 +134,17 @@ Object* ModelInfo::LoadFrameInfoFromFile(std::ifstream& file, std::vector<std::u
 			Material* material = new Material();
 			material->LoadMaterialFromFile(file);
 
-			//TODO: Material에 name 추가 및 모델정보 추출시 재질의 이름도 함께 추출하여 중복검사.
-			/*std::find_if(materials.begin(), materials.end(), [](const std::unique_ptr<Material>& mat) {
-				return mat.get().name
-				})*/
-			materials.emplace_back();
-			materials.back().reset(material);
+			Material* find_material = Scene::FindMaterial(mesh->name(), materials);
+			if (find_mesh)
+			{
+				delete material;
+				material = find_material;
+			}
+			else
+			{
+				materials.emplace_back();
+				materials.back().reset(material);
+			}
 
 			mesh->AddMaterial(material);
 		}

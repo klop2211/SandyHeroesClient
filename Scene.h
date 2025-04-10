@@ -43,6 +43,10 @@ public:
 	ModelInfo* FindModelInfo(const std::string& name);
 
 	static Mesh* FindMesh(const std::string& mesh_name, const std::vector<std::unique_ptr<Mesh>>& meshes);
+	static Material* FindMaterial(const std::string& material_name, const std::vector<std::unique_ptr<Material>>& materials);
+
+	//getter
+	const std::vector<std::unique_ptr<Mesh>>& meshes() const;
 
 protected:
 	std::list<std::unique_ptr<Object>> object_list_;

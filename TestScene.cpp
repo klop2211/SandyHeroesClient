@@ -57,8 +57,13 @@ void TestScene::BuildShader(ID3D12Device* device, ID3D12RootSignature* root_sign
 void TestScene::BuildMesh(ID3D12Device* device, ID3D12GraphicsCommandList* command_list)
 {
 	meshes_.reserve(2);
-	meshes_.push_back(std::make_unique<CubeMesh>(XMFLOAT4(0, 1, 0, 1)));
+	meshes_.push_back(std::make_unique<CubeMesh>());
+	Material* material = new Material{};
+	material->set_albedo_color(0, 1, 0, 1);
+	meshes_[0].get()->AddMaterial(material);
 	meshes_[0].get()->set_name("green_cube");
+	materials_.emplace_back();
+	materials_.back().reset(material);
 
 	model_infos_.reserve(3);
 	model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/Dog00.bin", meshes_, materials_));
@@ -94,7 +99,7 @@ void TestScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 	Object* camera_object = new Object();
 	temp->AddChild(camera_object);
 	fps_controller->set_camera_object(camera_object);
-	camera_object->set_position_vector(0, 0.75, 0); // 플레이어 캐릭터의 키가 150인것을 고려하여 머리위치에 배치
+	camera_object->set_position_vector(0, 0.5, 0); // 플레이어 캐릭터의 키가 150인것을 고려하여 머리위치에 배치
 	camera_object->set_name("CAMERA_1");
 	CameraComponent* camera_component = 
 		new CameraComponent(camera_object, 0.3, 10000, 
@@ -109,6 +114,8 @@ void TestScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 
 	camera_object = new Object;
 	camera_object->set_name("CAMERA_2");
+	MeshComponent* cube = new MeshComponent(camera_object, Scene::FindMesh("green_cube", meshes_));
+	camera_object->AddComponent(cube);
 	camera_component =
 		new CameraComponent(camera_object, 0.3, 10000,
 			(float)kDefaultFrameBufferWidth / (float)kDefaultFrameBufferHeight, 58);
@@ -223,13 +230,16 @@ void TestScene::BuildScene()
 		}
 		else
 		{
-			model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/" + load_token + ".bin", meshes_, materials_));
+			std::string object_name = load_token;
+
+			ReadStringFromFile(scene_file, load_token); // <Transfrom>
+			XMFLOAT4X4 transfrom = ReadFromFile<XMFLOAT4X4>(scene_file);
+
+			model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/" + object_name + ".bin", meshes_, materials_));
 
 			object_list_.emplace_back();
 			object_list_.back().reset(model_infos_.back()->GetInstance());
 
-			ReadStringFromFile(scene_file, load_token); // <Transfrom>
-			XMFLOAT4X4 transfrom = ReadFromFile<XMFLOAT4X4>(scene_file);
 			object_list_.back()->set_transform_matrix(transfrom);
 
 		}
