@@ -192,9 +192,6 @@
     <ClInclude Include="AnimatorComponent.h">
       <Filter>Component\Animator</Filter>
     </ClInclude>
-    <ClInclude Include="AnimationState.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
     <ClInclude Include="ASTest.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
@@ -203,6 +200,9 @@
     </ClInclude>
     <ClInclude Include="PlayerAnimationState.h">
       <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="AnimationState.h">
+      <Filter>Animation</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -296,9 +296,6 @@
     <ClCompile Include="AnimatorComponent.cpp">
       <Filter>Component\Animator</Filter>
     </ClCompile>
-    <ClCompile Include="AnimationState.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
     <ClCompile Include="ASTest.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
@@ -307,6 +304,9 @@
     </ClCompile>
     <ClCompile Include="PlayerAnimationState.cpp">
       <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="AnimationState.cpp">
+      <Filter>Animation</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

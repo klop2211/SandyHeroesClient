@@ -22,13 +22,12 @@
 #include "AnimatorComponent.h"
 #include "PlayerAnimationState.h"
 #include "AnimatorComponent.h"
+#include "GameFramework.h"
 
 void TestScene::Initialize(ID3D12Device* device, ID3D12GraphicsCommandList* command_list, 
-	ID3D12RootSignature* root_signature, FrameResourceManager* frame_resource_manager,
-	DescriptorManager* descriptor_manager)
+	ID3D12RootSignature* root_signature, GameFramework* game_framework)
 {
-	frame_resource_manager_ = frame_resource_manager;
-	descriptor_manager_ = descriptor_manager;
+	game_framework_ = game_framework;
 
 	BuildShader(device, root_signature);
 	BuildMesh(device, command_list);
@@ -86,6 +85,7 @@ void TestScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 
 	//FPS 조작용 컨트롤러 설정
 	FPSControllerComponent* fps_controller = new FPSControllerComponent(temp);
+	fps_controller->set_client_wnd(game_framework_->main_wnd());
 	temp->AddComponent(fps_controller);
 	//메인 컨트롤러로 설정
 	main_input_controller_ = fps_controller;
@@ -256,12 +256,13 @@ void TestScene::Render(ID3D12GraphicsCommandList* command_list)
 	for (int i = 1; i < 16; ++i)
 		cb_pass.lights[i].enable = false;
 
-	frame_resource_manager_->curr_frame_resource()->cb_pass.get()->CopyData(0, cb_pass);
+	FrameResourceManager* frame_resource_manager = game_framework_->frame_resource_manager();
+	frame_resource_manager->curr_frame_resource()->cb_pass.get()->CopyData(0, cb_pass);
 
 	//25.02.23 수정
 	//기존 루트 디스크립터 테이블에서 루트 CBV로 변경
 	D3D12_GPU_VIRTUAL_ADDRESS cb_pass_address =
-		frame_resource_manager_->curr_frame_resource()->cb_pass.get()->Resource()->GetGPUVirtualAddress();
+		frame_resource_manager->curr_frame_resource()->cb_pass.get()->Resource()->GetGPUVirtualAddress();
 
 	command_list->SetGraphicsRootConstantBufferView((int)RootParameterIndex::kRenderPass, cb_pass_address);
 
@@ -278,7 +279,7 @@ void TestScene::Render(ID3D12GraphicsCommandList* command_list)
 		{
 			if (mesh->shader_type() == (int)shader->shader_type())
 			{
-				mesh->Render(command_list, frame_resource_manager_, descriptor_manager_);
+				mesh->Render(command_list, frame_resource_manager, game_framework_->descriptor_manager());
 			}
 		}
 

@@ -38,6 +38,12 @@ public:
 
 	LRESULT CALLBACK ProcessWindowMessage(HWND h_wnd, UINT message_id, WPARAM w_param, LPARAM l_param);
 
+	//getter
+	FrameResourceManager* frame_resource_manager() const;
+	DescriptorManager* descriptor_manager() const;
+	HWND main_wnd() const;
+
+
 private:
 	static GameFramework* kGameFramework;
 

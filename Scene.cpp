@@ -11,6 +11,7 @@
 #include "ModelInfo.h"
 #include "Material.h"
 #include "AnimationSet.h"
+#include "GameFramework.h"
 
 
 void Scene::UpdateObjectWorldMatrix()
@@ -71,10 +72,10 @@ void Scene::ReleaseMeshUploadBuffer()
 	}
 }
 
-void Scene::Initialize(ID3D12Device* device, ID3D12GraphicsCommandList* command_list, ID3D12RootSignature* root_signature, FrameResourceManager* frame_resource_manager, DescriptorManager* descriptor_manager)
+void Scene::Initialize(ID3D12Device* device, ID3D12GraphicsCommandList* command_list, 
+	ID3D12RootSignature* root_signature, GameFramework* game_framework)
 {
-	frame_resource_manager_ = frame_resource_manager;
-	descriptor_manager_ = descriptor_manager;
+	game_framework_ = game_framework;
 
 	BuildShader(device, root_signature);
 	BuildMesh(device, command_list);
@@ -99,22 +100,23 @@ void Scene::BuildMaterial(ID3D12Device* device, ID3D12GraphicsCommandList* comma
 
 void Scene::BuildFrameResources(ID3D12Device* device)
 {
-	frame_resource_manager_->ResetFrameResources(device, 1,
-		cb_object_capacity_,
-		cb_skinned_mesh_object_capacity_, materials_.size());
+	game_framework_->frame_resource_manager()->
+		ResetFrameResources(device, 1, cb_object_capacity_,
+			cb_skinned_mesh_object_capacity_, materials_.size());
 }
 
 void Scene::BuildDescriptorHeap(ID3D12Device* device)
 {
-	descriptor_manager_->ResetDescriptorHeap(device,
-		Material::GetTextureCount());
+	game_framework_->descriptor_manager()->
+		ResetDescriptorHeap(device,
+			Material::GetTextureCount());
 }
 
 void Scene::BuildShaderResourceViews(ID3D12Device* device)
 {
-	int heap_index = descriptor_manager_->srv_offset();
+	int heap_index = game_framework_->descriptor_manager()->srv_offset();
 	for (std::unique_ptr<Material>& material : materials_)
 	{
-		heap_index = material->CreateShaderResourceViews(device, descriptor_manager_, heap_index);
+		heap_index = material->CreateShaderResourceViews(device, game_framework_->descriptor_manager(), heap_index);
 	}
 }
