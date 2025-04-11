@@ -310,6 +310,16 @@ std::string Mesh::name() const
 	return name_;
 }
 
+const std::vector<std::vector<UINT>>& Mesh::GetIndicesArray() const
+{
+	return indices_array_;
+}
+
+std::vector<XMFLOAT3> Mesh::GetPositions() const
+{
+	return positions_;
+}
+
 void Mesh::set_shader_type(int value)
 {
 	shader_type_ = value;

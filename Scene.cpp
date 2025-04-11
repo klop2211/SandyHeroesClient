@@ -120,3 +120,5 @@ void Scene::BuildShaderResourceViews(ID3D12Device* device)
 		heap_index = material->CreateShaderResourceViews(device, game_framework_->descriptor_manager(), heap_index);
 	}
 }
+
+

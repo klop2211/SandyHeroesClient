@@ -23,6 +23,7 @@
 #include "PlayerAnimationState.h"
 #include "AnimatorComponent.h"
 #include "GameFramework.h"
+#include "ColliderComponent.h"
 
 void TestScene::Initialize(ID3D12Device* device, ID3D12GraphicsCommandList* command_list, 
 	ID3D12RootSignature* root_signature, GameFramework* game_framework)
@@ -79,6 +80,7 @@ void TestScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 
 	//모델 오브젝트 배치
 	Object* temp = model_infos_[0]->GetInstance();
+	player_ = temp;
 	temp->set_position_vector(XMFLOAT3{ 0, 2, 0 });
 	AnimatorComponent* animator = Object::GetComponent<AnimatorComponent>(temp);
 	animator->set_animation_state(new PlayerAnimationState);
@@ -102,6 +104,17 @@ void TestScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 	camera_object->AddComponent(camera_component);
 	main_camera_ = camera_component;
 
+	//충돌체 추가
+	BoundingOrientedBox* obb = new BoundingOrientedBox;
+	{
+		//TODO: OBB 초기값 설정
+		obb->Center = temp->position_vector();
+		obb->Extents = { 1,1,1 };
+
+	}
+	ColliderComponent* collider = new ColliderComponent(temp, obb);
+	temp->AddComponent(collider);
+
 	//씬 리스트에 추가
 	object_list_.emplace_back();
 	object_list_.back().reset(temp);
@@ -118,8 +131,6 @@ void TestScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 
 	object_list_.emplace_back();
 	object_list_.back().reset(camera_object);
-
-
 
 }
 
@@ -237,6 +248,44 @@ void TestScene::BuildScene()
 
 }
 
+bool TestScene::CheckObjectByObjectCollisions()
+{
+	auto player_collider = Object::GetComponent<ColliderComponent>(player_);
+	for (auto& object : object_list_)
+	{
+		ColliderComponent* collider = Object::GetComponent<ColliderComponent>(object.get());
+		if (nullptr != collider)
+		{
+			if (player_collider->Intersects(collider))
+			{
+				MeshComponent* mesh = Object::GetComponent<MeshComponent>(object.get());
+				if (nullptr != mesh)
+				{
+					if (player_collider->CheckOBBMeshCollision(mesh, player_->world_matrix(), object->world_matrix()))
+					{
+						float deltaY = player_->world_position_vector().y - object->world_position_vector().y;
+						if (deltaY > 0.0f && deltaY < 20.0f) // 바닥이라고 판단할 수 있는 높이
+						{
+							player_->set_on_ground(true);
+							player_->set_velocity({ player_->velocity().x, 0.0f, player_->velocity().z }); // y 속도 정지
+
+							return true;
+						}
+						else
+						{
+							// 바닥이 아니면 위치 복구 및 속도 제한
+							//ResolveCollision(m_pPlayer, pGameObject);
+							return true;
+						}
+					}
+				}
+			}
+		}
+	}
+	player_->set_on_ground(false); // 아무 것도 닿지 않으면 공중
+	return false;
+}
+
 void TestScene::Render(ID3D12GraphicsCommandList* command_list)
 {
 	main_camera_->UpdateCameraInfo();
@@ -336,4 +385,6 @@ void TestScene::Update(float elapsed_time)
 	{
 		object->Update(elapsed_time);
 	}
+
+	CheckObjectByObjectCollisions();
 }

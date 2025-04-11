@@ -85,6 +85,9 @@
     <Filter Include="GameFramework">
       <UniqueIdentifier>{8650f60f-2d28-4a04-8c83-5a6f343323b7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Component\Collider">
+      <UniqueIdentifier>{bffc973a-2473-4c41-8426-9585cf6adb1f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="targetver.h">
@@ -204,6 +207,9 @@
     <ClInclude Include="AnimationState.h">
       <Filter>Animation</Filter>
     </ClInclude>
+    <ClInclude Include="ColliderComponent.h">
+      <Filter>Component\Collider</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="SandyHeroesClient.cpp">
@@ -307,6 +313,9 @@
     </ClCompile>
     <ClCompile Include="AnimationState.cpp">
       <Filter>Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="ColliderComponent.cpp">
+      <Filter>Component\Collider</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
