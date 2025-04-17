@@ -4,7 +4,7 @@ class CubeMesh :
     public Mesh
 {
 public:
-    CubeMesh(const XMFLOAT4& color);
+    CubeMesh();
     ~CubeMesh() {}
 };
 

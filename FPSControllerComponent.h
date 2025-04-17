@@ -1,6 +1,8 @@
 #pragma once
 #include "InputControllerComponent.h"
 
+class Scene;
+
 class FPSControllerComponent :
     public InputControllerComponent
 {
@@ -15,8 +17,10 @@ public:
     virtual void Update(float elapsed_time) override;
 
     void set_camera_object(Object* value);
+    void set_scene(Scene* value);
 
 private:
+    Scene* scene_ = nullptr;
     Object* camera_object_ = nullptr;
 
     // 점프키가 눌렸고 owner가 지면위에 있다면 점프를 실행

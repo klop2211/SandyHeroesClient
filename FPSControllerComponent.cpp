@@ -3,6 +3,10 @@
 #include "Object.h"
 #include "AnimatorComponent.h"
 #include "PlayerAnimationState.h"
+#include "CameraComponent.h"
+#include "MeshComponent.h"
+#include "Scene.h"
+#include "Mesh.h"
 
 FPSControllerComponent::FPSControllerComponent(Object* owner) : InputControllerComponent(owner)
 {
@@ -45,6 +49,49 @@ bool FPSControllerComponent::ProcessInput(UINT message_id, WPARAM w_param, LPARA
 		}
 		SetCursorPos(center.x, center.y);
 	}
+		break;
+	case WM_LBUTTONDOWN:
+	{
+		//총알이 총구에서 피킹 지점으로 발사되게 구현
+		//2가지 정보 필요 1. 총구 위치 2. 피킹 지점
+
+		//picking ray 계산
+		int sx = LOWORD(l_param);
+		int sy = HIWORD(l_param);
+		CameraComponent* camera = Object::GetComponentInChildren<CameraComponent>(camera_object_);
+		if (!camera)
+		{
+			break;
+		}
+		XMFLOAT4X4 proj = camera->projection_matrix();
+
+		float vx = (2.f * sx / kDefaultFrameBufferWidth - 1.f) / proj(0, 0);
+		float vy = (-2.f * sy / kDefaultFrameBufferHeight + 1.f) / proj(1, 1);
+
+		XMVECTOR ray_origin{ XMVectorSet(0, 0, 0, 1.f) };
+		XMVECTOR ray_direction{ XMVectorSet(vx, vy, 1.f, 0) };
+
+		XMMATRIX view = XMLoadFloat4x4(&camera->view_matrix());
+		XMMATRIX inverse_view = XMMatrixInverse(&XMMatrixDeterminant(view), view);
+
+		for (const auto& mesh : scene_->meshes())
+		{
+			const auto& mesh_component_list = mesh->mesh_component_list();
+			for (const auto& mesh_component : mesh_component_list)
+			{
+				XMMATRIX world = XMLoadFloat4x4(&mesh_component->owner()->world_matrix());
+				XMMATRIX inverse_world = XMMatrixInverse(&XMMatrixDeterminant(world), world);
+				XMMATRIX to_local = inverse_view * inverse_world;
+
+				// 메쉬 로컬좌표의 피킹반직선
+				ray_origin = XMVector3TransformCoord(ray_origin, to_local);
+				ray_direction = XMVector3Normalize(XMVector3Transform(ray_direction, to_local));
+
+			}
+		}
+
+	}
+
 		break;
 	case WM_KEYDOWN:
 		switch (w_param)
@@ -198,5 +245,10 @@ void FPSControllerComponent::Update(float elapsed_time)
 void FPSControllerComponent::set_camera_object(Object* value)
 {
 	camera_object_ = value;
+}
+
+void FPSControllerComponent::set_scene(Scene* value)
+{
+	scene_ = value;
 }
 

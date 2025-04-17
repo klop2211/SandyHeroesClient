@@ -64,6 +64,25 @@ Mesh* Scene::FindMesh(const std::string& mesh_name, const std::vector<std::uniqu
 	return nullptr;
 }
 
+Material* Scene::FindMaterial(const std::string& material_name, const std::vector<std::unique_ptr<Material>>& materials)
+{
+	auto it = std::find_if(materials.begin(), materials.end(), [&material_name](const std::unique_ptr<Material>& mat) {
+		return mat.get()->name() == material_name;
+		});
+
+	if (it != materials.end())
+	{
+		return (*it).get();
+	}
+
+	return nullptr;
+}
+
+const std::vector<std::unique_ptr<Mesh>>& Scene::meshes() const
+{
+	return meshes_;
+}
+
 void Scene::ReleaseMeshUploadBuffer()
 {
 	for (std::unique_ptr<Mesh>& mesh : meshes_)

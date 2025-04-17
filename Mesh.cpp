@@ -256,6 +256,11 @@ void Mesh::LoadMeshFromFile(std::ifstream& file)
 	ReadStringFromFile(file, load_token);
 	while (load_token != "</Mesh>")
 	{
+		if (load_token == "<Bounds>:")
+		{
+			bounds_.Center = ReadFromFile<XMFLOAT3>(file);
+			bounds_.Extents = ReadFromFile<XMFLOAT3>(file);
+		}
 		if (load_token == "<Positions>:")
 		{
 			positions_.resize(ReadFromFile<int>(file));
@@ -318,6 +323,10 @@ const std::vector<std::vector<UINT>>& Mesh::GetIndicesArray() const
 std::vector<XMFLOAT3> Mesh::GetPositions() const
 {
 	return positions_;
+
+const std::list<MeshComponent*>& Mesh::mesh_component_list() const
+{
+	return mesh_component_list_;
 }
 
 void Mesh::set_shader_type(int value)
