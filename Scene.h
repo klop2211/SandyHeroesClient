@@ -11,6 +11,7 @@ class InputControllerComponent;
 class ModelInfo;
 class Material;
 class GameFramework;
+class ColliderComponent;
 
 class Scene
 {
@@ -30,6 +31,8 @@ public:
 	virtual void BuildShaderResourceViews(ID3D12Device* device);
 	
 	void BuildScene(const std::string& scene_name);
+
+	virtual bool CheckObjectByObjectCollisions() = 0;
 
 	void ReleaseMeshUploadBuffer();
 

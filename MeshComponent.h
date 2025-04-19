@@ -1,7 +1,7 @@
 #pragma once
 #include "Component.h"
+#include "Mesh.h"
 
-class Mesh;
 struct FrameResource;
 
 // 오브젝트에 메쉬 기능을 추가해 주는 클래스
@@ -20,6 +20,7 @@ public:
 
     bool IsVisible() const;
 
+    const Mesh* GetMesh() const;
 protected:
     Mesh* mesh_ = nullptr;
 

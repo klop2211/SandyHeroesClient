@@ -142,6 +142,7 @@
     <ClInclude Include="ASTest.h" />
     <ClInclude Include="BaseScene.h" />
     <ClInclude Include="CameraComponent.h" />
+    <ClInclude Include="ColliderComponent.h" />
     <ClInclude Include="ColorShader.h" />
     <ClInclude Include="Component.h" />
     <ClInclude Include="CubeMesh.h" />
@@ -185,6 +186,7 @@
     <ClCompile Include="ASTest.cpp" />
     <ClCompile Include="BaseScene.cpp" />
     <ClCompile Include="CameraComponent.cpp" />
+    <ClCompile Include="ColliderComponent.cpp" />
     <ClCompile Include="ColorShader.cpp" />
     <ClCompile Include="Component.cpp" />
     <ClCompile Include="CubeMesh.cpp" />

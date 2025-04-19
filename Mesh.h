@@ -38,6 +38,9 @@ public:
 	//getter
 	int shader_type() const;
 	std::string name() const;
+
+	const std::vector<std::vector<UINT>>& GetIndicesArray() const;
+	std::vector<XMFLOAT3> GetPositions() const;
 	const std::list<MeshComponent*>& mesh_component_list() const;
 	BoundingBox bounds() const;
 	const std::vector<XMFLOAT3>& positions() const;
@@ -46,7 +49,6 @@ public:
 	//setter
 	void set_shader_type(int value);
 	void set_name(const std::string& name);
-
 protected:
 	std::vector<Material*> materials_;
 
@@ -98,6 +100,5 @@ protected:
 private:
 	//업데이트 되어야 할 cb의 인덱스를 갖는 변수 Scene 렌더시 0으로 초기화 해야한다. (Reset함수로)
 	static int kCBObjectCurrentIndex;
-
 };
 

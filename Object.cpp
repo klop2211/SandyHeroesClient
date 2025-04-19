@@ -118,6 +118,15 @@ Object* Object::sibling() const
 	return sibling_;
 }
 
+void Object::ApplyGravity(float elapsed_time)
+{
+	if (!on_ground_)
+		velocity_.y += gravity_ * elapsed_time;
+	else
+		velocity_.y = 0.0f;
+
+}
+
 void Object::set_transform_matrix(const XMFLOAT4X4& value)
 {
 	transform_matrix_ = value;
@@ -164,6 +173,11 @@ void Object::set_name(const std::string& value)
 void Object::set_velocity(const XMFLOAT3& value)
 {
 	velocity_ = value;
+}
+
+void Object::set_on_ground(bool on_ground)
+{
+	on_ground_ = on_ground;
 }
 
 void Object::AddChild(Object* object)

@@ -35,6 +35,9 @@ public:
 	Object* child() const;
 	Object* sibling() const;
 
+	void ApplyGravity(float elapsed_time);
+	
+
 	//setter
 	// 변환행렬 및 각 벡터
 	void set_transform_matrix(const XMFLOAT4X4& value);
@@ -44,11 +47,14 @@ public:
 	void set_right_vector(const XMFLOAT3& value);
 	void set_up_vector(const XMFLOAT3& value);
 
+
 	// 월드행렬의 setter는 지원하지 않는다.(상위노드의 의해 업데이트 되기 때문)
 
 	void set_name(const std::string& value);
 	void set_velocity(const XMFLOAT3& value);
 
+	void set_on_ground(bool on_ground);
+	
 	void AddChild(Object* object);
 	void AddSibling(Object* object);
 	void AddComponent(Component* component);
@@ -157,6 +163,8 @@ protected:
 
 	//물리 관련 변수들
 	XMFLOAT3 velocity_{ 0,0,0 };
+	const float gravity_ = { -9.8f };
+	bool on_ground_ = false;
 
 private:
 	// 오브젝트의 실제 월드 행렬(즉, 상위노드의 변환이 전부 적용된)
