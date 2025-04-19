@@ -118,9 +118,14 @@ Object* Object::sibling() const
 	return sibling_;
 }
 
+bool Object::is_ground() const
+{
+	return is_ground_;
+}
+
 void Object::ApplyGravity(float elapsed_time)
 {
-	if (!on_ground_)
+	if (!is_ground_)
 		velocity_.y += gravity_ * elapsed_time;
 	else
 		velocity_.y = 0.0f;
@@ -175,9 +180,9 @@ void Object::set_velocity(const XMFLOAT3& value)
 	velocity_ = value;
 }
 
-void Object::set_on_ground(bool on_ground)
+void Object::set_is_ground(bool is_ground)
 {
-	on_ground_ = on_ground;
+	is_ground_ = is_ground;
 }
 
 void Object::AddChild(Object* object)

@@ -49,7 +49,7 @@ void GameFramework::Initialize(HINSTANCE hinstance, HWND hwnd)
     input_manager_ = std::make_unique<InputManager>();
 
     //씬 생성 및 초기화
-    scene_ = std::make_unique<BaseScene>();
+    scene_ = std::make_unique<TestScene>();
     scene_->Initialize(d3d_device_.Get(), d3d_command_list_.Get(), d3d_root_signature_.Get(), 
         this);
 
@@ -413,6 +413,9 @@ void GameFramework::FrameAdvance()
 
     //인풋 처리
     ProcessInput();
+
+    //충돌처리
+    scene_->CheckObjectByObjectCollisions();
 
     //업데이트
     scene_->Update(client_timer_->ElapsedTime());

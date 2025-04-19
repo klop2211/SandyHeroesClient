@@ -143,7 +143,6 @@
     <ClInclude Include="BaseScene.h" />
     <ClInclude Include="CameraComponent.h" />
     <ClInclude Include="ColliderComponent.h" />
-    <ClInclude Include="ColorShader.h" />
     <ClInclude Include="Component.h" />
     <ClInclude Include="CubeMesh.h" />
     <ClInclude Include="d3dx12.h" />
@@ -187,7 +186,6 @@
     <ClCompile Include="BaseScene.cpp" />
     <ClCompile Include="CameraComponent.cpp" />
     <ClCompile Include="ColliderComponent.cpp" />
-    <ClCompile Include="ColorShader.cpp" />
     <ClCompile Include="Component.cpp" />
     <ClCompile Include="CubeMesh.cpp" />
     <ClCompile Include="DDSTextureLoader.cpp" />

@@ -34,8 +34,7 @@ int PlayerAnimationState::Run(Object* object, bool is_end)
 		}
 		break;
 	case PlayerAnimationTrack::kJump:
-		//TODO: 지면 판정 정상화
-		if (object->position_vector().y < 0.001)
+		if (object->is_ground())
 		{
 			animation_track_ = (int)PlayerAnimationTrack::kIdle;
 		}

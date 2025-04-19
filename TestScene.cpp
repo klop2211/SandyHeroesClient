@@ -85,9 +85,10 @@ void TestScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 	cb_skinned_mesh_object_capacity_ = 10000;
 
 	//모델 오브젝트 배치
-	Object* temp = model_infos_[0]->GetInstance();
-	temp->set_position_vector(XMFLOAT3{ 0, 2, 0 });
-	AnimatorComponent* animator = Object::GetComponent<AnimatorComponent>(temp);
+	Object* player = model_infos_[0]->GetInstance();
+	player_ = player;
+	player->set_position_vector(XMFLOAT3{ 0, 15, 0 });
+	AnimatorComponent* animator = Object::GetComponent<AnimatorComponent>(player);
 	animator->set_animation_state(new PlayerAnimationState);
 
 	//FPS 조작용 컨트롤러 설정
@@ -128,12 +129,12 @@ void TestScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 	BoundingOrientedBox* obb = new BoundingOrientedBox;
 	{
 		//TODO: OBB 초기값 설정
-		obb->Center = temp->position_vector();
+		obb->Center = player->position_vector();
 		obb->Extents = { 1,1,1 };
 
 	}
-	ColliderComponent* collider = new ColliderComponent(temp, obb);
-	temp->AddComponent(collider);
+	ColliderComponent* collider = new ColliderComponent(player, obb);
+	player->AddComponent(collider);
 
 	//씬 리스트에 추가
 	object_list_.emplace_back();
@@ -291,8 +292,8 @@ bool TestScene::CheckObjectByObjectCollisions()
 						float deltaY = player_->world_position_vector().y - object->world_position_vector().y;
 						if (deltaY > 0.0f && deltaY < 20.0f) // 바닥이라고 판단할 수 있는 높이
 						{
-							player_->set_on_ground(true);
-							player_->set_velocity({ player_->velocity().x, 0.0f, player_->velocity().z }); // y 속도 정지
+							player_->set_is_ground(true);
+							//player_->set_velocity({ player_->velocity().x, 0.0f, player_->velocity().z }); // y 속도 정지
 
 							return true;
 						}
@@ -307,7 +308,7 @@ bool TestScene::CheckObjectByObjectCollisions()
 			}
 		}
 	}
-	player_->set_on_ground(false); // 아무 것도 닿지 않으면 공중
+	player_->set_is_ground(false); // 아무 것도 닿지 않으면 공중
 	return false;
 }
 
@@ -401,13 +402,5 @@ bool TestScene::ProcessInput(UINT id, WPARAM w_param, LPARAM l_param, float time
 	default:
 		return false;
 		break;
-	}
-}
-
-void TestScene::Update(float elapsed_time)
-{
-	for (const std::unique_ptr<Object>& object : object_list_)
-	{
-		object->Update(elapsed_time);
 	}
 }

@@ -32,7 +32,7 @@ public:
 	
 	void BuildScene(const std::string& scene_name);
 
-	virtual bool CheckObjectByObjectCollisions() = 0;
+	virtual bool CheckObjectByObjectCollisions() { return false; };
 
 	void ReleaseMeshUploadBuffer();
 
