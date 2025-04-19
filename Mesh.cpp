@@ -320,6 +320,21 @@ const std::list<MeshComponent*>& Mesh::mesh_component_list() const
 	return mesh_component_list_;
 }
 
+BoundingBox Mesh::bounds() const
+{
+	return bounds_;
+}
+
+const std::vector<XMFLOAT3>& Mesh::positions() const
+{
+	return positions_;
+}
+
+const std::vector<std::vector<UINT>>& Mesh::indices_array() const
+{
+	return indices_array_;
+}
+
 void Mesh::set_shader_type(int value)
 {
 	shader_type_ = value;

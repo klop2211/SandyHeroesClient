@@ -234,6 +234,15 @@ void Object::Update(float elapsed_time)
 
 	set_position_vector(position_vector() + (velocity_ * elapsed_time));
 
+	if (child_)
+	{
+		child_->Update(elapsed_time);
+	}
+	if (sibling_)
+	{
+		sibling_->Update(elapsed_time);
+	}
+
 }
 
 void Object::Rotate(float pitch, float yaw, float roll)
@@ -242,6 +251,16 @@ void Object::Rotate(float pitch, float yaw, float roll)
 		XMConvertToRadians(pitch), XMConvertToRadians(yaw), XMConvertToRadians(roll));
 
 	XMStoreFloat4x4(&transform_matrix_, rotation * XMLoadFloat4x4(&transform_matrix_));
+}
+
+void Object::Scale(float value)
+{
+	XMVECTOR s, r, t;
+	if (XMMatrixDecompose(&s, &r, &t, XMLoadFloat4x4(&transform_matrix_)))
+	{
+		s = XMLoadFloat3(&XMFLOAT3{ value,value,value });
+		XMStoreFloat4x4(&transform_matrix_, XMMatrixAffineTransformation(s, XMVectorZero(), r, t));
+	}
 }
 
 Object* Object::DeepCopy(Object* value, Object* parent)

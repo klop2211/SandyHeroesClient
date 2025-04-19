@@ -151,6 +151,7 @@
     <ClInclude Include="FrameResource.h" />
     <ClInclude Include="FrameResourceManager.h" />
     <ClInclude Include="GameFramework.h" />
+    <ClInclude Include="GunComponent.h" />
     <ClInclude Include="InputControllerComponent.h" />
     <ClInclude Include="InputManager.h" />
     <ClInclude Include="Material.h" />
@@ -190,6 +191,7 @@
     <ClCompile Include="FPSControllerComponent.cpp" />
     <ClCompile Include="FrameResourceManager.cpp" />
     <ClCompile Include="GameFramework.cpp" />
+    <ClCompile Include="GunComponent.cpp" />
     <ClCompile Include="InputControllerComponent.cpp" />
     <ClCompile Include="InputManager.cpp" />
     <ClCompile Include="Material.cpp" />

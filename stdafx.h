@@ -6,6 +6,7 @@
 
 #include "targetver.h"
 #define WIN32_LEAN_AND_MEAN             // 거의 사용되지 않는 내용을 Windows 헤더에서 제외합니다.
+#define NOMINMAX						// min, max 메크로를 사용하지 않음
 // Windows 헤더 파일
 #include <windows.h>
 // C 런타임 헤더 파일입니다.
@@ -23,6 +24,8 @@
 #include <string>
 #include <unordered_map>
 #include <fstream>
+#include <limits>
+#include <sstream>
 
 // DirectX 관련 헤더 파일 및 선언문
 #include <wrl.h>

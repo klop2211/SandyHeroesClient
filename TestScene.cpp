@@ -23,6 +23,7 @@
 #include "PlayerAnimationState.h"
 #include "AnimatorComponent.h"
 #include "GameFramework.h"
+#include "GunComponent.h"
 
 void TestScene::Initialize(ID3D12Device* device, ID3D12GraphicsCommandList* command_list, 
 	ID3D12RootSignature* root_signature, GameFramework* game_framework)
@@ -83,21 +84,36 @@ void TestScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 	cb_skinned_mesh_object_capacity_ = 10000;
 
 	//모델 오브젝트 배치
-	Object* temp = model_infos_[0]->GetInstance();
-	temp->set_position_vector(XMFLOAT3{ 0, 2, 0 });
-	AnimatorComponent* animator = Object::GetComponent<AnimatorComponent>(temp);
+	Object* player = model_infos_[0]->GetInstance();
+	player->set_position_vector(XMFLOAT3{ 0, 2, 0 });
+	AnimatorComponent* animator = Object::GetComponent<AnimatorComponent>(player);
 	animator->set_animation_state(new PlayerAnimationState);
 
 	//FPS 조작용 컨트롤러 설정
-	FPSControllerComponent* fps_controller = new FPSControllerComponent(temp);
+	FPSControllerComponent* fps_controller = new FPSControllerComponent(player);
 	fps_controller->set_client_wnd(game_framework_->main_wnd());
-	temp->AddComponent(fps_controller);
+	fps_controller->set_scene(this);
+	player->AddComponent(fps_controller);
 	//메인 컨트롤러로 설정
 	main_input_controller_ = fps_controller;
 
+	//모든 총기 정보 로드
+	GunComponent::LoadGunInfosFromFile("./Resource/GunInfos.txt");
+
+	//플레이어 총기 장착
+	//TODO: 총기 메쉬 장착 구현
+	Object* player_gun_frame = player->FindFrame("WeaponR_locator");
+	player_gun_frame->AddChild(new Object());
+	player_gun_frame = player_gun_frame->child();
+	GunComponent* player_gun = new GunComponent(player_gun_frame);
+	player_gun->LoadGunInfo("classic");
+	player_gun_frame->AddComponent(player_gun);
+	player_gun_frame->AddComponent(new MeshComponent(player_gun_frame, Scene::FindMesh("green_cube", meshes_)));
+	player_gun_frame->Scale(0.3);
+
 	//카메라 설정
 	Object* camera_object = new Object();
-	temp->AddChild(camera_object);
+	player->AddChild(camera_object);
 	fps_controller->set_camera_object(camera_object);
 	camera_object->set_position_vector(0, 0.5, 0); // 플레이어 캐릭터의 키가 150인것을 고려하여 머리위치에 배치
 	camera_object->set_name("CAMERA_1");
@@ -109,13 +125,13 @@ void TestScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 
 	//씬 리스트에 추가
 	object_list_.emplace_back();
-	object_list_.back().reset(temp);
+	object_list_.back().reset(player);
 
 
 	camera_object = new Object;
 	camera_object->set_name("CAMERA_2");
-	MeshComponent* cube = new MeshComponent(camera_object, Scene::FindMesh("green_cube", meshes_));
-	camera_object->AddComponent(cube);
+	//MeshComponent* cube = new MeshComponent(camera_object, Scene::FindMesh("green_cube", meshes_));
+	//camera_object->AddComponent(cube);
 	camera_component =
 		new CameraComponent(camera_object, 0.3, 10000,
 			(float)kDefaultFrameBufferWidth / (float)kDefaultFrameBufferHeight, 58);

@@ -62,6 +62,7 @@ public:
 	virtual void Update(float elapsed_time);
 
 	void Rotate(float pitch, float yaw, float roll);
+	void Scale(float value);				// transform 의 스케일을 value로 균등 변환한다.
 
 	static Object* DeepCopy(Object* value, Object* parent = nullptr);
 

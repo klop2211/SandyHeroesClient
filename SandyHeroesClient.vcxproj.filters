@@ -204,6 +204,9 @@
     <ClInclude Include="AnimationState.h">
       <Filter>Animation</Filter>
     </ClInclude>
+    <ClInclude Include="GunComponent.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="SandyHeroesClient.cpp">
@@ -307,6 +310,9 @@
     </ClCompile>
     <ClCompile Include="AnimationState.cpp">
       <Filter>Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="GunComponent.cpp">
+      <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
