@@ -225,7 +225,7 @@ void TestScene::BuildConstantBufferViews(ID3D12Device* device)
 using namespace file_load_util;
 void TestScene::BuildScene()
 {
-	std::ifstream scene_file{ "./Resource/Model/Scene.bin", std::ios::binary };
+	std::ifstream scene_file{ "./Resource/Model/Base.bin", std::ios::binary };
 
 	int root_object_count = ReadFromFile<int>(scene_file);
 
@@ -356,10 +356,3 @@ bool TestScene::ProcessInput(UINT id, WPARAM w_param, LPARAM l_param, float time
 	}
 }
 
-void TestScene::Update(float elapsed_time)
-{
-	for (const std::unique_ptr<Object>& object : object_list_)
-	{
-		object->Update(elapsed_time);
-	}
-}

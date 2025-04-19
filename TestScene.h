@@ -21,7 +21,6 @@ public:
 
 	virtual bool ProcessInput(UINT id, WPARAM w_param, LPARAM l_param, float time) override;
 
-	virtual void Update(float elapsed_time) override;
 
 private:
 

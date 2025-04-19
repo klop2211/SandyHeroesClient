@@ -12,6 +12,7 @@
 #include "ModelInfo.h"
 #include "Material.h"
 #include "AnimationSet.h"
+#include "BaseScene.h"
 
 GameFramework* GameFramework::kGameFramework = nullptr;
 
@@ -48,7 +49,7 @@ void GameFramework::Initialize(HINSTANCE hinstance, HWND hwnd)
     input_manager_ = std::make_unique<InputManager>();
 
     //씬 생성 및 초기화
-    scene_ = std::make_unique<TestScene>();
+    scene_ = std::make_unique<BaseScene>();
     scene_->Initialize(d3d_device_.Get(), d3d_command_list_.Get(), d3d_root_signature_.Get(), 
         this);
 
@@ -378,7 +379,28 @@ void GameFramework::ProcessInput(UINT id, WPARAM w_param, LPARAM l_param, float 
     {
     case WM_KEYDOWN:
         if (w_param == VK_ESCAPE)
+        {
             PostQuitMessage(0);
+        }
+        if (w_param == 'P')
+        {
+            FlushCommandQueue();
+
+            d3d_command_list_->Reset(d3d_command_allocator_.Get(), nullptr);
+
+            scene_ = std::make_unique<BaseScene>();
+            scene_->Initialize(d3d_device_.Get(), d3d_command_list_.Get(), d3d_root_signature_.Get(),
+                this);
+
+            d3d_command_list_->Close();
+            ID3D12CommandList* cmd_list[] = { d3d_command_list_.Get() };
+            d3d_command_queue_->ExecuteCommandLists(1, cmd_list);
+
+            FlushCommandQueue();
+
+            scene_->ReleaseMeshUploadBuffer();
+
+        }
         break;
     default:
         break;

@@ -140,6 +140,7 @@
     <ClInclude Include="AnimationTrack.h" />
     <ClInclude Include="AnimatorComponent.h" />
     <ClInclude Include="ASTest.h" />
+    <ClInclude Include="BaseScene.h" />
     <ClInclude Include="CameraComponent.h" />
     <ClInclude Include="ColorShader.h" />
     <ClInclude Include="Component.h" />
@@ -182,6 +183,7 @@
     <ClCompile Include="AnimationTrack.cpp" />
     <ClCompile Include="AnimatorComponent.cpp" />
     <ClCompile Include="ASTest.cpp" />
+    <ClCompile Include="BaseScene.cpp" />
     <ClCompile Include="CameraComponent.cpp" />
     <ClCompile Include="ColorShader.cpp" />
     <ClCompile Include="Component.cpp" />

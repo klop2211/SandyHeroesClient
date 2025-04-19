@@ -28,6 +28,8 @@ public:
 	virtual void BuildDescriptorHeap(ID3D12Device* device);
 	virtual void BuildConstantBufferViews(ID3D12Device* device) {};
 	virtual void BuildShaderResourceViews(ID3D12Device* device);
+	
+	void BuildScene(const std::string& scene_name);
 
 	void ReleaseMeshUploadBuffer();
 
@@ -35,7 +37,7 @@ public:
 
 	virtual bool ProcessInput(UINT id, WPARAM w_param, LPARAM l_param, float time) = 0;
 
-	virtual void Update(float elapsed_time) = 0;
+	virtual void Update(float elapsed_time);
 
 	void UpdateObjectWorldMatrix();
 

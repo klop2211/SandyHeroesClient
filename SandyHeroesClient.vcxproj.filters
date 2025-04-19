@@ -85,6 +85,9 @@
     <Filter Include="GameFramework">
       <UniqueIdentifier>{8650f60f-2d28-4a04-8c83-5a6f343323b7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Component\Gun">
+      <UniqueIdentifier>{0ab171bf-9dfb-441d-8a6b-419b19516a8c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="targetver.h">
@@ -205,6 +208,9 @@
       <Filter>Animation</Filter>
     </ClInclude>
     <ClInclude Include="GunComponent.h">
+      <Filter>Component\Gun</Filter>
+    </ClInclude>
+    <ClInclude Include="BaseScene.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>
@@ -312,6 +318,9 @@
       <Filter>Animation</Filter>
     </ClCompile>
     <ClCompile Include="GunComponent.cpp">
+      <Filter>Component\Gun</Filter>
+    </ClCompile>
+    <ClCompile Include="BaseScene.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
