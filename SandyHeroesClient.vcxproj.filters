@@ -91,6 +91,15 @@
     <Filter Include="7.Component\Gun">
       <UniqueIdentifier>{0ab171bf-9dfb-441d-8a6b-419b19516a8c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="4.Mesh\Skybox">
+      <UniqueIdentifier>{a75d1d15-ade7-48a3-aa5d-993ca01ebb8a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="7.Component\Input\Test">
+      <UniqueIdentifier>{1e16d6a0-6301-463f-9849-076f3d90ab6b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="7.Component\Input\FPS">
+      <UniqueIdentifier>{009c1362-c1e8-46de-a90a-c4ca6085ba0c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="targetver.h">
@@ -159,9 +168,6 @@
     <ClInclude Include="InputControllerComponent.h">
       <Filter>7.Component\Input</Filter>
     </ClInclude>
-    <ClInclude Include="TestControllerComponent.h">
-      <Filter>7.Component\Input</Filter>
-    </ClInclude>
     <ClInclude Include="ModelInfo.h">
       <Filter>ModelInfo</Filter>
     </ClInclude>
@@ -198,9 +204,6 @@
     <ClInclude Include="ASTest.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="FPSControllerComponent.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
     <ClInclude Include="PlayerAnimationState.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
@@ -220,7 +223,13 @@
       <Filter>2.Scene\Base</Filter>
     </ClInclude>
     <ClInclude Include="SkyboxMesh.h">
-      <Filter>헤더 파일</Filter>
+      <Filter>4.Mesh\Skybox</Filter>
+    </ClInclude>
+    <ClInclude Include="TestControllerComponent.h">
+      <Filter>7.Component\Input\Test</Filter>
+    </ClInclude>
+    <ClInclude Include="FPSControllerComponent.h">
+      <Filter>7.Component\Input\FPS</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -275,9 +284,6 @@
     <ClCompile Include="InputControllerComponent.cpp">
       <Filter>7.Component\Input</Filter>
     </ClCompile>
-    <ClCompile Include="TestControllerComponent.cpp">
-      <Filter>7.Component\Input</Filter>
-    </ClCompile>
     <ClCompile Include="ModelInfo.cpp">
       <Filter>ModelInfo</Filter>
     </ClCompile>
@@ -314,9 +320,6 @@
     <ClCompile Include="ASTest.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="FPSControllerComponent.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
     <ClCompile Include="PlayerAnimationState.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
@@ -336,7 +339,13 @@
       <Filter>2.Scene\Base</Filter>
     </ClCompile>
     <ClCompile Include="SkyboxMesh.cpp">
-      <Filter>소스 파일</Filter>
+      <Filter>4.Mesh\Skybox</Filter>
+    </ClCompile>
+    <ClCompile Include="TestControllerComponent.cpp">
+      <Filter>7.Component\Input\Test</Filter>
+    </ClCompile>
+    <ClCompile Include="FPSControllerComponent.cpp">
+      <Filter>7.Component\Input\FPS</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

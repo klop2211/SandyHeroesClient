@@ -30,6 +30,7 @@ Component* GunComponent::GetCopy()
 void GunComponent::Update(float elapsed_time)
 {
     loading_time_ -= elapsed_time;
+    cooling_time_ += elapsed_time;
 
     if (is_reload_ && loading_time_ <= 0.f)
     {
@@ -56,12 +57,17 @@ bool GunComponent::FireBullet(XMFLOAT3 direction, Mesh* bullet_mesh)
 {
     if (loaded_bullets_ > 0)
     {
-        Object* bullet = new Object();
-        bullet->AddComponent(new MeshComponent(bullet, bullet_mesh));
-        bullet->set_position_vector(owner_->world_position_vector());
-        bullet->set_velocity(direction * bullet_speed_);
-        bullet->Scale(0.1);
-        fired_bullet_list_.push_back(bullet);
+        const float rps = rpm_ / 60.f;
+        if (rps * cooling_time_ >= 1.f)
+        {
+            cooling_time_ = 0.f;
+            Object* bullet = new Object();
+            bullet->AddComponent(new MeshComponent(bullet, bullet_mesh));
+            bullet->set_position_vector(owner_->world_position_vector());
+            bullet->set_velocity(direction * bullet_speed_);
+            bullet->Scale(0.1);
+            fired_bullet_list_.push_back(bullet);
+        }
     }
     else
     {
@@ -87,6 +93,11 @@ void GunComponent::LoadGunInfo(const std::string& gun_name)
 
     loaded_bullets_ = magazine_cacity_;
 
+}
+
+GunFireType GunComponent::fire_type() const
+{
+    return fire_type_;
 }
 
 

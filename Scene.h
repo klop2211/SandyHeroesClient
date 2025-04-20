@@ -40,6 +40,10 @@ public:
 
 	virtual bool ProcessInput(UINT id, WPARAM w_param, LPARAM l_param, float time) = 0;
 
+	//반환 값: 월드 좌표계에서 피킹된 지점
+	//설명: 스크린 x, y좌표를 받아 피킹 광선과 오브젝트들간 충돌검사를 시행
+	XMVECTOR GetPickingPointAtWorld(float sx, float sy, Object* picked_object);
+
 	virtual void Update(float elapsed_time);
 
 	void UpdateObjectWorldMatrix();

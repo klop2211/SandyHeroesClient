@@ -23,6 +23,8 @@ private:
     Scene* scene_ = nullptr;
     Object* camera_object_ = nullptr;
 
+    bool is_firekey_down_ = false;
+
     // 점프키가 눌렸고 owner가 지면위에 있다면 점프를 실행
     bool is_jumpkey_pressed_ = false;
     float jump_speed_ = 10.f;

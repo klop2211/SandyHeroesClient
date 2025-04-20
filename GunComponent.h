@@ -40,6 +40,9 @@ public:
 
     void LoadGunInfo(const std::string& gun_name);
 
+    //getter
+    GunFireType fire_type() const;
+
     //총기 정보를 로드하는 함수
     static void LoadGunInfosFromFile(const std::string& file_name); 
 
@@ -50,6 +53,7 @@ private:
     int loaded_bullets_{};      //남은 총알 수
     float loading_time_{ 0.f }; //장전 중 시간
     bool is_reload_ = false;    //장전 중?
+    float cooling_time_{ 0.f }; //마지막 발사로 부터 경과한 시간
 
     // 총기 정보
     int damage_{ 0 };                   
