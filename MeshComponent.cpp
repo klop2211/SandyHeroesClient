@@ -44,7 +44,7 @@ bool MeshComponent::IsVisible() const
 	return is_visible_;
 }
 
-const Mesh* MeshComponent::GetMesh() const
+Mesh* MeshComponent::GetMesh() const
 {
 	return mesh_;
 }

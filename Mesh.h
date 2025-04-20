@@ -33,14 +33,16 @@ public:
 
 	void LoadMeshFromFile(std::ifstream& file);
 
-	static void ResetCBObjectCurrentIndex();
+	//정점 쉐이터 입력 레이아웃을 맞추기 위해 정점의 일부 정보을 제거하는 함수들
+	void ClearColors();
+	void ClearUvs();
+	void ClearNormals();
+	void ClearTangents();
 
 	//getter
 	int shader_type() const;
 	std::string name() const;
 
-	const std::vector<std::vector<UINT>>& GetIndicesArray() const;
-	std::vector<XMFLOAT3> GetPositions() const;
 	const std::list<MeshComponent*>& mesh_component_list() const;
 	BoundingBox bounds() const;
 	const std::vector<XMFLOAT3>& positions() const;
@@ -49,6 +51,9 @@ public:
 	//setter
 	void set_shader_type(int value);
 	void set_name(const std::string& name);
+
+	static void ResetCBObjectCurrentIndex();
+
 protected:
 	std::vector<Material*> materials_;
 

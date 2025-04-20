@@ -34,6 +34,7 @@ cbuffer RenderPass : register(b3)
 #define TEXTURE_MASK_METALGLOS (1 << 2)
 #define TEXTURE_MASK_EMISSION (1 << 3)
 #define TEXTURE_MASK_NORMAL (1 << 4)
+#define TEXTURE_MASK_CUBE (1 << 5)
 
 cbuffer Material : register(b4)
 {
@@ -46,5 +47,7 @@ Texture2D g_spec_glos_map : register(t1);
 Texture2D g_metal_glos_map : register(t2);
 Texture2D g_emission_map : register(t3);
 Texture2D g_normal_map : register(t4);
+TextureCube g_cube_map : register(t5);
 
 SamplerState g_anisotropic_warp : register(s0);
+SamplerState g_linear_warp : register(s1);

@@ -18,5 +18,5 @@ public:
 	bool Intersects(ColliderComponent* collider_object);
 protected:
 	BoundingOrientedBox* bounding_box_ = nullptr;
-
+	BoundingOrientedBox animated_bounding_box_{};
 };

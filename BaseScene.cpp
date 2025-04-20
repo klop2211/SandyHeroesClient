@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "BaseScene.h"
 #include "Object.h"
-#include "ColorShader.h"
 #include "FrameResourceManager.h"
 #include "DescriptorManager.h"
 #include "Mesh.h"
@@ -12,7 +11,6 @@
 #include "TestControllerComponent.h"
 #include "InputManager.h"
 #include "ModelInfo.h"
-#include "SkinnedMeshShader.h"
 #include "SkinnedMesh.h"
 #include "Material.h"
 #include "StandardMeshShader.h"
@@ -24,13 +22,16 @@
 #include "AnimatorComponent.h"
 #include "GameFramework.h"
 #include "GunComponent.h"
+#include "SkyboxShader.h"
+#include "SkyboxMesh.h"
 
 void BaseScene::BuildShader(ID3D12Device* device, ID3D12RootSignature* root_signature)
 {
-	int shader_count = 2;
+	int shader_count = 3;
 	shaders_.reserve(shader_count);
 	shaders_.push_back(std::make_unique<StandardMeshShader>());
 	shaders_.push_back(std::make_unique<StandardSkinnedMeshShader>());
+	shaders_.push_back(std::make_unique<SkyboxShader>());
 
 	for (int i = 0; i < shader_count; ++i)
 	{
@@ -46,6 +47,12 @@ void BaseScene::BuildMesh(ID3D12Device* device, ID3D12GraphicsCommandList* comma
 	material->set_albedo_color(0, 1, 0, 1);
 	meshes_[0].get()->AddMaterial(material);
 	meshes_[0].get()->set_name("green_cube");
+	materials_.emplace_back();
+	materials_.back().reset(material);
+
+	//skybox
+	material = SkyboxMesh::CreateSkyboxMaterial("Skybox_Cube");
+	meshes_.push_back(std::make_unique<SkyboxMesh>(meshes_[0].get(), material));
 	materials_.emplace_back();
 	materials_.back().reset(material);
 
@@ -65,6 +72,12 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 	//TODO: 각 메쉬의 컴포넌트 연결 개수를 파악하면 아래 수치를 디테일하게 설정할 수 있을것 같다..
 	cb_object_capacity_ = 10000;
 	cb_skinned_mesh_object_capacity_ = 10000;
+
+	Object* skybox = new Object();
+	skybox->AddComponent(new MeshComponent(skybox, Scene::FindMesh("Skybox", meshes_)));
+
+	object_list_.emplace_back();
+	object_list_.back().reset(skybox);
 
 	//모델 오브젝트 배치
 	Object* player = model_infos_[0]->GetInstance();

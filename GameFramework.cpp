@@ -49,7 +49,7 @@ void GameFramework::Initialize(HINSTANCE hinstance, HWND hwnd)
     input_manager_ = std::make_unique<InputManager>();
 
     //씬 생성 및 초기화
-    scene_ = std::make_unique<TestScene>();
+    scene_ = std::make_unique<BaseScene>();
     scene_->Initialize(d3d_device_.Get(), d3d_command_list_.Get(), d3d_root_signature_.Get(), 
         this);
 
@@ -208,14 +208,16 @@ void GameFramework::CreateRtvAndDsvDescriptorHeaps()
 
 void GameFramework::BuildRootSignature()
 {
-    CD3DX12_DESCRIPTOR_RANGE descriptor_range[5];
+    CD3DX12_DESCRIPTOR_RANGE descriptor_range[6];
     descriptor_range[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0); //albedo
     descriptor_range[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 1); //spec gloss
     descriptor_range[2].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 2); //metal gloss
     descriptor_range[3].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 3); //emission
     descriptor_range[4].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 4); //normal
+    descriptor_range[5].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 5); //cube
 
-    CD3DX12_ROOT_PARAMETER root_parameter[10];
+    constexpr int root_parameter_size{ 11 };
+    CD3DX12_ROOT_PARAMETER root_parameter[root_parameter_size];
 
     //25.02.23 수정
     //기존 루트 디스크립터 테이블에서 루트 CBV사용으로 변경
@@ -229,11 +231,16 @@ void GameFramework::BuildRootSignature()
     root_parameter[7].InitAsDescriptorTable(1, &descriptor_range[2], D3D12_SHADER_VISIBILITY_PIXEL);
     root_parameter[8].InitAsDescriptorTable(1, &descriptor_range[3], D3D12_SHADER_VISIBILITY_PIXEL);
     root_parameter[9].InitAsDescriptorTable(1, &descriptor_range[4], D3D12_SHADER_VISIBILITY_PIXEL);
+    root_parameter[10].InitAsDescriptorTable(1, &descriptor_range[5], D3D12_SHADER_VISIBILITY_PIXEL);
 
-    //비등방 필터링 warp 모드 샘플러
-    CD3DX12_STATIC_SAMPLER_DESC aniso_warp{ 0 };
+    
+    CD3DX12_STATIC_SAMPLER_DESC aniso_warp{ 0 };    //비등방 필터링 warp 모드 샘플러
+    CD3DX12_STATIC_SAMPLER_DESC linear_warp{ 1, D3D12_FILTER_COMPARISON_MIN_LINEAR_MAG_MIP_POINT };
 
-    CD3DX12_ROOT_SIGNATURE_DESC root_sig_desc(10, root_parameter, 1, &aniso_warp,
+    constexpr int static_sampler_size = 2;
+    D3D12_STATIC_SAMPLER_DESC static_sampler[static_sampler_size]{ aniso_warp , linear_warp };
+
+    CD3DX12_ROOT_SIGNATURE_DESC root_sig_desc(root_parameter_size, root_parameter, static_sampler_size, static_sampler,
         D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
     ComPtr<ID3DBlob> serialized_root_sig = nullptr;
@@ -415,7 +422,7 @@ void GameFramework::FrameAdvance()
     ProcessInput();
 
     //충돌처리
-    scene_->CheckObjectByObjectCollisions();
+    //scene_->CheckObjectByObjectCollisions();
 
     //업데이트
     scene_->Update(client_timer_->ElapsedTime());

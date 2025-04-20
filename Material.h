@@ -8,8 +8,9 @@ constexpr int kTextureMaskSpecGlos(1 << 1);
 constexpr int kTextureMaskMetalGlos(1 << 2);
 constexpr int kTextureMaskEmission(1 << 3);
 constexpr int kTextureMaskNormal(1 << 4);
+constexpr int kTextureMaskCube(1 << 5);
 
-enum class TextureType{ kAlbedoMap, kSpecGlossMap, kMetallicGlossMap, kEmissionMap, kNormalMap };
+enum class TextureType{ kAlbedoMap, kSpecGlossMap, kMetallicGlossMap, kEmissionMap, kNormalMap, kCubeMap };
 
 struct Texture
 {
@@ -46,6 +47,8 @@ public:
     int CreateShaderResourceViews(ID3D12Device* device, DescriptorManager* descriptor_manager, int start_index);
 
     void LoadMaterialFromFile(std::ifstream& file);
+
+    void AddTexture(Texture* texture);
 
     static int GetTextureCount();
 

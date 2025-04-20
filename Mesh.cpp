@@ -300,6 +300,26 @@ void Mesh::LoadMeshFromFile(std::ifstream& file)
 
 }
 
+void Mesh::ClearColors()
+{
+	colors_.clear();
+}
+
+void Mesh::ClearUvs()
+{
+	uvs_.clear();
+}
+
+void Mesh::ClearNormals()
+{
+	normals_.clear();
+}
+
+void Mesh::ClearTangents()
+{
+	tangents_.clear();
+}
+
 void Mesh::ResetCBObjectCurrentIndex()
 {
 	kCBObjectCurrentIndex = 0;
@@ -315,15 +335,6 @@ std::string Mesh::name() const
 	return name_;
 }
 
-const std::vector<std::vector<UINT>>& Mesh::GetIndicesArray() const
-{
-	return indices_array_;
-}
-
-std::vector<XMFLOAT3> Mesh::GetPositions() const
-{
-	return positions_;
-}
 const std::list<MeshComponent*>& Mesh::mesh_component_list() const
 {
 	return mesh_component_list_;

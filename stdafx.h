@@ -58,7 +58,7 @@ constexpr int kMaxBoneCount = 128; //skinned mesh의 본 최대 개수
 constexpr int kMaxLights = 16;		// 조명처리의 최대 개수
 
 enum class RootParameterIndex{ kWorldMatrix = 0, kBoneTransform, kBoneOffset, kRenderPass, 
-	kMaterial, kAlbedoMap, kSpecGlosMap, kMetalGlosMap, kEmissionMap, kNormalMap
+	kMaterial, kAlbedoMap, kSpecGlosMap, kMetalGlosMap, kEmissionMap, kNormalMap, kCubeMap
 };
 
 // 유틸 함수

@@ -271,3 +271,8 @@ Object* ModelInfo::GetInstance()
 
 	return r_value;
 }
+
+Object* ModelInfo::hierarchy_root() const
+{
+	return hierarchy_root_;
+}

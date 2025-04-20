@@ -25,6 +25,8 @@ public:
 
 	Object* GetInstance();
 
+	Object* hierarchy_root() const;
+
 private:
 	std::string model_name_ = "None";
 

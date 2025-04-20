@@ -93,9 +93,10 @@ void TestScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 
 	//FPS 조작용 컨트롤러 설정
 	FPSControllerComponent* fps_controller = new FPSControllerComponent(player);
+	player->AddComponent(fps_controller);
 	fps_controller->set_client_wnd(game_framework_->main_wnd());
 	fps_controller->set_scene(this);
-	player->AddComponent(fps_controller);
+	
 	//메인 컨트롤러로 설정
 	main_input_controller_ = fps_controller;
 
@@ -284,7 +285,7 @@ bool TestScene::CheckObjectByObjectCollisions()
 		{
 			if (player_collider->Intersects(collider))
 			{
-				MeshComponent* mesh = Object::GetComponent<MeshComponent>(object.get());
+				MeshComponent* mesh = Object::GetComponentInChildren<MeshComponent>(object.get());
 				if (nullptr != mesh)
 				{
 					if (player_collider->CheckOBBMeshCollision(mesh, player_->world_matrix(), object->world_matrix()))

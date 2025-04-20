@@ -13,79 +13,82 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Object">
-      <UniqueIdentifier>{1ad6dd00-9a2f-486d-95cc-455ae6269e3c}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Timer">
-      <UniqueIdentifier>{18d56895-b4f5-433b-b3fd-6837df7fb1ca}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Component">
-      <UniqueIdentifier>{eb13979b-95cf-4b8c-9af3-95f6b3521ad1}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Shader">
-      <UniqueIdentifier>{6fd218ff-d5dd-4ea2-affb-599ffaba36fc}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Shader\ColorShader">
-      <UniqueIdentifier>{6161465d-57f6-41f0-9081-a8d55943a45c}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Mesh">
-      <UniqueIdentifier>{7275f89b-6016-4a00-aee4-df8a76907ee8}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Mesh\Cube">
-      <UniqueIdentifier>{96e9464c-3e60-43fb-b9dc-c2a3b97bbcee}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Manager">
-      <UniqueIdentifier>{e8b9f229-4c85-4817-ba09-8e170489aa99}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Manager\DescriptorManager">
-      <UniqueIdentifier>{7c762a4b-9f15-4f20-a537-e5a4cc10266a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Manager\FrameResourceManager">
-      <UniqueIdentifier>{7cb23a6e-4380-474a-844e-c02a6d497ff7}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Manager\InputManager">
-      <UniqueIdentifier>{4b8d8f53-86ab-4bdc-8cf3-92480074ef7e}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Component\Camera">
-      <UniqueIdentifier>{b5ad54b6-d298-486f-9166-bff24f6bf93a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Component\Mesh">
-      <UniqueIdentifier>{595c9353-178b-46b5-a9ad-eaf088f4572a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Component\Input">
-      <UniqueIdentifier>{c225eaad-b137-44ff-9321-939c464687b6}</UniqueIdentifier>
-    </Filter>
     <Filter Include="ModelInfo">
       <UniqueIdentifier>{0d01a7d5-c82d-4034-8e3d-906d6df2f098}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Shader\SkinnedMeshShader">
-      <UniqueIdentifier>{8907c794-c724-4295-b1bf-c6a145725483}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Component\SkinnedMesh">
-      <UniqueIdentifier>{1abe438f-5798-44ed-b5a3-c6d476f52c1e}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Material">
-      <UniqueIdentifier>{ebd8e96b-5f5b-429c-8633-9f62894b49eb}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Shader\Standard">
-      <UniqueIdentifier>{5f21cb53-108b-40c9-a02d-661285dca773}</UniqueIdentifier>
     </Filter>
     <Filter Include="Animation">
       <UniqueIdentifier>{0a521d77-a876-459d-bb6e-46a2df2b2b21}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Component\Animator">
-      <UniqueIdentifier>{022fb1bb-77bc-4d27-9781-00ec0a98feb2}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Scene">
-      <UniqueIdentifier>{7fb82dd8-c53f-4508-b745-e52a6e7b874d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Scene\TestScene">
-      <UniqueIdentifier>{9067d95c-12fd-4805-add0-fa632b158c81}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="GameFramework">
+    <Filter Include="0.GameFramework">
       <UniqueIdentifier>{8650f60f-2d28-4a04-8c83-5a6f343323b7}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Component\Gun">
+    <Filter Include="1.Manager">
+      <UniqueIdentifier>{e8b9f229-4c85-4817-ba09-8e170489aa99}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="1.Manager\DescriptorManager">
+      <UniqueIdentifier>{7c762a4b-9f15-4f20-a537-e5a4cc10266a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="1.Manager\FrameResourceManager">
+      <UniqueIdentifier>{7cb23a6e-4380-474a-844e-c02a6d497ff7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="1.Manager\InputManager">
+      <UniqueIdentifier>{4b8d8f53-86ab-4bdc-8cf3-92480074ef7e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="2.Scene">
+      <UniqueIdentifier>{7fb82dd8-c53f-4508-b745-e52a6e7b874d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="2.Scene\TestScene">
+      <UniqueIdentifier>{9067d95c-12fd-4805-add0-fa632b158c81}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="2.Scene\Base">
+      <UniqueIdentifier>{ebb6b811-8c07-4146-a0be-75a94f565f5e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="3.Shader">
+      <UniqueIdentifier>{6fd218ff-d5dd-4ea2-affb-599ffaba36fc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="3.Shader\SkinnedMeshShader">
+      <UniqueIdentifier>{8907c794-c724-4295-b1bf-c6a145725483}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="3.Shader\Standard">
+      <UniqueIdentifier>{5f21cb53-108b-40c9-a02d-661285dca773}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="3.Shader\Skybox">
+      <UniqueIdentifier>{ab6cbec0-4210-400b-adfc-20a94578e96a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="4.Mesh">
+      <UniqueIdentifier>{7275f89b-6016-4a00-aee4-df8a76907ee8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="4.Mesh\Cube">
+      <UniqueIdentifier>{96e9464c-3e60-43fb-b9dc-c2a3b97bbcee}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="0.GameFramework\Timer">
+      <UniqueIdentifier>{18d56895-b4f5-433b-b3fd-6837df7fb1ca}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="5.Material">
+      <UniqueIdentifier>{ebd8e96b-5f5b-429c-8633-9f62894b49eb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="6.Object">
+      <UniqueIdentifier>{1ad6dd00-9a2f-486d-95cc-455ae6269e3c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="7.Component">
+      <UniqueIdentifier>{eb13979b-95cf-4b8c-9af3-95f6b3521ad1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="7.Component\Camera">
+      <UniqueIdentifier>{b5ad54b6-d298-486f-9166-bff24f6bf93a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="7.Component\Mesh">
+      <UniqueIdentifier>{595c9353-178b-46b5-a9ad-eaf088f4572a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="7.Component\Input">
+      <UniqueIdentifier>{c225eaad-b137-44ff-9321-939c464687b6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="7.Component\SkinnedMesh">
+      <UniqueIdentifier>{1abe438f-5798-44ed-b5a3-c6d476f52c1e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="7.Component\Animator">
+      <UniqueIdentifier>{022fb1bb-77bc-4d27-9781-00ec0a98feb2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="7.Component\Gun">
       <UniqueIdentifier>{0ab171bf-9dfb-441d-8a6b-419b19516a8c}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -106,85 +109,82 @@
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="GameFramework.h">
-      <Filter>GameFramework</Filter>
+      <Filter>0.GameFramework</Filter>
     </ClInclude>
     <ClInclude Include="Object.h">
-      <Filter>Object</Filter>
+      <Filter>6.Object</Filter>
     </ClInclude>
     <ClInclude Include="Timer.h">
-      <Filter>Timer</Filter>
+      <Filter>0.GameFramework\Timer</Filter>
     </ClInclude>
     <ClInclude Include="Scene.h">
-      <Filter>Scene</Filter>
+      <Filter>2.Scene</Filter>
     </ClInclude>
     <ClInclude Include="Component.h">
-      <Filter>Component</Filter>
+      <Filter>7.Component</Filter>
     </ClInclude>
     <ClInclude Include="Shader.h">
-      <Filter>Shader</Filter>
-    </ClInclude>
-    <ClInclude Include="ColorShader.h">
-      <Filter>Shader\ColorShader</Filter>
+      <Filter>3.Shader</Filter>
     </ClInclude>
     <ClInclude Include="Mesh.h">
-      <Filter>Mesh</Filter>
+      <Filter>4.Mesh</Filter>
     </ClInclude>
     <ClInclude Include="MeshComponent.h">
-      <Filter>Component\Mesh</Filter>
+      <Filter>7.Component\Mesh</Filter>
     </ClInclude>
     <ClInclude Include="UploadBuffer.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="FrameResourceManager.h">
-      <Filter>Manager\FrameResourceManager</Filter>
+      <Filter>1.Manager\FrameResourceManager</Filter>
     </ClInclude>
     <ClInclude Include="TestScene.h">
-      <Filter>Scene\TestScene</Filter>
+      <Filter>2.Scene\TestScene</Filter>
     </ClInclude>
     <ClInclude Include="FrameResource.h">
-      <Filter>Manager\FrameResourceManager</Filter>
+      <Filter>1.Manager\FrameResourceManager</Filter>
     </ClInclude>
     <ClInclude Include="DescriptorManager.h">
-      <Filter>Manager\DescriptorManager</Filter>
+      <Filter>1.Manager\DescriptorManager</Filter>
     </ClInclude>
     <ClInclude Include="CubeMesh.h">
-      <Filter>Mesh\Cube</Filter>
+      <Filter>4.Mesh\Cube</Filter>
     </ClInclude>
     <ClInclude Include="CameraComponent.h">
-      <Filter>Component\Camera</Filter>
+      <Filter>7.Component\Camera</Filter>
     </ClInclude>
     <ClInclude Include="InputManager.h">
-      <Filter>Manager\InputManager</Filter>
+      <Filter>1.Manager\InputManager</Filter>
     </ClInclude>
     <ClInclude Include="InputControllerComponent.h">
-      <Filter>Component\Input</Filter>
+      <Filter>7.Component\Input</Filter>
     </ClInclude>
     <ClInclude Include="TestControllerComponent.h">
-      <Filter>Component\Input</Filter>
+      <Filter>7.Component\Input</Filter>
     </ClInclude>
     <ClInclude Include="ModelInfo.h">
       <Filter>ModelInfo</Filter>
     </ClInclude>
     <ClInclude Include="SkinnedMesh.h">
-      <Filter>Mesh</Filter>
+      <Filter>4.Mesh</Filter>
     </ClInclude>
     <ClInclude Include="SkinnedMeshShader.h">
-      <Filter>Shader\SkinnedMeshShader</Filter>
+      <Filter>3.Shader\SkinnedMeshShader</Filter>
     </ClInclude>
     <ClInclude Include="SkinnedMeshComponent.h">
-      <Filter>Component\SkinnedMesh</Filter>
+      <Filter>7.Component\SkinnedMesh</Filter>
     </ClInclude>
     <ClInclude Include="DDSTextureLoader.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="Material.h">
-      <Filter>Material</Filter>
+      <Filter>5.Material</Filter>
     </ClInclude>
     <ClInclude Include="StandardMeshShader.h">
-      <Filter>Shader\Standard</Filter>
+      <Filter>3.Shader\Standard</Filter>
     </ClInclude>
     <ClInclude Include="StandardSkinnedMeshShader.h">
-      <Filter>Shader\Standard</Filter>
+      <Filter>3.Shader\Standard</Filter>
     </ClInclude>
     <ClInclude Include="AnimationSet.h">
       <Filter>Animation</Filter>
@@ -193,7 +193,7 @@
       <Filter>Animation</Filter>
     </ClInclude>
     <ClInclude Include="AnimatorComponent.h">
-      <Filter>Component\Animator</Filter>
+      <Filter>7.Component\Animator</Filter>
     </ClInclude>
     <ClInclude Include="ASTest.h">
       <Filter>헤더 파일</Filter>
@@ -208,9 +208,18 @@
       <Filter>Animation</Filter>
     </ClInclude>
     <ClInclude Include="GunComponent.h">
-      <Filter>Component\Gun</Filter>
+      <Filter>7.Component\Gun</Filter>
+    </ClInclude>
+    <ClInclude Include="ColliderComponent.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="SkyboxShader.h">
+      <Filter>3.Shader\Skybox</Filter>
     </ClInclude>
     <ClInclude Include="BaseScene.h">
+      <Filter>2.Scene\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="SkyboxMesh.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>
@@ -222,79 +231,76 @@
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="GameFramework.cpp">
-      <Filter>GameFramework</Filter>
+      <Filter>0.GameFramework</Filter>
     </ClCompile>
     <ClCompile Include="Object.cpp">
-      <Filter>Object</Filter>
+      <Filter>6.Object</Filter>
     </ClCompile>
     <ClCompile Include="Timer.cpp">
-      <Filter>Timer</Filter>
+      <Filter>0.GameFramework\Timer</Filter>
     </ClCompile>
     <ClCompile Include="Scene.cpp">
-      <Filter>Scene</Filter>
+      <Filter>2.Scene</Filter>
     </ClCompile>
     <ClCompile Include="Component.cpp">
-      <Filter>Component</Filter>
+      <Filter>7.Component</Filter>
     </ClCompile>
     <ClCompile Include="Shader.cpp">
-      <Filter>Shader</Filter>
-    </ClCompile>
-    <ClCompile Include="ColorShader.cpp">
-      <Filter>Shader\ColorShader</Filter>
+      <Filter>3.Shader</Filter>
     </ClCompile>
     <ClCompile Include="Mesh.cpp">
-      <Filter>Mesh</Filter>
+      <Filter>4.Mesh</Filter>
     </ClCompile>
     <ClCompile Include="MeshComponent.cpp">
-      <Filter>Component\Mesh</Filter>
+      <Filter>7.Component\Mesh</Filter>
     </ClCompile>
     <ClCompile Include="FrameResourceManager.cpp">
-      <Filter>Manager\FrameResourceManager</Filter>
+      <Filter>1.Manager\FrameResourceManager</Filter>
     </ClCompile>
     <ClCompile Include="TestScene.cpp">
-      <Filter>Scene\TestScene</Filter>
+      <Filter>2.Scene\TestScene</Filter>
     </ClCompile>
     <ClCompile Include="DescriptorManager.cpp">
-      <Filter>Manager\DescriptorManager</Filter>
+      <Filter>1.Manager\DescriptorManager</Filter>
     </ClCompile>
     <ClCompile Include="CubeMesh.cpp">
-      <Filter>Mesh\Cube</Filter>
+      <Filter>4.Mesh\Cube</Filter>
     </ClCompile>
     <ClCompile Include="CameraComponent.cpp">
-      <Filter>Component\Camera</Filter>
+      <Filter>7.Component\Camera</Filter>
     </ClCompile>
     <ClCompile Include="InputManager.cpp">
-      <Filter>Manager\InputManager</Filter>
+      <Filter>1.Manager\InputManager</Filter>
     </ClCompile>
     <ClCompile Include="InputControllerComponent.cpp">
-      <Filter>Component\Input</Filter>
+      <Filter>7.Component\Input</Filter>
     </ClCompile>
     <ClCompile Include="TestControllerComponent.cpp">
-      <Filter>Component\Input</Filter>
+      <Filter>7.Component\Input</Filter>
     </ClCompile>
     <ClCompile Include="ModelInfo.cpp">
       <Filter>ModelInfo</Filter>
     </ClCompile>
     <ClCompile Include="SkinnedMesh.cpp">
-      <Filter>Mesh</Filter>
+      <Filter>4.Mesh</Filter>
     </ClCompile>
     <ClCompile Include="SkinnedMeshShader.cpp">
-      <Filter>Shader\SkinnedMeshShader</Filter>
+      <Filter>3.Shader\SkinnedMeshShader</Filter>
     </ClCompile>
     <ClCompile Include="SkinnedMeshComponent.cpp">
-      <Filter>Component\SkinnedMesh</Filter>
+      <Filter>7.Component\SkinnedMesh</Filter>
     </ClCompile>
     <ClCompile Include="DDSTextureLoader.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="Material.cpp">
-      <Filter>Material</Filter>
+      <Filter>5.Material</Filter>
     </ClCompile>
     <ClCompile Include="StandardMeshShader.cpp">
-      <Filter>Shader\Standard</Filter>
+      <Filter>3.Shader\Standard</Filter>
     </ClCompile>
     <ClCompile Include="StandardSkinnedMeshShader.cpp">
-      <Filter>Shader\Standard</Filter>
+      <Filter>3.Shader\Standard</Filter>
     </ClCompile>
     <ClCompile Include="AnimationSet.cpp">
       <Filter>Animation</Filter>
@@ -303,7 +309,7 @@
       <Filter>Animation</Filter>
     </ClCompile>
     <ClCompile Include="AnimatorComponent.cpp">
-      <Filter>Component\Animator</Filter>
+      <Filter>7.Component\Animator</Filter>
     </ClCompile>
     <ClCompile Include="ASTest.cpp">
       <Filter>소스 파일</Filter>
@@ -318,9 +324,18 @@
       <Filter>Animation</Filter>
     </ClCompile>
     <ClCompile Include="GunComponent.cpp">
-      <Filter>Component\Gun</Filter>
+      <Filter>7.Component\Gun</Filter>
+    </ClCompile>
+    <ClCompile Include="ColliderComponent.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="SkyboxShader.cpp">
+      <Filter>3.Shader\Skybox</Filter>
     </ClCompile>
     <ClCompile Include="BaseScene.cpp">
+      <Filter>2.Scene\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="SkyboxMesh.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
@@ -339,9 +354,9 @@
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="GlobalValues.hlsl" />
-    <FxCompile Include="ColorShader.hlsl" />
     <FxCompile Include="SkinnedMeshShader.hlsl" />
     <FxCompile Include="LightingUtil.hlsl" />
     <FxCompile Include="StandardShader.hlsl" />
+    <FxCompile Include="SkyboxShader.hlsl" />
   </ItemGroup>
 </Project>

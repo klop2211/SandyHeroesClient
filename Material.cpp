@@ -33,6 +33,10 @@ void Material::CreateShaderVariables(ID3D12Device* device, ID3D12GraphicsCommand
 {
 	for (std::unique_ptr<Texture>& texture : texture_list_)
 	{
+		if (texture->name == "Skybox_Cube")
+		{
+			int a = 1;
+		}
 		std::string file_name = kTextureFilePath + texture->name + ".dds";
 		std::wstring file_name_w;
 		file_name_w.assign(file_name.begin(), file_name.end());
@@ -79,7 +83,10 @@ void Material::UpdateShaderVariables(ID3D12GraphicsCommandList* command_list,
 			texture_mask |= kTextureMaskNormal;
 			texture_root_index = (int)RootParameterIndex::kNormalMap;
 			break;
-
+		case TextureType::kCubeMap:
+			texture_mask |= kTextureMaskCube;
+			texture_root_index = (int)RootParameterIndex::kCubeMap;
+			break;
 		default:
 			break;
 		}
@@ -104,7 +111,6 @@ int Material::CreateShaderResourceViews(ID3D12Device* device, DescriptorManager*
 
 	D3D12_SHADER_RESOURCE_VIEW_DESC srv_desc{};
 	srv_desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-	srv_desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
 	srv_desc.Texture2D.MostDetailedMip = 0;
 	srv_desc.Texture2D.ResourceMinLODClamp = 0.f;
 
@@ -115,6 +121,14 @@ int Material::CreateShaderResourceViews(ID3D12Device* device, DescriptorManager*
 		descriptor = descriptor_manager->GetCpuHandle(i);
 		srv_desc.Format = texture->resource->GetDesc().Format;
 		srv_desc.Texture2D.MipLevels = texture->resource->GetDesc().MipLevels;
+		if (texture->type == TextureType::kCubeMap)
+		{
+			srv_desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURECUBE;
+		}
+		else
+		{
+			srv_desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+		}
 		device->CreateShaderResourceView(texture->resource.Get(), &srv_desc, descriptor);
 		texture->heap_index = i;
 		++i;
@@ -231,6 +245,15 @@ void Material::LoadMaterialFromFile(std::ifstream& file)
 		}
 		if (load_token == "</Material>")
 			return;
+	}
+}
+
+void Material::AddTexture(Texture* texture)
+{
+	if (texture)
+	{
+		texture_list_.emplace_back();
+		texture_list_.back().reset(texture);
 	}
 }
 
