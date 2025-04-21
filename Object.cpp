@@ -120,7 +120,7 @@ Object* Object::sibling() const
 
 void Object::ApplyGravity(float elapsed_time)
 {
-	if (!on_ground_)
+	if (!is_ground_)
 		velocity_.y += gravity_ * elapsed_time;
 	else
 		velocity_.y = 0.0f;
@@ -177,7 +177,7 @@ void Object::set_velocity(const XMFLOAT3& value)
 
 void Object::set_on_ground(bool on_ground)
 {
-	on_ground_ = on_ground;
+	is_ground_ = on_ground;
 }
 
 void Object::AddChild(Object* object)

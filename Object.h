@@ -163,7 +163,7 @@ protected:
 	//물리 관련 변수들
 	XMFLOAT3 velocity_{ 0,0,0 };
 	const float gravity_ = { -9.8f };
-	bool on_ground_ = false;
+	bool is_ground_ = false;
 
 private:
 	// 오브젝트의 실제 월드 행렬(즉, 상위노드의 변환이 전부 적용된)
