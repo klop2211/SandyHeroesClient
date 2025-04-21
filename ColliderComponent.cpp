@@ -48,7 +48,64 @@ bool ColliderComponent::CheckOBBMeshCollision(const MeshComponent* other_mesh, c
 	return false; // 충돌 없음
 }
 
+bool ColliderComponent::CheckRayGroundCollision(const MeshComponent* other_mesh, const XMFLOAT3& rayOrigin, const XMFLOAT3& rayDir, float maxDistance, const XMFLOAT4X4& worldMatrix)
+{
+	XMMATRIX matWorld = XMLoadFloat4x4(&worldMatrix);
+
+	auto indices = other_mesh->GetMesh()->GetIndicesArray();
+	auto positions = other_mesh->GetMesh()->GetPositions();
+
+	for (UINT i = 0; i < indices.size(); i += 3)
+	{
+		XMVECTOR v0 = XMVector3TransformCoord(XMLoadFloat3(&positions[i]), matWorld);
+		XMVECTOR v1 = XMVector3TransformCoord(XMLoadFloat3(&positions[i+1]), matWorld);
+		XMVECTOR v2 = XMVector3TransformCoord(XMLoadFloat3(&positions[i+2]), matWorld);
+
+		float distance = 0.0f;
+		if (RayIntersectsTriangle(XMLoadFloat3(&rayOrigin), XMLoadFloat3(&rayDir), v0, v1, v2, distance))
+		{
+			if (distance <= maxDistance)
+				return true;
+		}
+	}
+	return false;
+}
+
+bool ColliderComponent::RayIntersectsTriangle(XMVECTOR rayOrigin, XMVECTOR rayDir, XMVECTOR v0, XMVECTOR v1, XMVECTOR v2, float& t)
+{
+	constexpr float EPSILON = 0.000001f;
+	XMVECTOR edge1 = XMVectorSubtract(v1, v0);
+	XMVECTOR edge2 = XMVectorSubtract(v2, v0);
+	XMVECTOR h = XMVector3Cross(rayDir, edge2);
+	float a = XMVectorGetX(XMVector3Dot(edge1, h));
+
+	if (fabs(a) < EPSILON)
+		return false; // 평행
+
+	float f = 1.0f / a;
+	XMVECTOR s = XMVectorSubtract(rayOrigin, v0);
+	float u = f * XMVectorGetX(XMVector3Dot(s, h));
+	if (u < 0.0f || u > 1.0f)
+		return false;
+
+	XMVECTOR q = XMVector3Cross(s, edge1);
+	float v = f * XMVectorGetX(XMVector3Dot(rayDir, q));
+	if (v < 0.0f || u + v > 1.0f)
+		return false;
+
+	t = f * XMVectorGetX(XMVector3Dot(edge2, q));
+	if (t > EPSILON)
+		return true;
+
+	return false;
+}
+
 bool ColliderComponent::Intersects(ColliderComponent* collider_object)
 {
 	return (animated_bounding_box_.Intersects(collider_object->animated_bounding_box_));
+}
+
+XMFLOAT3 ColliderComponent::extent() const
+{
+	return bounding_box_->Extents;
 }

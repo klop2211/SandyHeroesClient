@@ -278,11 +278,18 @@ void TestScene::BuildScene()
 bool TestScene::CheckObjectByObjectCollisions()
 {
 	auto player_collider = Object::GetComponent<ColliderComponent>(player_);
+
+	XMFLOAT3 rayOrigin = player_->world_position_vector();
+	rayOrigin.y -= player_collider->extent().y * 0.9f; // 발밑에서 Ray 시작
+	XMFLOAT3 rayDir = { 0.0f, -1.0f, 0.0f }; // 아래 방향
+	float maxDistance = 5.0f; // 최대 체크 거리
+
 	for (auto& object : object_list_)
 	{
 		ColliderComponent* collider = Object::GetComponent<ColliderComponent>(object.get());
 		if (nullptr != collider)
 		{
+			// 1차: OBB 충돌 검사
 			if (player_collider->Intersects(collider))
 			{
 				MeshComponent* mesh = Object::GetComponentInChildren<MeshComponent>(object.get());
@@ -290,12 +297,11 @@ bool TestScene::CheckObjectByObjectCollisions()
 				{
 					if (player_collider->CheckOBBMeshCollision(mesh, player_->world_matrix(), object->world_matrix()))
 					{
-						float deltaY = player_->world_position_vector().y - object->world_position_vector().y;
-						if (deltaY > 0.0f && deltaY < 20.0f) // 바닥이라고 판단할 수 있는 높이
+						// 2차: 발밑으로 RayCast 체크
+						if (collider->CheckRayGroundCollision(mesh, rayOrigin, rayDir, maxDistance, object->world_matrix()))
 						{
 							player_->set_is_ground(true);
-							//player_->set_velocity({ player_->velocity().x, 0.0f, player_->velocity().z }); // y 속도 정지
-
+							player_->set_velocity({ player_->velocity().x, 0.0f, player_->velocity().z }); // y 속도 정지
 							return true;
 						}
 						else
