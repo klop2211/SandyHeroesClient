@@ -24,6 +24,7 @@
 #include "GunComponent.h"
 #include "SkyboxShader.h"
 #include "SkyboxMesh.h"
+#include "MeshColliderComponent.h"
 
 void BaseScene::BuildShader(ID3D12Device* device, ID3D12RootSignature* root_signature)
 {
@@ -82,10 +83,11 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 
 	//모델 오브젝트 배치
 	Object* player = model_infos_[0]->GetInstance();
-
-	player->set_position_vector(XMFLOAT3{ 0, 2, 0 });
+	player->set_position_vector(XMFLOAT3{ 0, 30, 0 });
 	AnimatorComponent* animator = Object::GetComponent<AnimatorComponent>(player);
 	animator->set_animation_state(new PlayerAnimationState);
+
+	player_ = player;
 
 	//FPS 조작용 컨트롤러 설정
 	FPSControllerComponent* fps_controller = new FPSControllerComponent(player);
@@ -113,7 +115,7 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 	Object* camera_object = new Object();
 	player->AddChild(camera_object);
 	fps_controller->set_camera_object(camera_object);
-	camera_object->set_position_vector(0,1.2,0); // 플레이어 캐릭터의 키가 150인것을 고려하여 머리위치에 배치
+	camera_object->set_position_vector(0,0.4,0); // 플레이어 캐릭터의 키가 150인것을 고려하여 머리위치에 배치
 	camera_object->set_name("CAMERA_1");
 	CameraComponent* camera_component =
 		new CameraComponent(camera_object, 0.01, 10000,
@@ -138,6 +140,20 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 	object_list_.emplace_back();
 	object_list_.back().reset(camera_object);
 
+	//모든 메쉬 있는 객체에 메쉬 콜라이더 추가(주의사항: 새롭게 만들어지는 메쉬있는 객체는 메쉬콜라이더가 없음)
+	for (auto& mesh : meshes_)
+	{
+		auto& mesh_component_list = mesh->mesh_component_list();
+		for (auto& mesh_component : mesh_component_list)
+		{
+			Object* object = mesh_component->owner();
+			MeshColliderComponent* mesh_collider = new MeshColliderComponent(object);
+			mesh_collider->set_mesh(mesh.get());
+			object->AddComponent(mesh_collider);
+		}
+	}
+
+	Scene::UpdateObjectWorldMatrix();
 }
 
 void BaseScene::Render(ID3D12GraphicsCommandList* command_list)
@@ -232,3 +248,46 @@ bool BaseScene::ProcessInput(UINT id, WPARAM w_param, LPARAM l_param, float time
 		break;
 	}
 }
+
+void BaseScene::Update(float elapsed_time)
+{
+	CheckPlayerIsGround();
+
+	Scene::Update(elapsed_time);
+
+}
+
+void BaseScene::CheckPlayerIsGround()
+{
+	XMFLOAT3 position = player_->world_position_vector();
+	constexpr float kGroundYOffset = 0.3;
+	position.y += kGroundYOffset;
+	XMVECTOR ray_origin = XMLoadFloat3(&position);
+	XMVECTOR ray_direction = XMVectorSet(0, -1, 0, 0);
+
+	float distance{};
+	for (auto& object : object_list_)
+	{
+		if (object.get() == player_)
+		{
+			continue;
+		}
+		auto mesh_collider = Object::GetComponent<MeshColliderComponent>(object.get());
+		if (!mesh_collider)
+		{
+			continue;
+		}
+		if (mesh_collider->CollisionCheckByRay(ray_origin, ray_direction, distance))
+		{
+			if (distance <= kGroundYOffset)
+			{
+				player_->set_is_ground(true);
+				position.y -= distance;
+				player_->set_position_vector(position);
+				return;
+			}
+		}
+	}
+	player_->set_is_ground(false);
+}
+

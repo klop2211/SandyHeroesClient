@@ -47,6 +47,7 @@ public:
 	BoundingBox bounds() const;
 	const std::vector<XMFLOAT3>& positions() const;
 	const std::vector<std::vector<UINT>>& indices_array() const;
+	D3D12_PRIMITIVE_TOPOLOGY primitive_topology() const;
 
 	//setter
 	void set_shader_type(int value);

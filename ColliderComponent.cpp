@@ -52,8 +52,8 @@ bool ColliderComponent::CheckRayGroundCollision(const MeshComponent* other_mesh,
 {
 	XMMATRIX matWorld = XMLoadFloat4x4(&worldMatrix);
 
-	auto indices = other_mesh->GetMesh()->GetIndicesArray();
-	auto positions = other_mesh->GetMesh()->GetPositions();
+	auto indices = other_mesh->GetMesh()->indices_array();
+	auto positions = other_mesh->GetMesh()->positions();
 
 	for (UINT i = 0; i < indices.size(); i += 3)
 	{

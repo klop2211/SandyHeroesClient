@@ -104,7 +104,7 @@ bool FPSControllerComponent::ProcessInput(UINT message_id, WPARAM w_param, LPARA
 			is_key_down_['D'] = true;
 			break;
 		case VK_SPACE:
-			if (owner_->is_ground()) //임시 지면 판정
+			if (owner_->is_ground())
 			{
 				is_jumpkey_pressed_ = true;
 			}
@@ -192,7 +192,7 @@ void FPSControllerComponent::Update(float elapsed_time)
 	if (is_key_down_['D']) velocity += right * speed;
 
 
-	if (owner_->is_ground()) //임시 지면 판정
+	if (owner_->is_ground())
 	{
 		y_axis_velocity_ = 0.f;
 		if (is_jumpkey_pressed_)

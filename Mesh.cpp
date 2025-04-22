@@ -355,6 +355,11 @@ const std::vector<std::vector<UINT>>& Mesh::indices_array() const
 	return indices_array_;
 }
 
+D3D12_PRIMITIVE_TOPOLOGY Mesh::primitive_topology() const
+{
+	return primitive_topology_;
+}
+
 void Mesh::set_shader_type(int value)
 {
 	shader_type_ = value;

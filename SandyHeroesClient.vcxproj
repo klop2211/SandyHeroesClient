@@ -157,6 +157,7 @@
     <ClInclude Include="InputManager.h" />
     <ClInclude Include="Material.h" />
     <ClInclude Include="Mesh.h" />
+    <ClInclude Include="MeshColliderComponent.h" />
     <ClInclude Include="MeshComponent.h" />
     <ClInclude Include="ModelInfo.h" />
     <ClInclude Include="Object.h" />
@@ -200,6 +201,7 @@
     <ClCompile Include="InputManager.cpp" />
     <ClCompile Include="Material.cpp" />
     <ClCompile Include="Mesh.cpp" />
+    <ClCompile Include="MeshColliderComponent.cpp" />
     <ClCompile Include="MeshComponent.cpp" />
     <ClCompile Include="ModelInfo.cpp" />
     <ClCompile Include="Object.cpp" />
