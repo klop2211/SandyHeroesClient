@@ -13,7 +13,7 @@ int PlayerAnimationState::Run(Object* object, bool is_end)
 		{
 			animation_track_ = (int)PlayerAnimationTrack::kRun;
 		}
-		if (object->position_vector().y > 0.001)
+		if (!object->is_ground())
 		{
 			animation_track_ = (int)PlayerAnimationTrack::kJump;
 		}
@@ -23,7 +23,6 @@ int PlayerAnimationState::Run(Object* object, bool is_end)
 		}
 		break;
 	case PlayerAnimationTrack::kRun:
-		//TODO: 달리기 애니메이션 좌우 구별
 		if (IsZero(xmath_util_float3::Length(object->velocity())))
 		{
 			animation_track_ = (int)PlayerAnimationTrack::kIdle;

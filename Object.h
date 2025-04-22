@@ -120,7 +120,7 @@ public:
 	template<class T>
 	static std::list<T*> GetComponentsInChildren(Object* object)
 	{
-		std::list<T*> component_list = GetCompnents<T>(object);
+		std::list<T*> component_list = GetComponents<T>(object);
 		std::list<T*> r_value;
 
 		for (T* component : component_list)

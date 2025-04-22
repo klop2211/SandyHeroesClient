@@ -25,14 +25,17 @@
 #include "SkyboxShader.h"
 #include "SkyboxMesh.h"
 #include "MeshColliderComponent.h"
+#include "DebugMeshComponent.h"
+#include "DebugShader.h"
 
 void BaseScene::BuildShader(ID3D12Device* device, ID3D12RootSignature* root_signature)
 {
-	int shader_count = 3;
+	int shader_count = 4;
 	shaders_.reserve(shader_count);
 	shaders_.push_back(std::make_unique<StandardMeshShader>());
 	shaders_.push_back(std::make_unique<StandardSkinnedMeshShader>());
 	shaders_.push_back(std::make_unique<SkyboxShader>());
+	shaders_.push_back(std::make_unique<DebugShader>());
 
 	for (int i = 0; i < shader_count; ++i)
 	{
@@ -40,9 +43,10 @@ void BaseScene::BuildShader(ID3D12Device* device, ID3D12RootSignature* root_sign
 	}
 }
 
+using namespace file_load_util;
 void BaseScene::BuildMesh(ID3D12Device* device, ID3D12GraphicsCommandList* command_list)
 {
-	meshes_.reserve(30);
+	meshes_.reserve(50);
 	meshes_.push_back(std::make_unique<CubeMesh>());
 	Material* material = new Material{};
 	material->set_albedo_color(0, 1, 0, 1);
@@ -57,11 +61,60 @@ void BaseScene::BuildMesh(ID3D12Device* device, ID3D12GraphicsCommandList* comma
 	materials_.emplace_back();
 	materials_.back().reset(material);
 
-	model_infos_.reserve(30);
+	//debug mesh
+	material = materials_[0].get(); // 의미 없는 아무 머터리얼
+	Mesh* debug_mesh = new CubeMesh();
+	debug_mesh->ClearNormals();
+	debug_mesh->ClearNormals();
+	debug_mesh->ClearTangents();
+	debug_mesh->AddMaterial(material);
+	debug_mesh->set_shader_type((int)ShaderType::kDebug);
+	debug_mesh->set_name("Debug_Mesh");
+	meshes_.emplace_back();
+	meshes_.back().reset(debug_mesh);
+
+
+	model_infos_.reserve(40);
 	model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/Dog00.bin", meshes_, materials_));
 	model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/Gun/classic.bin", meshes_, materials_));
 
-	BuildScene("Base");
+	//BuildScene("Base");
+
+	std::ifstream scene_file{ "./Resource/Model/World/Scene.bin", std::ios::binary };
+
+	int root_object_count = ReadFromFile<int>(scene_file);
+
+	std::string load_token;
+
+	for (int i = 0; i < root_object_count; ++i)
+	{
+		ReadStringFromFile(scene_file, load_token);
+		if (load_token[0] == '@')
+		{
+			load_token.erase(0, 1);
+			object_list_.emplace_back();
+			object_list_.back().reset(FindModelInfo(load_token)->GetInstance());
+
+			ReadStringFromFile(scene_file, load_token);
+			XMFLOAT4X4 transfrom = ReadFromFile<XMFLOAT4X4>(scene_file);
+			object_list_.back()->set_transform_matrix(transfrom);
+		}
+		else
+		{
+			std::string object_name = load_token;
+
+			ReadStringFromFile(scene_file, load_token); // <Transfrom>
+			XMFLOAT4X4 transfrom = ReadFromFile<XMFLOAT4X4>(scene_file);
+
+			model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/World/" + object_name + ".bin", meshes_, materials_));
+
+			object_list_.emplace_back();
+			object_list_.back().reset(model_infos_.back()->GetInstance());
+
+			object_list_.back()->set_transform_matrix(transfrom);
+
+		}
+	}
 
 	for (const std::unique_ptr<Mesh>& mesh : meshes_)
 	{
@@ -141,6 +194,8 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 	object_list_.back().reset(camera_object);
 
 	//모든 메쉬 있는 객체에 메쉬 콜라이더 추가(주의사항: 새롭게 만들어지는 메쉬있는 객체는 메쉬콜라이더가 없음)
+	//+ 디버그용 메쉬 추가
+	Mesh* debug_mesh = Scene::FindMesh("Debug_Mesh", meshes_);
 	for (auto& mesh : meshes_)
 	{
 		auto& mesh_component_list = mesh->mesh_component_list();
@@ -150,6 +205,10 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 			MeshColliderComponent* mesh_collider = new MeshColliderComponent(object);
 			mesh_collider->set_mesh(mesh.get());
 			object->AddComponent(mesh_collider);
+			if (mesh->name() != "Debug_Mesh")
+			{
+				object->AddComponent(new DebugMeshComponent(object, debug_mesh, mesh->bounds()));
+			}
 		}
 	}
 
@@ -167,8 +226,8 @@ void BaseScene::Render(ID3D12GraphicsCommandList* command_list)
 
 	//TODO: 조명 관련 클래스를 생성후 그것을 사용하여 아래 정보 업데이트(현재는 테스트용 하드코딩)
 	cb_pass.ambient_light = XMFLOAT4{ 0.1,0.1,0.1, 1 };
-	cb_pass.lights[0].strength = XMFLOAT3{ 1,1,1 };
-	cb_pass.lights[0].direction = XMFLOAT3{ 1,-1, -0.5 };
+	cb_pass.lights[0].strength = XMFLOAT3{ 1, 1, 1 };
+	cb_pass.lights[0].direction = XMFLOAT3{ 0, -1, 0 };
 	cb_pass.lights[0].enable = true;
 	cb_pass.lights[0].type = 0;
 
@@ -260,30 +319,24 @@ void BaseScene::Update(float elapsed_time)
 void BaseScene::CheckPlayerIsGround()
 {
 	XMFLOAT3 position = player_->world_position_vector();
-	constexpr float kGroundYOffset = 0.3;
-	position.y += kGroundYOffset;
+	constexpr float kGroundYOffset = 0.686;
 	XMVECTOR ray_origin = XMLoadFloat3(&position);
 	XMVECTOR ray_direction = XMVectorSet(0, -1, 0, 0);
 
 	float distance{};
-	for (auto& object : object_list_)
+	Object* map = Scene::FindObject("BASE");
+	auto& mesh_collider_list = Object::GetComponentsInChildren<MeshColliderComponent>(map);
+	if (!mesh_collider_list.size())
 	{
-		if (object.get() == player_)
-		{
-			continue;
-		}
-		auto mesh_collider = Object::GetComponent<MeshColliderComponent>(object.get());
-		if (!mesh_collider)
-		{
-			continue;
-		}
+		return;
+	}
+	for (auto& mesh_collider : mesh_collider_list)
+	{
 		if (mesh_collider->CollisionCheckByRay(ray_origin, ray_direction, distance))
 		{
 			if (distance <= kGroundYOffset)
 			{
 				player_->set_is_ground(true);
-				position.y -= distance;
-				player_->set_position_vector(position);
 				return;
 			}
 		}

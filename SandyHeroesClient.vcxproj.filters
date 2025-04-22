@@ -82,9 +82,6 @@
     <Filter Include="7.Component\Input">
       <UniqueIdentifier>{c225eaad-b137-44ff-9321-939c464687b6}</UniqueIdentifier>
     </Filter>
-    <Filter Include="7.Component\SkinnedMesh">
-      <UniqueIdentifier>{1abe438f-5798-44ed-b5a3-c6d476f52c1e}</UniqueIdentifier>
-    </Filter>
     <Filter Include="7.Component\Animator">
       <UniqueIdentifier>{022fb1bb-77bc-4d27-9781-00ec0a98feb2}</UniqueIdentifier>
     </Filter>
@@ -99,6 +96,18 @@
     </Filter>
     <Filter Include="7.Component\Input\FPS">
       <UniqueIdentifier>{009c1362-c1e8-46de-a90a-c4ca6085ba0c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="7.Component\Mesh\SkinnedMesh">
+      <UniqueIdentifier>{1abe438f-5798-44ed-b5a3-c6d476f52c1e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="7.Component\Mesh\DebugMesh">
+      <UniqueIdentifier>{bd906ab1-bf5e-4a64-bb7f-3ed9cb07f928}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="3.Shader\Debug">
+      <UniqueIdentifier>{ac8b63a8-37bd-434a-bb05-0b611ab6a249}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="7.Component\Collider">
+      <UniqueIdentifier>{0198f9e0-0727-40a1-90c2-86ef339f8ce0}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -178,7 +187,7 @@
       <Filter>3.Shader\SkinnedMeshShader</Filter>
     </ClInclude>
     <ClInclude Include="SkinnedMeshComponent.h">
-      <Filter>7.Component\SkinnedMesh</Filter>
+      <Filter>7.Component\Mesh\SkinnedMesh</Filter>
     </ClInclude>
     <ClInclude Include="DDSTextureLoader.h">
       <Filter>헤더 파일</Filter>
@@ -230,6 +239,15 @@
     </ClInclude>
     <ClInclude Include="FPSControllerComponent.h">
       <Filter>7.Component\Input\FPS</Filter>
+    </ClInclude>
+    <ClInclude Include="DebugMeshComponent.h">
+      <Filter>7.Component\Mesh\DebugMesh</Filter>
+    </ClInclude>
+    <ClInclude Include="DebugShader.h">
+      <Filter>3.Shader\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="MeshColliderComponent.h">
+      <Filter>7.Component\Collider</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -294,7 +312,7 @@
       <Filter>3.Shader\SkinnedMeshShader</Filter>
     </ClCompile>
     <ClCompile Include="SkinnedMeshComponent.cpp">
-      <Filter>7.Component\SkinnedMesh</Filter>
+      <Filter>7.Component\Mesh\SkinnedMesh</Filter>
     </ClCompile>
     <ClCompile Include="DDSTextureLoader.cpp">
       <Filter>소스 파일</Filter>
@@ -347,6 +365,15 @@
     <ClCompile Include="FPSControllerComponent.cpp">
       <Filter>7.Component\Input\FPS</Filter>
     </ClCompile>
+    <ClCompile Include="DebugMeshComponent.cpp">
+      <Filter>7.Component\Mesh\DebugMesh</Filter>
+    </ClCompile>
+    <ClCompile Include="DebugShader.cpp">
+      <Filter>3.Shader\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="MeshColliderComponent.cpp">
+      <Filter>7.Component\Collider</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="SandyHeroesClient.rc">
@@ -367,5 +394,6 @@
     <FxCompile Include="LightingUtil.hlsl" />
     <FxCompile Include="StandardShader.hlsl" />
     <FxCompile Include="SkyboxShader.hlsl" />
+    <FxCompile Include="DebugShader.hlsl" />
   </ItemGroup>
 </Project>
