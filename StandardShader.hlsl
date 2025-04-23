@@ -14,7 +14,7 @@ struct SkinnedMeshVertexIn
     float2 uv : TEXCOORD;
     float3 normal : NORMAL;
     float3 tangent : TANGENT;
-    int4 indices : BONEINDEX;
+    uint4 indices : BONEINDEX;
     float4 weights : BONEWEIGHT;
 };
 

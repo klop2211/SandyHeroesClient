@@ -72,10 +72,14 @@ void GameFramework::InitDirect3D()
 #if defined(DEBUG) | defined(_DEBUG)
     // D3D12 디버그 레이어를 활성화 합니다.
     {
-        ComPtr<ID3D12Debug> debugController;
-        D3D12GetDebugInterface(IID_PPV_ARGS(&debugController));
+        ComPtr<ID3D12Debug> debeg_controller;
+        if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debeg_controller))))
+        {
+            debeg_controller->EnableDebugLayer();
+
+            dxgi_farctory_flags |= DXGI_CREATE_FACTORY_DEBUG;
+        }
     }
-    dxgi_farctory_flags |= DXGI_CREATE_FACTORY_DEBUG;
 #endif
 
     CreateDXGIFactory2(dxgi_farctory_flags, IID_PPV_ARGS(&dxgi_factory_));
@@ -310,7 +314,7 @@ void GameFramework::OnResize()
     ds_buffer_desc.MipLevels = 1;
     ds_buffer_desc.Format = depth_stencil_buffer_format_;
     ds_buffer_desc.SampleDesc.Count = msaa_state_ ? 4 : 1; //msaa를 사용하면 4 아니면 1
-    ds_buffer_desc.SampleDesc.Quality = msaa_state_ ? (msaa_quality_ - 1) : 1; 
+    ds_buffer_desc.SampleDesc.Quality = msaa_state_ ? (msaa_quality_ - 1) : 0; 
     ds_buffer_desc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
     ds_buffer_desc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
 
