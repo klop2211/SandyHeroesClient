@@ -125,7 +125,7 @@ void BaseScene::BuildMesh(ID3D12Device* device, ID3D12GraphicsCommandList* comma
 void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* command_list)
 {
 	//TODO: 각 메쉬의 컴포넌트 연결 개수를 파악하면 아래 수치를 디테일하게 설정할 수 있을것 같다..
-	cb_object_capacity_ = 20000;
+	cb_object_capacity_ = 10000;
 	cb_skinned_mesh_object_capacity_ = 10000;
 
 	Object* skybox = new Object();
@@ -291,14 +291,13 @@ bool BaseScene::ProcessInput(UINT id, WPARAM w_param, LPARAM l_param, float time
 		if (w_param == 'L')
 		{
 			//바꿀 카메라 오브젝트를 찾고
-			Object* camera = FindObject("Dog00");
 			//그 오브젝트의 카메라와 컨트롤러를 씬으로 가져온다
-			CameraComponent* new_camera = Object::GetComponentInChildren<CameraComponent>(camera);
+			CameraComponent* new_camera = Object::GetComponentInChildren<CameraComponent>(player_);
 			if (new_camera) // nullptr 방지
 			{
 				main_camera_ = new_camera;
 			}
-			main_input_controller_ = Object::GetComponent<FPSControllerComponent>(camera);
+			main_input_controller_ = Object::GetComponent<FPSControllerComponent>(player_);
 		}
 		break;
 
@@ -319,11 +318,11 @@ void BaseScene::Update(float elapsed_time)
 void BaseScene::CheckPlayerIsGround()
 {
 	XMFLOAT3 position = player_->world_position_vector();
-	constexpr float kGroundYOffset = 0.686;
+	constexpr float kGroundYOffset = 0.68;
 	XMVECTOR ray_origin = XMLoadFloat3(&position);
 	XMVECTOR ray_direction = XMVectorSet(0, -1, 0, 0);
 
-	float distance{};
+	float distance{std::numeric_limits<float>::max()};
 	Object* map = Scene::FindObject("BASE");
 	auto& mesh_collider_list = Object::GetComponentsInChildren<MeshColliderComponent>(map);
 	if (!mesh_collider_list.size())
@@ -337,11 +336,13 @@ void BaseScene::CheckPlayerIsGround()
 			if (distance <= kGroundYOffset)
 			{
 				player_->set_is_ground(true);
-				
+				position.y += kGroundYOffset - distance;
+				player_->set_position_vector(position);
 				return;
 			}
 		}
 	}
+
 	player_->set_is_ground(false);
 }
 

@@ -35,6 +35,7 @@ void GunComponent::Update(float elapsed_time)
     if (is_reload_ && loading_time_ <= 0.f)
     {
         loaded_bullets_ = magazine_cacity_;
+        is_reload_ = false;
     }
 
     for (const auto& bullet : fired_bullet_list_)
@@ -49,8 +50,12 @@ void GunComponent::Update(float elapsed_time)
 void GunComponent::ReloadBullets()
 {
     //TODO: 재장전 애니메이션 수행
-    loading_time_ = reload_time_;
-    is_reload_ = true;
+    if (!is_reload_)
+    {
+        loading_time_ = reload_time_;
+        is_reload_ = true;
+
+    }
 }
 
 bool GunComponent::FireBullet(XMFLOAT3 direction, Mesh* bullet_mesh)
@@ -65,8 +70,9 @@ bool GunComponent::FireBullet(XMFLOAT3 direction, Mesh* bullet_mesh)
             bullet->AddComponent(new MeshComponent(bullet, bullet_mesh));
             bullet->set_position_vector(owner_->world_position_vector());
             bullet->set_velocity(direction * bullet_speed_);
-            bullet->Scale(0.5);
+            bullet->Scale(0.1);
             fired_bullet_list_.push_back(bullet);
+            --loaded_bullets_;
         }
     }
     else
@@ -117,31 +123,31 @@ void GunComponent::LoadGunInfosFromFile(const std::string& file_name)
             >> info.damage >> info.critical_damage_rate >> info.rpm
             >> info.magazine_cacity >> info.reload_time >> fire_type_str >> info.burst_num >> info.bullet_speed;
 
-        if (bullet_type_str == "일반")
+        if (bullet_type_str == "normal")
         {
             info.bullet_type = BulletType::kNormal;
         }
-        if (bullet_type_str == "대형")
+        if (bullet_type_str == "big")
         {
             info.bullet_type = BulletType::kBig;
         }
-        if (bullet_type_str == "특수")
+        if (bullet_type_str == "special")
         {
             info.bullet_type = BulletType::kSpecial;
         }
-        if (fire_type_str == "자동")
+        if (fire_type_str == "auto")
         {
             info.fire_type = GunFireType::kAuto;
         }
-        if (fire_type_str == "반자동")
+        if (fire_type_str == "semiauto")
         {
             info.fire_type = GunFireType::kSemiAuto;
         }
-        if (fire_type_str == "볼트액션")
+        if (fire_type_str == "boltaction")
         {
             info.fire_type = GunFireType::kBoltAction;
         }
-        if (fire_type_str == "점사")
+        if (fire_type_str == "burst")
         {
             info.fire_type = GunFireType::kBurst;
         }

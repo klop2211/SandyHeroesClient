@@ -104,10 +104,13 @@ bool FPSControllerComponent::ProcessInput(UINT message_id, WPARAM w_param, LPARA
 			is_key_down_['D'] = true;
 			break;
 		case VK_SPACE:
-			if (owner_->is_ground())
+		{
+			constexpr float kFallCheckVelocity = -0.5;
+			if (owner_->velocity().y > kFallCheckVelocity)
 			{
 				is_jumpkey_pressed_ = true;
 			}
+		}
 			break; 
 		case VK_SHIFT:
 			if (dash_cool_delta_time_ <= 0)
@@ -239,7 +242,7 @@ void FPSControllerComponent::Update(float elapsed_time)
 		//총알이 총구에서 피킹 지점으로 발사되게 구현
 		//2가지 정보 필요 1. 총구 위치 2. 피킹 지점
 		GunComponent* gun = Object::GetComponentInChildren<GunComponent>(owner_);
-		if (gun && gun->fire_type() == GunFireType::kAuto)
+		if (gun && (gun->fire_type() == GunFireType::kAuto))
 		{
 			// 1. 총구 위치
 			XMFLOAT3 gun_shoting_point{ gun->owner()->world_position_vector() };

@@ -249,6 +249,9 @@
     <ClInclude Include="MeshColliderComponent.h">
       <Filter>7.Component\Collider</Filter>
     </ClInclude>
+    <ClInclude Include="CutSceneRecorder.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="SandyHeroesClient.cpp">
@@ -373,6 +376,9 @@
     </ClCompile>
     <ClCompile Include="MeshColliderComponent.cpp">
       <Filter>7.Component\Collider</Filter>
+    </ClCompile>
+    <ClCompile Include="CutSceneRecorder.cpp">
+      <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

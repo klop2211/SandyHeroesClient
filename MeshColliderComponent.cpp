@@ -69,6 +69,47 @@ bool MeshColliderComponent::CollisionCheckByRay(FXMVECTOR ray_origin, FXMVECTOR 
 	return is_collide;
 }
 
+bool MeshColliderComponent::CollisionCheckByObb(BoundingOrientedBox obb)
+{
+	XMMATRIX world = XMLoadFloat4x4(&owner_->world_matrix());
+	XMMATRIX inverse_world = XMMatrixInverse(&XMMatrixDeterminant(world), world);
+
+	BoundingOrientedBox obb_local{};
+	obb.Transform(obb_local, inverse_world);
+
+	bool is_collide{ false };
+	if (mesh_->bounds().Intersects(obb_local))
+	{
+		auto& positions = mesh_->positions();
+		auto& indices_array = mesh_->indices_array();
+
+		//TODO: 트라이앵글 스트립에 대한 처리 구현
+		if (mesh_->primitive_topology() == D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST)
+		{
+			for (auto& indices : indices_array)
+			{
+				for (int i = 0; i < indices.size(); i += 3)
+				{
+					UINT i0 = indices[i + 0];
+					UINT i1 = indices[i + 1];
+					UINT i2 = indices[i + 2];
+
+					XMVECTOR v0 = XMLoadFloat3(&positions[i0]);
+					XMVECTOR v1 = XMLoadFloat3(&positions[i1]);
+					XMVECTOR v2 = XMLoadFloat3(&positions[i2]);
+
+					if (obb_local.Intersects(v0, v1, v2))
+					{
+						is_collide = true;
+					}
+				}
+			}
+		}
+	}
+
+	return is_collide;
+}
+
 void MeshColliderComponent::set_mesh(Mesh* mesh)
 {
 	mesh_ = mesh;

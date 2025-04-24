@@ -17,6 +17,7 @@ public:
     // return: 충돌 여부
     bool CollisionCheckByRay(FXMVECTOR ray_origin, FXMVECTOR ray_direction, float& out_distance);
 
+    bool CollisionCheckByObb(BoundingOrientedBox obb);
 
     //setter
     void set_mesh(Mesh* mesh);

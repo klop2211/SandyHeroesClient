@@ -145,6 +145,7 @@
     <ClInclude Include="ColliderComponent.h" />
     <ClInclude Include="Component.h" />
     <ClInclude Include="CubeMesh.h" />
+    <ClInclude Include="CutSceneRecorder.h" />
     <ClInclude Include="d3dx12.h" />
     <ClInclude Include="DDSTextureLoader.h" />
     <ClInclude Include="DebugMeshComponent.h" />
@@ -193,6 +194,7 @@
     <ClCompile Include="ColliderComponent.cpp" />
     <ClCompile Include="Component.cpp" />
     <ClCompile Include="CubeMesh.cpp" />
+    <ClCompile Include="CutSceneRecorder.cpp" />
     <ClCompile Include="DDSTextureLoader.cpp" />
     <ClCompile Include="DebugMeshComponent.cpp" />
     <ClCompile Include="DebugShader.cpp" />
