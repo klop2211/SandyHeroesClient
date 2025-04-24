@@ -41,6 +41,8 @@ XMVECTOR Scene::GetPickingPointAtWorld(float sx, float sy, Object* picked_object
 	//TODO: 피킹 처리 리펙토링
 	for (const auto& mesh : meshes_)
 	{
+		if (mesh->name() == "Debug_Mesh")
+			continue;
 		const auto& mesh_component_list = mesh->mesh_component_list();
 		for (const auto& mesh_component : mesh_component_list)
 		{

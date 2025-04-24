@@ -125,7 +125,7 @@ void BaseScene::BuildMesh(ID3D12Device* device, ID3D12GraphicsCommandList* comma
 void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* command_list)
 {
 	//TODO: 각 메쉬의 컴포넌트 연결 개수를 파악하면 아래 수치를 디테일하게 설정할 수 있을것 같다..
-	cb_object_capacity_ = 10000;
+	cb_object_capacity_ = 20000;
 	cb_skinned_mesh_object_capacity_ = 10000;
 
 	Object* skybox = new Object();
@@ -159,7 +159,7 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 	player_gun_frame->AddChild(model_infos_[1]->GetInstance());
 	player_gun_frame = player_gun_frame->child();
 	GunComponent* player_gun = new GunComponent(player_gun_frame);
-	player_gun->LoadGunInfo("classic");
+	player_gun->LoadGunInfo("specter");
 	player_gun_frame->AddComponent(player_gun);
 	player_gun_frame->Rotate(0, 170, -17);
 	//player_gun_frame->Scale(3);
@@ -337,6 +337,7 @@ void BaseScene::CheckPlayerIsGround()
 			if (distance <= kGroundYOffset)
 			{
 				player_->set_is_ground(true);
+				
 				return;
 			}
 		}

@@ -65,7 +65,7 @@ bool GunComponent::FireBullet(XMFLOAT3 direction, Mesh* bullet_mesh)
             bullet->AddComponent(new MeshComponent(bullet, bullet_mesh));
             bullet->set_position_vector(owner_->world_position_vector());
             bullet->set_velocity(direction * bullet_speed_);
-            bullet->Scale(0.1);
+            bullet->Scale(0.5);
             fired_bullet_list_.push_back(bullet);
         }
     }
