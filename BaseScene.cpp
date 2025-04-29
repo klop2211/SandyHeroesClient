@@ -1,21 +1,16 @@
 #include "stdafx.h"
 #include "BaseScene.h"
-#include "Object.h"
 #include "FrameResourceManager.h"
 #include "DescriptorManager.h"
-#include "Mesh.h"
 #include "CubeMesh.h"
 #include "MeshComponent.h"
 #include "CameraComponent.h"
 #include "InputControllerComponent.h"
 #include "TestControllerComponent.h"
 #include "InputManager.h"
-#include "ModelInfo.h"
 #include "SkinnedMesh.h"
-#include "Material.h"
 #include "StandardMeshShader.h"
 #include "StandardSkinnedMeshShader.h"
-#include "AnimationSet.h"
 #include "FPSControllerComponent.h"
 #include "AnimatorComponent.h"
 #include "PlayerAnimationState.h"
@@ -27,6 +22,7 @@
 #include "MeshColliderComponent.h"
 #include "DebugMeshComponent.h"
 #include "DebugShader.h"
+#include "SkinnedMeshComponent.h"
 
 void BaseScene::BuildShader(ID3D12Device* device, ID3D12RootSignature* root_signature)
 {
@@ -35,9 +31,9 @@ void BaseScene::BuildShader(ID3D12Device* device, ID3D12RootSignature* root_sign
 	shaders_.push_back(std::make_unique<StandardMeshShader>());
 	shaders_.push_back(std::make_unique<StandardSkinnedMeshShader>());
 	shaders_.push_back(std::make_unique<SkyboxShader>());
-	shaders_.push_back(std::make_unique<DebugShader>());
+	//shaders_.push_back(std::make_unique<DebugShader>());
 
-	for (int i = 0; i < shader_count; ++i)
+	for (int i = 0; i < shaders_.size(); ++i)
 	{
 		shaders_[i]->CreateShader(device, root_signature);
 	}
@@ -225,13 +221,22 @@ void BaseScene::Render(ID3D12GraphicsCommandList* command_list)
 	cb_pass.camera_position = main_camera_->world_position();
 
 	//TODO: 조명 관련 클래스를 생성후 그것을 사용하여 아래 정보 업데이트(현재는 테스트용 하드코딩)
-	cb_pass.ambient_light = XMFLOAT4{ 0.1,0.1,0.1, 1 };
-	cb_pass.lights[0].strength = XMFLOAT3{ 1, 1, 1 };
+	cb_pass.ambient_light = XMFLOAT4{ 0.01,0.01,0.01, 1 };
+	cb_pass.lights[0].strength = XMFLOAT3{ 0.7, 0.7, 0.7 };
 	cb_pass.lights[0].direction = XMFLOAT3{ 0, -1, 0 };
 	cb_pass.lights[0].enable = true;
 	cb_pass.lights[0].type = 0;
 
-	for (int i = 1; i < 16; ++i)
+	cb_pass.lights[1].strength = XMFLOAT3{ 1, 0, 0 };
+	cb_pass.lights[1].falloff_start = 0.1;
+	cb_pass.lights[1].direction = xmath_util_float3::Normalize(main_camera_->owner()->world_look_vector());
+	cb_pass.lights[1].falloff_end = 100.f;
+	cb_pass.lights[1].position = main_camera_->owner()->world_position_vector();
+	cb_pass.lights[1].spot_power = 14;
+	cb_pass.lights[1].enable = true;
+	cb_pass.lights[1].type = 2;
+
+	for (int i = 3; i < 16; ++i)
 		cb_pass.lights[i].enable = false;
 
 	FrameResourceManager* frame_resource_manager = game_framework_->frame_resource_manager();
@@ -287,6 +292,7 @@ bool BaseScene::ProcessInput(UINT id, WPARAM w_param, LPARAM l_param, float time
 				main_camera_ = new_camera;
 			}
 			main_input_controller_ = Object::GetComponent<InputControllerComponent>(camera);
+			return true;
 		}
 		if (w_param == 'L')
 		{
@@ -298,9 +304,27 @@ bool BaseScene::ProcessInput(UINT id, WPARAM w_param, LPARAM l_param, float time
 				main_camera_ = new_camera;
 			}
 			main_input_controller_ = Object::GetComponent<FPSControllerComponent>(player_);
+			return true;
+		}
+		if (w_param == 'O')
+		{
+			--stage_clear_num_;
+			return true;
+		}
+		if (w_param == 'P')
+		{
+			++stage_clear_num_;
+			return true;
+		}
+		if (w_param == 'N')
+		{
+			auto& mesh_list = Object::GetComponentsInChildren<SkinnedMeshComponent>(player_);
+			for (auto& mesh : mesh_list)
+			{
+				mesh->set_is_visible(!mesh->IsVisible());
+			}
 		}
 		break;
-
 	default:
 		return false;
 		break;
@@ -317,19 +341,18 @@ void BaseScene::Update(float elapsed_time)
 
 void BaseScene::CheckPlayerIsGround()
 {
+	if (!is_prepare_ground_checking_)
+	{
+		PrepareGroundChecking();
+	}
+
 	XMFLOAT3 position = player_->world_position_vector();
 	constexpr float kGroundYOffset = 0.68;
 	XMVECTOR ray_origin = XMLoadFloat3(&position);
 	XMVECTOR ray_direction = XMVectorSet(0, -1, 0, 0);
 
 	float distance{std::numeric_limits<float>::max()};
-	Object* map = Scene::FindObject("BASE");
-	auto& mesh_collider_list = Object::GetComponentsInChildren<MeshColliderComponent>(map);
-	if (!mesh_collider_list.size())
-	{
-		return;
-	}
-	for (auto& mesh_collider : mesh_collider_list)
+	for (auto& mesh_collider : checking_maps_mesh_collider_list_[stage_clear_num_])
 	{
 		if (mesh_collider->CollisionCheckByRay(ray_origin, ray_direction, distance))
 		{
@@ -342,7 +365,35 @@ void BaseScene::CheckPlayerIsGround()
 			}
 		}
 	}
+	if (stage_clear_num_ - 1 >= 0)
+	{
+		for (auto& mesh_collider : checking_maps_mesh_collider_list_[stage_clear_num_ - 1])
+		{
+			if (mesh_collider->CollisionCheckByRay(ray_origin, ray_direction, distance))
+			{
+				if (distance <= kGroundYOffset)
+				{
+					player_->set_is_ground(true);
+					position.y += kGroundYOffset - distance;
+					player_->set_position_vector(position);
+					return;
+				}
+			}
+		}
+	}
 
 	player_->set_is_ground(false);
+}
+
+void BaseScene::PrepareGroundChecking()
+{
+	static const std::array<std::string, kStageMaxCount>
+		stage_names{ "BASE", "STAGE1", "STAGE2", "STAGE3", "STAGE4", "STAGE5", "STAGE6", "STAGE7", };
+	for (int i = 0; i < stage_names.size(); ++i)
+	{
+		Object* object = Scene::FindObject(stage_names[i]);
+		checking_maps_mesh_collider_list_[i] = Object::GetComponentsInChildren<MeshColliderComponent>(object);
+	}
+	is_prepare_ground_checking_ = true;
 }
 

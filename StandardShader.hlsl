@@ -120,7 +120,7 @@ float4 PS(VertexOut p_in) : SV_Target
     float4 result = ambient + direct_light + emission_color;
     result.a = diffuse_albedo.a;
     
-    return result;
+    return direct_light;
 }
 
 

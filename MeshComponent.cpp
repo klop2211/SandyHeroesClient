@@ -44,6 +44,11 @@ bool MeshComponent::IsVisible() const
 	return is_visible_;
 }
 
+void MeshComponent::set_is_visible(bool value)
+{
+	is_visible_ = value;
+}
+
 Mesh* MeshComponent::GetMesh() const
 {
 	return mesh_;

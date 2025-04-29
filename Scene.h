@@ -1,14 +1,15 @@
 #pragma once
+#include "Object.h"
+#include "Shader.h"
+#include "Material.h"
+#include "Mesh.h"
+#include "ModelInfo.h"
 
-class Object;
-class Shader;
 class FrameResourceManager;
 class DescriptorManager;
-class Mesh;
 class CameraComponent;
 class InputManager;
 class InputControllerComponent;
-class ModelInfo;
 class Material;
 class GameFramework;
 class ColliderComponent;
@@ -56,6 +57,7 @@ public:
 
 	//getter
 	const std::vector<std::unique_ptr<Mesh>>& meshes() const;
+	CameraComponent* main_camera() const;
 
 protected:
 	std::list<std::unique_ptr<Object>> object_list_;

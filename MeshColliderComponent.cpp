@@ -61,8 +61,8 @@ bool MeshColliderComponent::CollisionCheckByRay(FXMVECTOR ray_origin, FXMVECTOR 
 	}
 	if (is_collide)
 	{
-		ray_direction_local = ray_direction_local* t_min;
-		XMVector3Transform(ray_direction, world);
+		ray_direction_local = ray_direction_local * t_min;
+		ray_direction_local = XMVector3Transform(ray_direction_local, world);
 		out_distance = XMVectorGetX(XMVector3Length(ray_direction_local));
 	}
 

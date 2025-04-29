@@ -7,7 +7,6 @@
 #include "SkinnedMeshComponent.h"
 #include "Shader.h"
 #include "Material.h"
-#include "AnimationSet.h"
 #include "AnimatorComponent.h"
 #include "ASTest.h"
 #include "Scene.h"
