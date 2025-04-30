@@ -23,15 +23,18 @@
 #include "DebugMeshComponent.h"
 #include "DebugShader.h"
 #include "SkinnedMeshComponent.h"
+#include "UIShader.h"
+#include "UIMesh.h"
 
 void BaseScene::BuildShader(ID3D12Device* device, ID3D12RootSignature* root_signature)
 {
-	int shader_count = 4;
+	constexpr int shader_count = 5;
 	shaders_.reserve(shader_count);
 	shaders_.push_back(std::make_unique<StandardMeshShader>());
 	shaders_.push_back(std::make_unique<StandardSkinnedMeshShader>());
 	shaders_.push_back(std::make_unique<SkyboxShader>());
-	//shaders_.push_back(std::make_unique<DebugShader>());
+	shaders_.push_back(std::make_unique<DebugShader>());
+	shaders_.push_back(std::make_unique<UIShader>());
 
 	for (int i = 0; i < shaders_.size(); ++i)
 	{
@@ -46,8 +49,27 @@ void BaseScene::BuildMesh(ID3D12Device* device, ID3D12GraphicsCommandList* comma
 	meshes_.push_back(std::make_unique<CubeMesh>());
 	Material* material = new Material{};
 	material->set_albedo_color(0, 1, 0, 1);
-	meshes_[0].get()->AddMaterial(material);
-	meshes_[0].get()->set_name("green_cube");
+	meshes_.back().get()->AddMaterial(material);
+	meshes_.back().get()->set_name("green_cube");
+	materials_.emplace_back();
+	materials_.back().reset(material);
+
+	//CrossHair
+	constexpr float cross_hair_size = 64.f;
+	float ui_width = cross_hair_size;
+	float ui_height = cross_hair_size;
+	float ui_x = kDefaultFrameBufferWidth / 2.f - ui_width / 2.f;
+	float ui_y = kDefaultFrameBufferHeight / 2.f - ui_height / 2.f;
+	meshes_.push_back(std::make_unique<UIMesh>(ui_x, ui_y, ui_width, ui_height));
+	material = new Material{};
+	material->set_name("CrossHair");
+	Texture* ui_texture = new Texture{ "CrossHair",
+	 -1,
+	TextureType::kAlbedoMap
+	};
+	material->AddTexture(ui_texture);
+	meshes_.back().get()->AddMaterial(material);
+	meshes_.back().get()->set_name("CrossHair");
 	materials_.emplace_back();
 	materials_.back().reset(material);
 
@@ -121,8 +143,15 @@ void BaseScene::BuildMesh(ID3D12Device* device, ID3D12GraphicsCommandList* comma
 void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* command_list)
 {
 	//TODO: 각 메쉬의 컴포넌트 연결 개수를 파악하면 아래 수치를 디테일하게 설정할 수 있을것 같다..
-	cb_object_capacity_ = 10000;
+	cb_object_capacity_ = 15000;
 	cb_skinned_mesh_object_capacity_ = 10000;
+
+	ShowCursor(false);
+
+	Object* ui = new Object();
+	ui->AddComponent(new MeshComponent(ui, Scene::FindMesh("CrossHair", meshes_)));
+	object_list_.emplace_back();
+	object_list_.back().reset(ui);
 
 	Object* skybox = new Object();
 	skybox->AddComponent(new MeshComponent(skybox, Scene::FindMesh("Skybox", meshes_)));
@@ -257,6 +286,10 @@ void BaseScene::Render(ID3D12GraphicsCommandList* command_list)
 	for (const std::unique_ptr<Shader>& shader : shaders_)
 	{
 		command_list->SetPipelineState(shader->GetPipelineState());
+		if (shader->shader_type() == ShaderType::kDebug && !is_render_debug_mesh_)
+		{
+			continue;
+		}
 		for (const std::unique_ptr<Mesh>& mesh : meshes_)
 		{
 			if (mesh->shader_type() == (int)shader->shader_type())
@@ -282,6 +315,7 @@ bool BaseScene::ProcessInput(UINT id, WPARAM w_param, LPARAM l_param, float time
 		// 카메라 전환 테스트
 		if (w_param == 'K')
 		{
+			ShowCursor(true);
 			//바꿀 카메라 오브젝트를 찾고
 			Object* camera = FindObject("CAMERA_2");
 
@@ -296,6 +330,7 @@ bool BaseScene::ProcessInput(UINT id, WPARAM w_param, LPARAM l_param, float time
 		}
 		if (w_param == 'L')
 		{
+			ShowCursor(false);
 			//바꿀 카메라 오브젝트를 찾고
 			//그 오브젝트의 카메라와 컨트롤러를 씬으로 가져온다
 			CameraComponent* new_camera = Object::GetComponentInChildren<CameraComponent>(player_);
@@ -323,6 +358,12 @@ bool BaseScene::ProcessInput(UINT id, WPARAM w_param, LPARAM l_param, float time
 			{
 				mesh->set_is_visible(!mesh->IsVisible());
 			}
+			return true;
+		}
+		if (w_param == 'M')
+		{
+			is_render_debug_mesh_ = !is_render_debug_mesh_;
+			return true;
 		}
 		break;
 	default:
