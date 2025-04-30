@@ -333,10 +333,11 @@ bool BaseScene::ProcessInput(UINT id, WPARAM w_param, LPARAM l_param, float time
 
 void BaseScene::Update(float elapsed_time)
 {
-	CheckPlayerIsGround();
-
 	Scene::Update(elapsed_time);
 
+	UpdateObjectWorldMatrix();
+
+	CheckPlayerIsGround();
 }
 
 void BaseScene::CheckPlayerIsGround()
@@ -347,21 +348,23 @@ void BaseScene::CheckPlayerIsGround()
 	}
 
 	XMFLOAT3 position = player_->world_position_vector();
-	constexpr float kGroundYOffset = 0.68;
+	constexpr float kGroundYOffset = 1.5f;
+	position.y += kGroundYOffset;
 	XMVECTOR ray_origin = XMLoadFloat3(&position);
+	position.y -= kGroundYOffset;
 	XMVECTOR ray_direction = XMVectorSet(0, -1, 0, 0);
 
+	bool is_collide = false;
 	float distance{std::numeric_limits<float>::max()};
 	for (auto& mesh_collider : checking_maps_mesh_collider_list_[stage_clear_num_])
 	{
-		if (mesh_collider->CollisionCheckByRay(ray_origin, ray_direction, distance))
+		float t{};
+		if (mesh_collider->CollisionCheckByRay(ray_origin, ray_direction, t))
 		{
-			if (distance <= kGroundYOffset)
+			is_collide = true;
+			if (t < distance)
 			{
-				player_->set_is_ground(true);
-				position.y += kGroundYOffset - distance;
-				player_->set_position_vector(position);
-				return;
+				distance = t;
 			}
 		}
 	}
@@ -369,17 +372,29 @@ void BaseScene::CheckPlayerIsGround()
 	{
 		for (auto& mesh_collider : checking_maps_mesh_collider_list_[stage_clear_num_ - 1])
 		{
-			if (mesh_collider->CollisionCheckByRay(ray_origin, ray_direction, distance))
+			float t{};
+			if (mesh_collider->CollisionCheckByRay(ray_origin, ray_direction, t))
 			{
-				if (distance <= kGroundYOffset)
+				is_collide = true;
+				if (t < distance)
 				{
-					player_->set_is_ground(true);
-					position.y += kGroundYOffset - distance;
-					player_->set_position_vector(position);
-					return;
+					distance = t;
 				}
 			}
 		}
+	}
+	if (is_collide)
+	{
+		float distance_on_ground = distance - kGroundYOffset; //지면까지의 거리
+		if (distance_on_ground > 0.005f)
+		{
+			player_->set_is_ground(false);
+			return;
+		}
+		position.y -= distance_on_ground;
+		player_->set_is_ground(true);
+		player_->set_position_vector(position);
+		return;
 	}
 
 	player_->set_is_ground(false);
