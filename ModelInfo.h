@@ -1,9 +1,9 @@
 #pragma once
+#include "AnimationSet.h"
 
 class Object;
 class Mesh;
 class Material;
-class AnimationSet;
 
 class ModelInfo
 {

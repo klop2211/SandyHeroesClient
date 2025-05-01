@@ -35,6 +35,7 @@ public:
     void set_frame_resource_index(int value);
     void set_albedo_color(float r, float g, float b, float a);
     void set_albedo_color(XMFLOAT4 value);
+    void set_name(const std::string& value);
 
     // 머터리얼을 사용하는 데 필요한 텍스처 로드
     void CreateShaderVariables(ID3D12Device* device, ID3D12GraphicsCommandList* command_list);
