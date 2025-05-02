@@ -31,6 +31,16 @@ float Timer::ElapsedTime() const
     return elapsed_time_;
 }
 
+int Timer::Fps()
+{
+    double fps = 1.0 / elapsed_time_;
+    fps_buffer_[fps_buffer_index_] = fps;
+    fps_buffer_index_ = (fps_buffer_index_ + 1) % kFpsBufferSize;
+    double sum = std::accumulate(fps_buffer_.begin(), fps_buffer_.end(), 0.f);
+    
+    return sum /= kFpsBufferSize;
+}
+
 void Timer::Reset()
 {
     __int64 curr_time;
