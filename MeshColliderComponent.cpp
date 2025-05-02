@@ -21,17 +21,13 @@ bool MeshColliderComponent::CollisionCheckByRay(FXMVECTOR ray_origin, FXMVECTOR 
 	XMMATRIX world = XMLoadFloat4x4(&owner_->world_matrix());
 	XMMATRIX inverse_world = XMMatrixInverse(&XMMatrixDeterminant(world), world);
 
-	//XMVECTOR ray_origin_local = XMVector3TransformCoord(ray_origin, inverse_world);
-	//XMVECTOR ray_direction_local = XMVector3Normalize(XMVector3Transform(ray_direction, inverse_world));
-
-	BoundingOrientedBox bounds;
-	BoundingOrientedBox::CreateFromBoundingBox(bounds, mesh_->bounds());
-	bounds.Transform(bounds, world);
+	XMVECTOR ray_origin_local = XMVector3TransformCoord(ray_origin, inverse_world);
+	XMVECTOR ray_direction_local = XMVector3Normalize(XMVector3Transform(ray_direction, inverse_world));
 
 	float t{};
 	float t_min{ std::numeric_limits<float>::max() };
 	bool is_collide{ false };
-	if (bounds.Intersects(ray_origin, ray_direction, t))
+	if (mesh_->bounds().Intersects(ray_origin_local, ray_direction_local, t))
 	{
 		auto& positions = mesh_->positions();
 		auto& indices_array = mesh_->indices_array();
@@ -47,11 +43,11 @@ bool MeshColliderComponent::CollisionCheckByRay(FXMVECTOR ray_origin, FXMVECTOR 
 					UINT i1 = indices[i + 1];
 					UINT i2 = indices[i + 2];
 
-					XMVECTOR v0 = XMVector3TransformCoord(XMLoadFloat3(&positions[i0]), world);
-					XMVECTOR v1 = XMVector3TransformCoord(XMLoadFloat3(&positions[i1]), world);
-					XMVECTOR v2 = XMVector3TransformCoord(XMLoadFloat3(&positions[i2]), world);
+					XMVECTOR v0 = XMLoadFloat3(&positions[i0]);
+					XMVECTOR v1 = XMLoadFloat3(&positions[i1]);
+					XMVECTOR v2 = XMLoadFloat3(&positions[i2]);
 
-					if (TriangleTests::Intersects(ray_origin, ray_direction, v0, v1, v2, t))
+					if (TriangleTests::Intersects(ray_origin_local, ray_direction_local, v0, v1, v2, t))
 					{
 						is_collide = true;
 						if (t < t_min) // 가장 반직선에 가까운 삼각형과의 교점 매개변수
@@ -65,7 +61,9 @@ bool MeshColliderComponent::CollisionCheckByRay(FXMVECTOR ray_origin, FXMVECTOR 
 	}
 	if (is_collide)
 	{
-		out_distance = t_min;
+		ray_direction_local = ray_direction_local* t_min;
+		XMVector3Transform(ray_direction, world);
+		out_distance = XMVectorGetX(XMVector3Length(ray_direction_local));
 	}
 
 	return is_collide;

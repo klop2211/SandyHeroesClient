@@ -20,8 +20,6 @@ public:
 
     bool IsVisible() const;
 
-    void set_is_visible(bool value);
-
     Mesh* GetMesh() const;
 protected:
     Mesh* mesh_ = nullptr;

@@ -6,13 +6,13 @@
 struct LightInfo
 {
 	XMFLOAT3 strength;
-	float falloff_start;	// 점/스팟 조명
-	XMFLOAT3 direction;		// 방향/스팟 조명
-	float falloff_end;		// 점/스팟 조명
-	XMFLOAT3 position;		// 점/스팟 조명
-	float spot_power;		// 스팟 조명
-	bool enable;			// 조명의 사용여부(일부조명은 게임 진행에 따라 끄고 킬수 있음)
-	int type;				// 0: 방향, 1: 점, 2: 스팟
+	float falloff_start;
+	XMFLOAT3 direction;
+	float falloff_end;
+	XMFLOAT3 position;
+	float spot_power;
+	bool enable;
+	int type;
 	XMFLOAT2 pad;
 };
 

@@ -252,12 +252,6 @@
     <ClInclude Include="CutSceneRecorder.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="UIMesh.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="UIShader.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="SandyHeroesClient.cpp">
@@ -386,12 +380,6 @@
     <ClCompile Include="CutSceneRecorder.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="UIMesh.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="UIShader.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="SandyHeroesClient.rc">
@@ -413,6 +401,5 @@
     <FxCompile Include="StandardShader.hlsl" />
     <FxCompile Include="SkyboxShader.hlsl" />
     <FxCompile Include="DebugShader.hlsl" />
-    <FxCompile Include="UIShader.hlsl" />
   </ItemGroup>
 </Project>

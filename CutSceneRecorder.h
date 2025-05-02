@@ -1,39 +1,23 @@
 #pragma once
 
-class Scene;
-
-struct CutSceneData
-{
-	XMFLOAT4X4 world_matrix{};
-	float key_time{};
-
-	CutSceneData(const XMFLOAT4X4& world, float time) : world_matrix(world), key_time(time) {}
-};
+//class Scene;
 
 //컷신을 녹화하는 클래스
 // 녹화시 씬에서 사용하는 메인 카메라의 월드행렬을 저장
 class CutSceneRecorder
 {
 public:
-	CutSceneRecorder(const std::string& name);
+	CutSceneRecorder();
 	~CutSceneRecorder();
 
-	void Start();
-	void Pause();
-	void Stop();
-
-	void CaptureCameraTransform(float elapsed_time);
+	void CaptureCameraTransform();
 	
-	void WriteCutScene(const std::string& cut_scene_name);
+	void WriteCutScene();
 
 private:
-	Scene* scene_{ nullptr };
-	std::string name_{ "None" };
+	//Scene* scene_{ nullptr };
 
-	std::list<CutSceneData> cut_scene_data_list_;
-	float key_time_{ 0.f };
 
-	bool is_recording_{ false };
 
 };
 

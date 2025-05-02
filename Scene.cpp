@@ -1,10 +1,16 @@
 #include "stdafx.h"
 #include "Scene.h"
+#include "Object.h"
+#include "Shader.h"
 #include "FrameResourceManager.h"
 #include "DescriptorManager.h"
+#include "Mesh.h"
 #include "CameraComponent.h"
 #include "InputManager.h"
 #include "InputControllerComponent.h"
+#include "ModelInfo.h"
+#include "Material.h"
+#include "AnimationSet.h"
 #include "GameFramework.h"
 #include "MeshComponent.h"
 
@@ -173,11 +179,6 @@ Material* Scene::FindMaterial(const std::string& material_name, const std::vecto
 const std::vector<std::unique_ptr<Mesh>>& Scene::meshes() const
 {
 	return meshes_;
-}
-
-CameraComponent* Scene::main_camera() const
-{
-	return main_camera_;
 }
 
 void Scene::ReleaseMeshUploadBuffer()

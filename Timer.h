@@ -11,8 +11,6 @@ public:
 	float PlayTime() const;		// 일시정지된 시간을 제외한 실행시간
 	float ElapsedTime() const;	// 이전 프레임 시각에서 현재 프레임 시각을 뺀 사이 시간
 
-	int Fps();
-
 	void Reset();		// 타이머 초기화
 	void Start();		// 타이머 시작
 	void Stop();		// 타이머 일시정지
@@ -21,10 +19,6 @@ public:
 private:
 	double seconds_per_count_ = 0;
 	double elapsed_time_ = -1;
-
-	static constexpr int kFpsBufferSize{ 60 };
-	std::array<double, kFpsBufferSize> fps_buffer_{};
-	UINT fps_buffer_index_{ 0 };
 
 	__int64 base_time_ = 0;		// 실행시각
 	__int64 paused_time_ = 0;	// 정지된 시간

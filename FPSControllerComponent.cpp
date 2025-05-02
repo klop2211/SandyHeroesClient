@@ -194,22 +194,20 @@ void FPSControllerComponent::Update(float elapsed_time)
 	if (is_key_down_['A']) velocity -= right * speed;
 	if (is_key_down_['D']) velocity += right * speed;
 
+
 	if (owner_->is_ground())
 	{
 		y_axis_velocity_ = 0.f;
+		if (is_jumpkey_pressed_)
+		{
+			y_axis_velocity_ = jump_speed_;
+			is_jumpkey_pressed_ = false;
+		}
 	}
 	else
 	{
 		y_axis_velocity_ -= gravity_ * elapsed_time;
 	}
-
-	if (is_jumpkey_pressed_)
-	{
-		y_axis_velocity_ = jump_speed_;
-		is_jumpkey_pressed_ = false;
-	}
-
-	
 	XMFLOAT3 position = owner_->position_vector();
 	if (position.y < 0)
 	{

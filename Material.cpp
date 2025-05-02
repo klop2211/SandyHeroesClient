@@ -29,15 +29,14 @@ void Material::set_albedo_color(XMFLOAT4 value)
 	albedo_color_ = value;
 }
 
-void Material::set_name(const std::string& value)
-{
-	name_ = value;
-}
-
 void Material::CreateShaderVariables(ID3D12Device* device, ID3D12GraphicsCommandList* command_list)
 {
 	for (std::unique_ptr<Texture>& texture : texture_list_)
 	{
+		if (texture->name == "Skybox_Cube")
+		{
+			int a = 1;
+		}
 		std::string file_name = kTextureFilePath + texture->name + ".dds";
 		std::wstring file_name_w;
 		file_name_w.assign(file_name.begin(), file_name.end());

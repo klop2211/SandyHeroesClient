@@ -485,9 +485,6 @@ void GameFramework::FrameAdvance()
 
     frame_resource_manager_->CirculateFrameResource(d3d_fence_.Get());
 
-    std::wstring fps{ L"SandyHeroes(" };
-    fps += std::to_wstring(client_timer_->Fps()) + L"fps)";
-    SetWindowText(main_wnd_, fps.c_str());
 }
 
 void GameFramework::FlushCommandQueue()

@@ -41,11 +41,6 @@ float3 SchlickFresnel(float3 r0, float3 normal, float3 light_vector)
     return rf;
 }
 
-float3 HalfLambert(float3 v1, float3 v2)
-{
-    return (dot(v1, v2) * 0.5 + 0.5);
-}
-
 //빛의 세기, 빛벡터, 정점의 법선, 정점에서 카메라로 향하는 to eye 벡터, 재질을 받아 조명계산을 하는 함수
 float3 BlinnPhongLighting(float3 light_strength, float3 light_vector, float3 normal, float3 to_eye_vector, Material mat)
 {
@@ -53,9 +48,9 @@ float3 BlinnPhongLighting(float3 light_strength, float3 light_vector, float3 nor
     float3 half_vector = normalize(to_eye_vector + light_vector);
     
     //표면 거칠기에 의한 계수
-    float roughness_factor = (m + 8.0f) * pow(max(dot(half_vector, normal) * 0.5 + 0.5, 0.f), m) / 8.0f;
+    float roughness_factor = (m + 8.0f) * pow(max(dot(half_vector, normal), 0.0f), m) / 8.0f;
     //프레넬 효과에 의한 계수
-    float3 fresnel_factor = SchlickFresnel(mat.fresnel_r0, half_vector, light_vector);
+    float3 fresnel_factor = SchlickFresnel(mat.fresnel_r0, normal, light_vector);
     
     //위 두 계수를 적용한 반영반사 색상
     float3 specular_albedo = roughness_factor * fresnel_factor;
@@ -71,9 +66,8 @@ float3 BlinnPhongLighting(float3 light_strength, float3 light_vector, float3 nor
 float3 ComputeDirectionalLight(Light l, Material mat, float3 normal, float3 to_eye_vector)
 {
     float3 light_vector = -l.direction;
-    float3 test = HalfLambert(light_vector, normal);
-    //test = ceil(test * 5) / 5;
-    float3 light_strength = l.strength * max(test, 0.f);
+    
+    float3 light_strength = l.strength * max(dot(light_vector, normal), 0.f);
     
     return BlinnPhongLighting(light_strength, light_vector, normal, to_eye_vector, mat);
 }
@@ -90,7 +84,7 @@ float3 ComputePointLight(Light l, Material mat, float3 position, float3 normal, 
     
     light_vector /= d;
     
-    float3 light_strength = l.strength * max(HalfLambert(light_vector, normal), 0.f);
+    float3 light_strength = l.strength * max(dot(light_vector, normal), 0.f);
 
     float attenuation = CalcAttenuation(d, l.falloff_start, l.falloff_end);
     light_strength *= attenuation;
@@ -110,7 +104,7 @@ float3 ComputeSpotLight(Light l, Material mat, float3 position, float3 normal, f
     
     light_vector /= d;
     
-    float3 light_strength = l.strength * max(HalfLambert(light_vector, normal), 0.f);
+    float3 light_strength = l.strength * max(dot(light_vector, normal), 0.f);
 
     float attenuation = CalcAttenuation(d, l.falloff_start, l.falloff_end);
     light_strength *= attenuation;
@@ -144,6 +138,6 @@ float4 ComputeLighting(Light lights[MAX_LIGHTS], Material mat,
             result += ComputeSpotLight(lights[i], mat, position, normal, to_eye_vector);
         }
     }
-    
+
     return float4(result, 0.f);
 }
