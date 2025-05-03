@@ -31,13 +31,9 @@ public:
 
 	UINT id() const;
 	std::string name() const;
-	XMFLOAT3 velocity() const;
 	Object* child() const;
 	Object* sibling() const;
-	bool is_ground() const;
-
-	void ApplyGravity(float elapsed_time);
-	
+	bool is_ground() const;	
 
 	//setter
 	// 변환행렬 및 각 벡터
@@ -52,7 +48,6 @@ public:
 	// 월드행렬의 setter는 지원하지 않는다.(상위노드의 의해 업데이트 되기 때문)
 
 	void set_name(const std::string& value);
-	void set_velocity(const XMFLOAT3& value);
 
 	void set_is_ground(bool on_ground);
 	
@@ -163,8 +158,6 @@ protected:
 	std::string name_ = "None";
 
 	//물리 관련 변수들
-	XMFLOAT3 velocity_{ 0,0,0 };
-	const float gravity_ = { -9.8f };
 	bool is_ground_ = false;
 
 private:

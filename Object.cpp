@@ -103,11 +103,6 @@ std::string Object::name() const
 	return name_;
 }
 
-XMFLOAT3 Object::velocity() const
-{
-	return velocity_;
-}
-
 Object* Object::child() const
 {
 	return child_;
@@ -121,15 +116,6 @@ Object* Object::sibling() const
 bool Object::is_ground() const
 {
 	return is_ground_;
-}
-
-void Object::ApplyGravity(float elapsed_time)
-{
-	if (!is_ground_)
-		velocity_.y += gravity_ * elapsed_time;
-	else
-		velocity_.y = 0.0f;
-
 }
 
 void Object::set_transform_matrix(const XMFLOAT4X4& value)
@@ -173,11 +159,6 @@ void Object::set_up_vector(const XMFLOAT3& value)
 void Object::set_name(const std::string& value)
 {
 	name_ = value;
-}
-
-void Object::set_velocity(const XMFLOAT3& value)
-{
-	velocity_ = value;
 }
 
 void Object::set_is_ground(bool is_ground)
@@ -250,8 +231,6 @@ void Object::Update(float elapsed_time)
 	{
 		component->Update(elapsed_time);
 	}
-
-	set_position_vector(position_vector() + (velocity_ * elapsed_time));
 
 	if (child_)
 	{

@@ -25,6 +25,8 @@
 #include "SkinnedMeshComponent.h"
 #include "UIShader.h"
 #include "UIMesh.h"
+#include "MonsterComponent.h"
+#include "MovementComponent.h"
 
 void BaseScene::BuildShader(ID3D12Device* device, ID3D12RootSignature* root_signature)
 {
@@ -95,6 +97,7 @@ void BaseScene::BuildMesh(ID3D12Device* device, ID3D12GraphicsCommandList* comma
 	model_infos_.reserve(40);
 	model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/Dog00.bin", meshes_, materials_));
 	model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/Gun/classic.bin", meshes_, materials_));
+	model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/Monster/Hit_Dragon.bin", meshes_, materials_));
 
 	//BuildScene("Base");
 
@@ -148,6 +151,15 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 
 	ShowCursor(false);
 
+	//TODO: 맵 특정 위치에서 지정된 몬스터를 스폰하는 스포너 클래스 구현
+	Object* hit_dragon = FindModelInfo("Hit_Dragon")->GetInstance();
+	hit_dragon->set_position_vector(0, 15, 0);
+	hit_dragon->AddComponent(new MonsterComponent(hit_dragon));
+	hit_dragon->AddComponent(new MovementComponent(hit_dragon));
+	object_list_.emplace_back();
+	object_list_.back().reset(hit_dragon);
+	ground_check_object_list_.push_back(hit_dragon);
+
 	Object* ui = new Object();
 	ui->AddComponent(new MeshComponent(ui, Scene::FindMesh("CrossHair", meshes_)));
 	object_list_.emplace_back();
@@ -161,7 +173,9 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 
 	//모델 오브젝트 배치
 	Object* player = model_infos_[0]->GetInstance();
+	player->set_name("Player");
 	player->set_position_vector(XMFLOAT3{ 0, 30, 0 });
+	player->AddComponent(new MovementComponent(player));
 	AnimatorComponent* animator = Object::GetComponent<AnimatorComponent>(player);
 	animator->set_animation_state(new PlayerAnimationState);
 
@@ -204,14 +218,18 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 	//씬 리스트에 추가
 	object_list_.emplace_back();
 	object_list_.back().reset(player);
+	ground_check_object_list_.push_back(player);
 
-
+	//자유시점 카메라
 	camera_object = new Object;
 	camera_object->set_name("CAMERA_2");
 	camera_component =
 		new CameraComponent(camera_object, 0.3, 10000,
 			(float)kDefaultFrameBufferWidth / (float)kDefaultFrameBufferHeight, 58);
 	TestControllerComponent* controller = new TestControllerComponent(camera_object);
+	MovementComponent* movement = new MovementComponent(camera_object);
+	movement->DisableGarvity();
+	camera_object->AddComponent(movement);
 	camera_object->AddComponent(camera_component);
 	camera_object->AddComponent(controller);
 
@@ -378,17 +396,25 @@ void BaseScene::Update(float elapsed_time)
 
 	UpdateObjectWorldMatrix();
 
-	CheckPlayerIsGround();
+	UpdateObjectIsGround();
 }
 
-void BaseScene::CheckPlayerIsGround()
+void BaseScene::UpdateObjectIsGround()
 {
 	if (!is_prepare_ground_checking_)
 	{
 		PrepareGroundChecking();
 	}
 
-	XMFLOAT3 position = player_->world_position_vector();
+	for (auto& object : ground_check_object_list_)
+	{
+		CheckObjectIsGround(object);
+	}
+}
+
+void BaseScene::CheckObjectIsGround(Object* object)
+{
+	XMFLOAT3 position = object->world_position_vector();
 	constexpr float kGroundYOffset = 1.5f;
 	position.y += kGroundYOffset;
 	XMVECTOR ray_origin = XMLoadFloat3(&position);
@@ -396,7 +422,7 @@ void BaseScene::CheckPlayerIsGround()
 	XMVECTOR ray_direction = XMVectorSet(0, -1, 0, 0);
 
 	bool is_collide = false;
-	float distance{std::numeric_limits<float>::max()};
+	float distance{ std::numeric_limits<float>::max() };
 	for (auto& mesh_collider : checking_maps_mesh_collider_list_[stage_clear_num_])
 	{
 		float t{};
@@ -429,16 +455,16 @@ void BaseScene::CheckPlayerIsGround()
 		float distance_on_ground = distance - kGroundYOffset; //지면까지의 거리
 		if (distance_on_ground > 0.005f)
 		{
-			player_->set_is_ground(false);
+			object->set_is_ground(false);
 			return;
 		}
 		position.y -= distance_on_ground;
-		player_->set_is_ground(true);
-		player_->set_position_vector(position);
+		object->set_is_ground(true);
+		object->set_position_vector(position);
 		return;
 	}
 
-	player_->set_is_ground(false);
+	object->set_is_ground(false);
 }
 
 void BaseScene::PrepareGroundChecking()

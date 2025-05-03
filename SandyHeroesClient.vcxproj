@@ -139,7 +139,6 @@
     <ClInclude Include="AnimationState.h" />
     <ClInclude Include="AnimationTrack.h" />
     <ClInclude Include="AnimatorComponent.h" />
-    <ClInclude Include="ASTest.h" />
     <ClInclude Include="BaseScene.h" />
     <ClInclude Include="CameraComponent.h" />
     <ClInclude Include="ColliderComponent.h" />
@@ -163,7 +162,9 @@
     <ClInclude Include="MeshColliderComponent.h" />
     <ClInclude Include="MeshComponent.h" />
     <ClInclude Include="ModelInfo.h" />
+    <ClInclude Include="MonsterComponent.h" />
     <ClInclude Include="Object.h" />
+    <ClInclude Include="MovementComponent.h" />
     <ClInclude Include="PlayerAnimationState.h" />
     <ClInclude Include="UIMesh.h" />
     <ClInclude Include="Resource.h" />
@@ -190,7 +191,6 @@
     <ClCompile Include="AnimationState.cpp" />
     <ClCompile Include="AnimationTrack.cpp" />
     <ClCompile Include="AnimatorComponent.cpp" />
-    <ClCompile Include="ASTest.cpp" />
     <ClCompile Include="BaseScene.cpp" />
     <ClCompile Include="CameraComponent.cpp" />
     <ClCompile Include="ColliderComponent.cpp" />
@@ -212,7 +212,9 @@
     <ClCompile Include="MeshColliderComponent.cpp" />
     <ClCompile Include="MeshComponent.cpp" />
     <ClCompile Include="ModelInfo.cpp" />
+    <ClCompile Include="MonsterComponent.cpp" />
     <ClCompile Include="Object.cpp" />
+    <ClCompile Include="MovementComponent.cpp" />
     <ClCompile Include="PlayerAnimationState.cpp" />
     <ClCompile Include="UIMesh.cpp" />
     <ClCompile Include="SandyHeroesClient.cpp" />

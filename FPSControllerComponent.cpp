@@ -12,6 +12,7 @@
 #include "Material.h"
 #include "AnimationSet.h"
 #include "GunComponent.h"
+#include "MovementComponent.h"
 
 FPSControllerComponent::FPSControllerComponent(Object* owner) : InputControllerComponent(owner)
 {
@@ -106,7 +107,7 @@ bool FPSControllerComponent::ProcessInput(UINT message_id, WPARAM w_param, LPARA
 		case VK_SPACE:
 		{
 			constexpr float kFallCheckVelocity = -0.5;
-			if (owner_->velocity().y > kFallCheckVelocity)
+			if (owner_->is_ground())
 			{
 				is_jumpkey_pressed_ = true;
 			}
@@ -180,6 +181,8 @@ bool FPSControllerComponent::ProcessInput(UINT message_id, WPARAM w_param, LPARA
 
 void FPSControllerComponent::Update(float elapsed_time)
 {
+	const auto& movement = Object::GetComponent<MovementComponent>(owner_);
+
 	XMFLOAT3 velocity{ 0,0,0 };
 	float speed = 10;
 	XMFLOAT3 look = owner_->look_vector();
@@ -189,33 +192,16 @@ void FPSControllerComponent::Update(float elapsed_time)
 	look = xmath_util_float3::Normalize(look);
 	right = xmath_util_float3::Normalize(right);
 
-	if (is_key_down_['W']) velocity += look * speed;
-	if (is_key_down_['S']) velocity -= look * speed;
-	if (is_key_down_['A']) velocity -= right * speed;
-	if (is_key_down_['D']) velocity += right * speed;
-
-	if (owner_->is_ground())
-	{
-		y_axis_velocity_ = 0.f;
-	}
-	else
-	{
-		y_axis_velocity_ -= gravity_ * elapsed_time;
-	}
+	if (is_key_down_['W']) movement->MoveXZ(look.x, look.z, speed);
+	if (is_key_down_['S']) movement->MoveXZ(-look.x, -look.z, speed);
+	if (is_key_down_['A']) movement->MoveXZ(-right.x, -right.z, speed);
+	if (is_key_down_['D']) movement->MoveXZ(right.x, right.z, speed);
 
 	if (is_jumpkey_pressed_)
 	{
-		y_axis_velocity_ = jump_speed_;
+		movement->Jump(jump_speed_);
 		is_jumpkey_pressed_ = false;
 	}
-
-	
-	XMFLOAT3 position = owner_->position_vector();
-	if (position.y < 0)
-	{
-		owner_->set_position_vector(position.x, 0, position.z);
-	}
-	velocity.y += y_axis_velocity_;
 
 	// ´ë½¬
 	constexpr float kDashSpeed = 70.f;
@@ -223,11 +209,12 @@ void FPSControllerComponent::Update(float elapsed_time)
 	if (is_dash_pressed_)
 	{
 		is_dash_pressed_ = false;
-		dash_velocity_ = (xmath_util_float3::Normalize(dash_velocity_) * kDashSpeed);
+		movement->set_max_speed_xz_(kDashSpeed);
+		movement->MoveXZ(dash_velocity_.x, dash_velocity_.z, kDashSpeed);
 	}
 	if (xmath_util_float3::Length(owner_->position_vector() - dash_before_position_) >= kDashLength)
 	{
-		dash_velocity_ = { 0,0,0 };
+		movement->set_max_speed_xz_(speed);
 		AnimatorComponent* animator = Object::GetComponent<AnimatorComponent>(owner_);
 		if (animator)
 		{
@@ -235,9 +222,6 @@ void FPSControllerComponent::Update(float elapsed_time)
 		}
 	}
 	dash_cool_delta_time_ -= elapsed_time;
-	velocity += dash_velocity_;
-
-	owner_->set_velocity(velocity);
 
 	if (is_firekey_down_)
 	{
