@@ -1,6 +1,7 @@
 #pragma once
 
 class Component;
+class BaseScene;
 
 // Scene에 등장하는 모든 오브젝트의 조상 클래스
 // 자식과 형제 노드를 가진 트리구조
@@ -37,8 +38,8 @@ public:
 	bool is_ground() const;
 
 	void ApplyGravity(float elapsed_time);
-	
-
+	const XMFLOAT3& prev_position_vector() const;
+	void set_prev_position_vector(const XMFLOAT3& pos);
 	//setter
 	// 변환행렬 및 각 벡터
 	void set_transform_matrix(const XMFLOAT4X4& value);
@@ -166,6 +167,7 @@ protected:
 	XMFLOAT3 velocity_{ 0,0,0 };
 	const float gravity_ = { -9.8f };
 	bool is_ground_ = false;
+	XMFLOAT3 prev_position_;
 
 private:
 	// 오브젝트의 실제 월드 행렬(즉, 상위노드의 변환이 전부 적용된)

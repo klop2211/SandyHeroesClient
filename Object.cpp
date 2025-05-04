@@ -132,6 +132,16 @@ void Object::ApplyGravity(float elapsed_time)
 
 }
 
+const XMFLOAT3& Object::prev_position_vector() const
+{
+	return prev_position_;
+}
+
+void Object::set_prev_position_vector(const XMFLOAT3& pos)
+{
+	prev_position_ = pos;
+}
+
 void Object::set_transform_matrix(const XMFLOAT4X4& value)
 {
 	transform_matrix_ = value;
@@ -250,8 +260,10 @@ void Object::Update(float elapsed_time)
 	{
 		component->Update(elapsed_time);
 	}
-
-	set_position_vector(position_vector() + (velocity_ * elapsed_time));
+	
+	if(name_ != "Player")
+		set_position_vector(position_vector() + (velocity_ * elapsed_time));
+	//set_position_vector(position_vector() + (velocity_ * elapsed_time));
 
 	if (child_)
 	{
