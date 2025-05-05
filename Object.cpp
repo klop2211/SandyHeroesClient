@@ -113,6 +113,11 @@ Object* Object::sibling() const
 	return sibling_;
 }
 
+Object* Object::parent() const
+{
+	return parent_;
+}
+
 bool Object::is_ground() const
 {
 	return is_ground_;
@@ -258,6 +263,20 @@ void Object::Scale(float value)
 	{
 		s = XMLoadFloat3(&XMFLOAT3{ value,value,value });
 		XMStoreFloat4x4(&transform_matrix_, XMMatrixAffineTransformation(s, XMVectorZero(), r, t));
+	}
+}
+
+void Object::EnableFuncInHeirachy(std::function<void(Object*, void*)> func, void* value)
+{
+	func(this, value);
+
+	if (child_)
+	{
+		child_->EnableFuncInHeirachy(func, value);
+	}
+	if (sibling_)
+	{
+		sibling_->EnableFuncInHeirachy(func, value);
 	}
 }
 

@@ -153,7 +153,7 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 
 	//TODO: 맵 특정 위치에서 지정된 몬스터를 스폰하는 스포너 클래스 구현
 	Object* hit_dragon = FindModelInfo("Hit_Dragon")->GetInstance();
-	hit_dragon->set_position_vector(0, 15, 0);
+	hit_dragon->set_position_vector(0, 15, 10);
 	hit_dragon->AddComponent(new MonsterComponent(hit_dragon));
 	hit_dragon->AddComponent(new MovementComponent(hit_dragon));
 	object_list_.emplace_back();
@@ -207,7 +207,7 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 	Object* camera_object = new Object();
 	player->AddChild(camera_object);
 	fps_controller->set_camera_object(camera_object);
-	camera_object->set_position_vector(0,0.4,0); // 플레이어 캐릭터의 키가 150인것을 고려하여 머리위치에 배치
+	camera_object->set_position_vector(0, 0.4f, 0); // 플레이어 캐릭터의 키가 150인것을 고려하여 머리위치에 배치
 	camera_object->set_name("CAMERA_1");
 	CameraComponent* camera_component =
 		new CameraComponent(camera_object, 0.01, 10000,

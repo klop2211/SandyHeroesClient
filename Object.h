@@ -33,6 +33,7 @@ public:
 	std::string name() const;
 	Object* child() const;
 	Object* sibling() const;
+	Object* parent() const;
 	bool is_ground() const;	
 
 	//setter
@@ -65,6 +66,9 @@ public:
 
 	void Rotate(float pitch, float yaw, float roll);
 	void Scale(float value);				// transform 의 스케일을 value로 균등 변환한다.
+
+	// func 함수를 하위 모든 노드에 적용하라.
+	void EnableFuncInHeirachy(std::function<void(Object*, void*)> func, void* value);
 
 	static Object* DeepCopy(Object* value, Object* parent = nullptr);
 
