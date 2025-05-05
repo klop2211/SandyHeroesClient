@@ -1,11 +1,13 @@
 #include "stdafx.h"
 #include "PlayerAnimationState.h"
 #include "Object.h"
+#include "MovementComponent.h"
 
 int PlayerAnimationState::Run(Object* object, bool is_end)
 {
 	constexpr float kPlayerDashSpeed = 70.f;
-	XMFLOAT3 velocity_xz = object->velocity();
+	auto movement = Object::GetComponentInChildren<MovementComponent>(object);
+	auto velocity_xz = movement->velocity();
 	velocity_xz.y = 0.f;
 
 	switch ((PlayerAnimationTrack)animation_track_)
@@ -16,7 +18,7 @@ int PlayerAnimationState::Run(Object* object, bool is_end)
 		{
 			animation_track_ = (int)PlayerAnimationTrack::kRun;
 		}
-		if (object->velocity().y > 0.f)
+		if (movement->velocity().y > 0.f)
 		{
 			animation_track_ = (int)PlayerAnimationTrack::kJump;
 		}

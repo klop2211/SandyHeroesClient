@@ -34,7 +34,7 @@ Object::Object(const Object& other) :
 	child_ = nullptr;
 	sibling_ = nullptr;
 
-	//º¹»ç ´ë»ó ¿ÀºêÁ§Æ®ÀÇ ÄÄÆ÷³ÍÆ®µéÀ» °¡Á®¿À°í ÀÌ ¿ÀºêÁ§Æ®·Î owner¸¦ Àç¼³Á¤ÇÑ´Ù.
+	//ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ownerï¿½ï¿½ ï¿½ç¼³ï¿½ï¿½ï¿½Ñ´ï¿½.
 	for (const std::unique_ptr<Component>& component : other.component_list_)
 	{
 		component_list_.emplace_back();
@@ -103,11 +103,6 @@ std::string Object::name() const
 	return name_;
 }
 
-XMFLOAT3 Object::velocity() const
-{
-	return velocity_;
-}
-
 Object* Object::child() const
 {
 	return child_;
@@ -118,30 +113,33 @@ Object* Object::sibling() const
 	return sibling_;
 }
 
+Object* Object::parent() const
+{
+	return parent_;
+}
+
 bool Object::is_ground() const
 {
 	return is_ground_;
 }
+// void Object::ApplyGravity(float elapsed_time)
+// {
+// 	if (!is_ground_)
+// 		velocity_.y += gravity_ * elapsed_time;
+// 	else
+// 		velocity_.y = 0.0f;
 
-void Object::ApplyGravity(float elapsed_time)
-{
-	if (!is_ground_)
-		velocity_.y += gravity_ * elapsed_time;
-	else
-		velocity_.y = 0.0f;
+// }
 
-}
+// const XMFLOAT3& Object::prev_position_vector() const
+// {
+// 	return prev_position_;
+// }
 
-const XMFLOAT3& Object::prev_position_vector() const
-{
-	return prev_position_;
-}
-
-void Object::set_prev_position_vector(const XMFLOAT3& pos)
-{
-	prev_position_ = pos;
-}
-
+// void Object::set_prev_position_vector(const XMFLOAT3& pos)
+// {
+// 	prev_position_ = pos;
+// }
 void Object::set_transform_matrix(const XMFLOAT4X4& value)
 {
 	transform_matrix_ = value;
@@ -183,11 +181,6 @@ void Object::set_up_vector(const XMFLOAT3& value)
 void Object::set_name(const std::string& value)
 {
 	name_ = value;
-}
-
-void Object::set_velocity(const XMFLOAT3& value)
-{
-	velocity_ = value;
 }
 
 void Object::set_is_ground(bool is_ground)
@@ -261,8 +254,8 @@ void Object::Update(float elapsed_time)
 		component->Update(elapsed_time);
 	}
 	
-	if(name_ != "Player")
-		set_position_vector(position_vector() + (velocity_ * elapsed_time));
+	// if(name_ != "Player")
+	// 	set_position_vector(position_vector() + (velocity_ * elapsed_time));
 	//set_position_vector(position_vector() + (velocity_ * elapsed_time));
 
 	if (child_)
@@ -291,6 +284,20 @@ void Object::Scale(float value)
 	{
 		s = XMLoadFloat3(&XMFLOAT3{ value,value,value });
 		XMStoreFloat4x4(&transform_matrix_, XMMatrixAffineTransformation(s, XMVectorZero(), r, t));
+	}
+}
+
+void Object::EnableFuncInHeirachy(std::function<void(Object*, void*)> func, void* value)
+{
+	func(this, value);
+
+	if (child_)
+	{
+		child_->EnableFuncInHeirachy(func, value);
+	}
+	if (sibling_)
+	{
+		sibling_->EnableFuncInHeirachy(func, value);
 	}
 }
 

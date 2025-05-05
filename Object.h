@@ -3,8 +3,8 @@
 class Component;
 class BaseScene;
 
-// Scene¿¡ µîÀåÇÏ´Â ¸ðµç ¿ÀºêÁ§Æ®ÀÇ Á¶»ó Å¬·¡½º
-// ÀÚ½Ä°ú ÇüÁ¦ ³ëµå¸¦ °¡Áø Æ®¸®±¸Á¶
+// Sceneï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Å¬ï¿½ï¿½ï¿½ï¿½
+// ï¿½Ú½Ä°ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½å¸¦ ï¿½ï¿½ï¿½ï¿½ Æ®ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 class Object
 {
 public:
@@ -12,18 +12,18 @@ public:
 	Object(const std::string& name);
 	virtual ~Object();
 
-	//º¹»ç »ý¼ºÀÚ(child, siblingµµ º¹»çÇÏ´Â ±íÀºº¹»ç)
+	//ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(child, siblingï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
 	Object(const Object& other);
 
 	//getter
-	// º¯È¯Çà·Ä ¹× °¢ º¤ÅÍ
+	// ï¿½ï¿½È¯ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 	XMFLOAT4X4 transform_matrix() const;
 	XMFLOAT3 position_vector() const;
 	XMFLOAT3 look_vector() const;
 	XMFLOAT3 right_vector() const;
 	XMFLOAT3 up_vector() const;
 
-	// ¿ùµåÇà·Ä ¹× °¢ º¤ÅÍ
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 	XMFLOAT4X4 world_matrix() const;
 	XMFLOAT3 world_position_vector() const;
 	XMFLOAT3 world_look_vector() const;
@@ -32,16 +32,17 @@ public:
 
 	UINT id() const;
 	std::string name() const;
-	XMFLOAT3 velocity() const;
 	Object* child() const;
 	Object* sibling() const;
-	bool is_ground() const;
 
 	void ApplyGravity(float elapsed_time);
-	const XMFLOAT3& prev_position_vector() const;
-	void set_prev_position_vector(const XMFLOAT3& pos);
+	//const XMFLOAT3& prev_position_vector() const;
+	//void set_prev_position_vector(const XMFLOAT3& pos);
+
+	Object* parent() const;
+	bool is_ground() const;	
 	//setter
-	// º¯È¯Çà·Ä ¹× °¢ º¤ÅÍ
+	// ï¿½ï¿½È¯ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 	void set_transform_matrix(const XMFLOAT4X4& value);
 	void set_position_vector(const XMFLOAT3& value);
 	void set_position_vector(float x, float y, float z);
@@ -50,10 +51,9 @@ public:
 	void set_up_vector(const XMFLOAT3& value);
 
 
-	// ¿ùµåÇà·ÄÀÇ setter´Â Áö¿øÇÏÁö ¾Ê´Â´Ù.(»óÀ§³ëµåÀÇ ÀÇÇØ ¾÷µ¥ÀÌÆ® µÇ±â ¶§¹®)
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ setterï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê´Â´ï¿½.(ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ® ï¿½Ç±ï¿½ ï¿½ï¿½ï¿½ï¿½)
 
 	void set_name(const std::string& value);
-	void set_velocity(const XMFLOAT3& value);
 
 	void set_is_ground(bool on_ground);
 	
@@ -64,13 +64,16 @@ public:
 	Object* FindFrame(const std::string& name);
 	Object* GetHierarchyRoot();
 
-	// ³ëµå¸¦ ¼øÈ¸ÇÏ¸ç world_matrix¸¦ ¾÷µ¥ÀÌÆ®ÇÑ´Ù.(ÃÖ»óÀ§ ³ëµåÀÇ °æ¿ì ÀÎÀÚ¿¡ nullptrÀ» ³ÖÀ¸¸é µÈ´Ù)
+	// ï¿½ï¿½å¸¦ ï¿½ï¿½È¸ï¿½Ï¸ï¿½ world_matrixï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½Ñ´ï¿½.(ï¿½Ö»ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ú¿ï¿½ nullptrï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½È´ï¿½)
 	void UpdateWorldMatrix(const XMFLOAT4X4* const parent_transform); 
 
 	virtual void Update(float elapsed_time);
 
 	void Rotate(float pitch, float yaw, float roll);
-	void Scale(float value);				// transform ÀÇ ½ºÄÉÀÏÀ» value·Î ±Õµî º¯È¯ÇÑ´Ù.
+	void Scale(float value);				// transform ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ valueï¿½ï¿½ ï¿½Õµï¿½ ï¿½ï¿½È¯ï¿½Ñ´ï¿½.
+
+	// func ï¿½Ô¼ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½å¿¡ ï¿½ï¿½ï¿½ï¿½ï¿½Ï¶ï¿½.
+	void EnableFuncInHeirachy(std::function<void(Object*, void*)> func, void* value);
 
 	static Object* DeepCopy(Object* value, Object* parent = nullptr);
 
@@ -150,7 +153,7 @@ public:
 	}
 
 protected:
-	// ¿ÀºêÁ§Æ®ÀÇ º¯È¯Çà·Ä
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½È¯ï¿½ï¿½ï¿½
 	XMFLOAT4X4 transform_matrix_ = xmath_util_float4x4::Identity();
 
 	Object* parent_ = nullptr;
@@ -158,22 +161,20 @@ protected:
 	Object* sibling_ = nullptr;
 
 
-	// ¿ÀºêÁ§Æ®¿¡ Ãß°¡µÈ ¸ðµç ÄÄÆ÷³ÍÆ®ÀÇ ¸®½ºÆ®
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ß°ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Æ®
 	std::list<std::unique_ptr<Component>> component_list_;
 
 	std::string name_ = "None";
 
-	//¹°¸® °ü·Ã º¯¼öµé
-	XMFLOAT3 velocity_{ 0,0,0 };
-	const float gravity_ = { -9.8f };
+	//ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	bool is_ground_ = false;
 	XMFLOAT3 prev_position_;
 
 private:
-	// ¿ÀºêÁ§Æ®ÀÇ ½ÇÁ¦ ¿ùµå Çà·Ä(Áï, »óÀ§³ëµåÀÇ º¯È¯ÀÌ ÀüºÎ Àû¿ëµÈ)
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½(ï¿½ï¿½, ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È¯ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½)
 	XMFLOAT4X4 world_matrix_ = xmath_util_float4x4::Identity();		
 
-	// ´ÙÀ½ »ý¼ºµÉ ¿ÀºêÁ§Æ®ÀÇ id, 1ºÎÅÍ ½ÃÀÛÇÑ´Ù. Áï, id 0¹øÀº ³ª¿Ã ¼ö ¾øÀ½
+	// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ id, 1ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ñ´ï¿½. ï¿½ï¿½, id 0ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 	static UINT kObjectNextId;
 	UINT id_ = 0;
 	

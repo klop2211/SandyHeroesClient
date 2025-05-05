@@ -45,6 +45,8 @@ void AnimatorComponent::Update(float elapsed_time)
 		animation_tracks_[track_index_].Start(AnimationLoopType::kLoop);
 	}
 
+	XMFLOAT3 before_root_bone_position = root_bone_frame_->position_vector();
+
 	animation_tracks_[track_index_].PlayTrack(elapsed_time, bone_frames_);
 
 	if (is_root_motion_animation_)
@@ -54,7 +56,7 @@ void AnimatorComponent::Update(float elapsed_time)
 		owner_->set_position_vector(owner_->position_vector() + delta_translation);
 		before_translation_ = root_bone_frame_->position_vector();
 	}
-	root_bone_frame_->set_position_vector(XMFLOAT3{ 0,0,0 });
+	root_bone_frame_->set_position_vector(before_root_bone_position);
 
 
 }

@@ -8,8 +8,8 @@
 #include "Shader.h"
 #include "Material.h"
 #include "AnimatorComponent.h"
-#include "ASTest.h"
 #include "Scene.h"
+#include "PlayerAnimationState.h"
 
 ModelInfo::ModelInfo(const std::string& file_name, std::vector<std::unique_ptr<Mesh>>& meshes,
 	std::vector<std::unique_ptr<Material>>& materials)
@@ -258,13 +258,13 @@ void ModelInfo::LoadAnimationInfoFromFile(std::ifstream& file)
 
 }
 
-Object* ModelInfo::GetInstance()
+Object* ModelInfo::GetInstance() const
 {
 	Object* r_value = Object::DeepCopy(hierarchy_root_);
 	if (animation_sets_.size())
 	{
 		//TODO: 모델 종류에 따라 알맞은 AS 클래스 분배가 필요
-		AnimatorComponent* animator = new AnimatorComponent(r_value, animation_sets_, frame_names_, root_bone_name_, new ASTest);
+		AnimatorComponent* animator = new AnimatorComponent(r_value, animation_sets_, frame_names_, root_bone_name_, new PlayerAnimationState);
 		r_value->AddComponent(animator);
 	}
 

@@ -3,6 +3,7 @@
 #include "Object.h"
 #include "Mesh.h"
 #include "MeshComponent.h"
+#include "MovementComponent.h"
 
 std::unordered_map<std::string, GunInfo> GunComponent::kGunInfos{};
 
@@ -68,8 +69,13 @@ bool GunComponent::FireBullet(XMFLOAT3 direction, Mesh* bullet_mesh)
             cooling_time_ = 0.f;
             Object* bullet = new Object();
             bullet->AddComponent(new MeshComponent(bullet, bullet_mesh));
+            MovementComponent* movement = new MovementComponent(bullet);
+            bullet->AddComponent(movement);
             bullet->set_position_vector(owner_->world_position_vector());
-            bullet->set_velocity(direction * bullet_speed_);
+            movement->DisableFriction();
+            movement->set_gravity_acceleration(9.8f);
+            movement->set_max_speed_xz_(bullet_speed_);
+            movement->Move(direction, bullet_speed_);
             bullet->Scale(0.1);
             fired_bullet_list_.push_back(bullet);
             --loaded_bullets_;

@@ -23,7 +23,7 @@ public:
 
 	void LoadAnimationInfoFromFile(std::ifstream& file);
 
-	Object* GetInstance();
+	Object* GetInstance() const;
 
 	Object* hierarchy_root() const;
 

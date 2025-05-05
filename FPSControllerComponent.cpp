@@ -1,4 +1,4 @@
-﻿#include "stdafx.h"
+#include "stdafx.h"
 #include "FPSControllerComponent.h"
 #include "Object.h"
 #include "AnimatorComponent.h"
@@ -12,6 +12,7 @@
 #include "Material.h"
 #include "AnimationSet.h"
 #include "GunComponent.h"
+#include "MovementComponent.h"
 
 FPSControllerComponent::FPSControllerComponent(Object* owner) : InputControllerComponent(owner)
 {
@@ -106,7 +107,7 @@ bool FPSControllerComponent::ProcessInput(UINT message_id, WPARAM w_param, LPARA
 		case VK_SPACE:
 		{
 			constexpr float kFallCheckVelocity = -0.5;
-			if (owner_->velocity().y > kFallCheckVelocity)
+			if (owner_->is_ground())
 			{
 				is_jumpkey_pressed_ = true;
 			}
@@ -274,6 +275,8 @@ bool FPSControllerComponent::ProcessInput(UINT message_id, WPARAM w_param, LPARA
 
 void FPSControllerComponent::Update(float elapsed_time)
 {
+	const auto& movement = Object::GetComponent<MovementComponent>(owner_);
+
 	XMFLOAT3 velocity{ 0,0,0 };
 	float speed = 10;
 	XMFLOAT3 look = owner_->look_vector();
@@ -283,46 +286,85 @@ void FPSControllerComponent::Update(float elapsed_time)
 	look = xmath_util_float3::Normalize(look);
 	right = xmath_util_float3::Normalize(right);
 
-	if (is_key_down_['W']) velocity += look * speed;
-	if (is_key_down_['S']) velocity -= look * speed;
-	if (is_key_down_['A']) velocity -= right * speed;
-	if (is_key_down_['D']) velocity += right * speed;
 
-	// 중력
-	if (owner_->is_ground())
-		y_axis_velocity_ = 0.f;
-	else
-		y_axis_velocity_ -= gravity_ * elapsed_time;
+	// if (is_key_down_['W']) velocity += look * speed;
+	// if (is_key_down_['S']) velocity -= look * speed;
+	// if (is_key_down_['A']) velocity -= right * speed;
+	// if (is_key_down_['D']) velocity += right * speed;
+
+	// // 중력
+	// if (owner_->is_ground())
+	// 	y_axis_velocity_ = 0.f;
+	// else
+	// 	y_axis_velocity_ -= gravity_ * elapsed_time;
+	if (is_key_down_['W']) movement->MoveXZ(look.x, look.z, speed);
+	if (is_key_down_['S']) movement->MoveXZ(-look.x, -look.z, speed);
+	if (is_key_down_['A']) movement->MoveXZ(-right.x, -right.z, speed);
+	if (is_key_down_['D']) movement->MoveXZ(right.x, right.z, speed);
 
 	if (is_jumpkey_pressed_)
 	{
-		y_axis_velocity_ = jump_speed_;
+		movement->Jump(jump_speed_);
 		is_jumpkey_pressed_ = false;
 	}
 
-	velocity.y = y_axis_velocity_;
+	//velocity.y = y_axis_velocity_;
 
 	// 대쉬
+	// �뽬
 	constexpr float kDashSpeed = 70.f;
 	constexpr float kDashLength = 10.f;
 	if (is_dash_pressed_)
 	{
 		is_dash_pressed_ = false;
-		dash_velocity_ = xmath_util_float3::Normalize(dash_velocity_) * kDashSpeed;
+// 		dash_velocity_ = xmath_util_float3::Normalize(dash_velocity_) * kDashSpeed;
+// 	}
+// 	if (xmath_util_float3::Length(owner_->position_vector() - dash_before_position_) >= kDashLength)
+// 	{
+// 		dash_velocity_ = { 0,0,0 };
+// 		if (auto* animator = Object::GetComponent<AnimatorComponent>(owner_))
+		movement->set_max_speed_xz_(kDashSpeed);
+		movement->MoveXZ(dash_velocity_.x, dash_velocity_.z, kDashSpeed);
 	}
 	if (xmath_util_float3::Length(owner_->position_vector() - dash_before_position_) >= kDashLength)
 	{
-		dash_velocity_ = { 0,0,0 };
-		if (auto* animator = Object::GetComponent<AnimatorComponent>(owner_))
+		movement->set_max_speed_xz_(speed);
+		AnimatorComponent* animator = Object::GetComponent<AnimatorComponent>(owner_);
+		if (animator)
+		{
 			animator->animation_state()->set_animation_track((int)PlayerAnimationTrack::kIdle);
+		}
 	}
 
 	dash_cool_delta_time_ -= elapsed_time;
 
-	velocity += dash_velocity_;
+	//velocity += dash_velocity_;
 
 	// 위치 이동은 여기서 하지 않음!
-	owner_->set_velocity(velocity);
+	//owner_->set_velocity(velocity);
+	if (is_firekey_down_)
+	{
+		//�Ѿ��� �ѱ����� ��ŷ �������� �߻��ǰ� ����
+		//2���� ���� �ʿ� 1. �ѱ� ��ġ 2. ��ŷ ����
+		GunComponent* gun = Object::GetComponentInChildren<GunComponent>(owner_);
+		if (gun && (gun->fire_type() == GunFireType::kAuto))
+		{
+			// 1. �ѱ� ��ġ
+			XMFLOAT3 gun_shoting_point{ gun->owner()->world_position_vector() };
+
+			// 2. ��ŷ ����(���� ��ǥ��)
+			int sx = mouse_xy_.x;
+			int sy = mouse_xy_.y;
+			Object* picked_object = nullptr;
+			XMVECTOR picking_point_w = scene_->GetPickingPointAtWorld(sx, sy, picked_object);
+
+			// 3. 1������ 2���� ���ϴ� �Ѿ� �߻�
+			XMFLOAT3 bullet_dir{};
+			XMStoreFloat3(&bullet_dir, XMVector3Normalize(picking_point_w - XMLoadFloat3(&gun_shoting_point)));
+			Mesh* bullet_mesh = Scene::FindMesh("green_cube", scene_->meshes());
+			gun->FireBullet(bullet_dir, bullet_mesh);
+		}
+	}
 }
 
 

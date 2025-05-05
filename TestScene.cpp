@@ -301,7 +301,7 @@ bool TestScene::CheckObjectByObjectCollisions()
 						if (collider->CheckRayGroundCollision(mesh, rayOrigin, rayDir, maxDistance, object->world_matrix()))
 						{
 							player_->set_is_ground(true);
-							player_->set_velocity({ player_->velocity().x, 0.0f, player_->velocity().z }); // y 속도 정지
+							//player_->set_velocity({ player_->velocity().x, 0.0f, player_->velocity().z }); // y 속도 정지
 							return true;
 						}
 						else

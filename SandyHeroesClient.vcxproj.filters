@@ -109,6 +109,15 @@
     <Filter Include="7.Component\Collider">
       <UniqueIdentifier>{0198f9e0-0727-40a1-90c2-86ef339f8ce0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="7.Component\Monster">
+      <UniqueIdentifier>{3f944c60-8398-4aba-878e-1cde285af01b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="4.Mesh\UI">
+      <UniqueIdentifier>{5c62b459-576a-41de-b27f-30125beabb27}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="3.Shader\UI">
+      <UniqueIdentifier>{9c597d13-46c4-4608-8cf9-bb9c121512d6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="targetver.h">
@@ -210,9 +219,6 @@
     <ClInclude Include="AnimatorComponent.h">
       <Filter>7.Component\Animator</Filter>
     </ClInclude>
-    <ClInclude Include="ASTest.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
     <ClInclude Include="PlayerAnimationState.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
@@ -252,10 +258,16 @@
     <ClInclude Include="CutSceneRecorder.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="MonsterComponent.h">
+      <Filter>7.Component\Monster</Filter>
+    </ClInclude>
     <ClInclude Include="UIMesh.h">
-      <Filter>헤더 파일</Filter>
+      <Filter>4.Mesh\UI</Filter>
     </ClInclude>
     <ClInclude Include="UIShader.h">
+      <Filter>3.Shader\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="MovementComponent.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>
@@ -344,9 +356,6 @@
     <ClCompile Include="AnimatorComponent.cpp">
       <Filter>7.Component\Animator</Filter>
     </ClCompile>
-    <ClCompile Include="ASTest.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
     <ClCompile Include="PlayerAnimationState.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
@@ -386,10 +395,16 @@
     <ClCompile Include="CutSceneRecorder.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="MonsterComponent.cpp">
+      <Filter>7.Component\Monster</Filter>
+    </ClCompile>
     <ClCompile Include="UIMesh.cpp">
-      <Filter>소스 파일</Filter>
+      <Filter>4.Mesh\UI</Filter>
     </ClCompile>
     <ClCompile Include="UIShader.cpp">
+      <Filter>3.Shader\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="MovementComponent.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>

@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "Object.h"
 #include "TestControllerComponent.h"
+#include "MovementComponent.h"
 
 TestControllerComponent::TestControllerComponent(Object* owner)
 	: InputControllerComponent(owner)
@@ -12,7 +13,7 @@ TestControllerComponent::TestControllerComponent(Object* owner)
 	is_key_down_['Q'] = false;
 	is_key_down_['E'] = false;
 	is_key_down_[VK_LBUTTON] = false;
-
+	is_key_down_[VK_SHIFT] = false;
 }
 
 Component* TestControllerComponent::GetCopy()
@@ -86,6 +87,8 @@ bool TestControllerComponent::ProcessInput(UINT message_id, WPARAM w_param, LPAR
 			{
 				is_key_down_['E'] = true;
 			}
+		case VK_SHIFT:
+			is_key_down_[VK_SHIFT] = true;
 			break;
 		default:
 			return false;
@@ -131,6 +134,10 @@ bool TestControllerComponent::ProcessInput(UINT message_id, WPARAM w_param, LPAR
 				is_key_down_['E'] = false;
 			}
 			break;
+		case VK_SHIFT:
+			is_key_down_[VK_SHIFT] = false;
+			break;
+
 		default:
 			return false;
 			break;
@@ -146,16 +153,28 @@ bool TestControllerComponent::ProcessInput(UINT message_id, WPARAM w_param, LPAR
 
 void TestControllerComponent::Update(float elapsed_time)
 {
+	auto movement = Object::GetComponentInChildren<MovementComponent>(owner_);
+	if (!movement)
+	{
+		return;
+	}
+	
+	movement->Stop();
+
 	XMFLOAT3 velocity{ 0,0,0 };
-	float speed = 10;
+	float speed = 15;
 	XMFLOAT3 look = owner_->look_vector();
 	XMFLOAT3 right = owner_->right_vector();
 	XMFLOAT3 up{ 0,1,0 };
-	if (is_key_down_['W']) velocity += look * speed;
-	if (is_key_down_['S']) velocity -= look * speed;
-	if (is_key_down_['A']) velocity -= right * speed;
-	if (is_key_down_['D']) velocity += right * speed;
-	if (is_key_down_['E']) velocity += up * speed;
-	if (is_key_down_['Q']) velocity -= up * speed;
-	owner_->set_velocity(velocity);
+	if (is_key_down_['W']) velocity += look;
+	if (is_key_down_['S']) velocity -= look;
+	if (is_key_down_['A']) velocity -= right;
+	if (is_key_down_['D']) velocity += right;
+	if (is_key_down_['E']) velocity += up;
+	if (is_key_down_['Q']) velocity -= up;
+
+	if (is_key_down_[VK_SHIFT]) speed *= 2.f;
+
+	movement->set_max_speed_xz_(speed);
+	movement->Move(velocity, speed);
 }
