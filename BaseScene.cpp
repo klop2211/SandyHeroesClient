@@ -166,10 +166,10 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 	AnimatorComponent* animator = Object::GetComponent<AnimatorComponent>(player);
 	animator->set_animation_state(new PlayerAnimationState);
 	
-	auto* player_mesh = Scene::FindMesh("Player_Mesh", meshes_); // 이름은 실제 메쉬 이름
-	auto* mesh_collider = new MeshColliderComponent(player_);
-	mesh_collider->set_mesh(player_mesh);
-	player->AddComponent(mesh_collider);
+	//auto* player_mesh = Scene::FindMesh("PlayerMesh", meshes_); // 이름은 실제 메쉬 이름
+	//auto* mesh_collider = new MeshColliderComponent(player_);
+	//mesh_collider->set_mesh(player_mesh);
+	//player->AddComponent(mesh_collider);
 
 
 	player_ = player;
@@ -379,28 +379,50 @@ bool BaseScene::ProcessInput(UINT id, WPARAM w_param, LPARAM l_param, float time
 	}
 }
 
+//void BaseScene::Update(float elapsed_time)
+//{
+//	Scene::Update(elapsed_time);
+//
+//	XMFLOAT3 old_position = player_->position_vector(); //진짜 이전 위치 저장
+//	player_->set_prev_position_vector(old_position);
+//
+//	// 여기서만 실제 이동
+//	XMFLOAT3 velocity = player_->velocity();
+//	XMFLOAT3 new_position = {
+//		old_position.x + velocity.x * elapsed_time,
+//		old_position.y + velocity.y * elapsed_time,
+//		old_position.z + velocity.z * elapsed_time
+//	};
+//	player_->set_position_vector(new_position);
+//	UpdateObjectWorldMatrix();
+//
+//
+//	CheckPlayerIsGround();
+//
+//	CheckPlayerHitWall();
+//}
+
 void BaseScene::Update(float elapsed_time)
 {
 	Scene::Update(elapsed_time);
 
-	XMFLOAT3 old_position = player_->position_vector(); //진짜 이전 위치 저장
-	player_->set_prev_position_vector(old_position);
-
-	// 여기서만 실제 이동
 	XMFLOAT3 velocity = player_->velocity();
+	XMFLOAT3 old_position = player_->position_vector(); //진짜 이전 위치 저장
+
+	CheckPlayerHitWall(velocity);
+	velocity = player_->velocity();
+	// 여기서만 실제 이동
 	XMFLOAT3 new_position = {
 		old_position.x + velocity.x * elapsed_time,
 		old_position.y + velocity.y * elapsed_time,
 		old_position.z + velocity.z * elapsed_time
 	};
 	player_->set_position_vector(new_position);
+
 	UpdateObjectWorldMatrix();
-
-
 	CheckPlayerIsGround();
-
-	CheckPlayerHitWall();
 }
+
 
 void BaseScene::CheckPlayerIsGround()
 {
@@ -474,23 +496,88 @@ void BaseScene::PrepareGroundChecking()
 	is_prepare_ground_checking_ = true;
 }
 
-void BaseScene::CheckPlayerHitWall()
+void BaseScene::CheckPlayerHitWall(const XMFLOAT3& velocity)
 {
-	XMFLOAT3 old_position = player_->prev_position_vector();
-	XMFLOAT3 current_position = player_->position_vector();
+	if (!is_prepare_ground_checking_)
+	{
+		PrepareGroundChecking();
+	}
 
-	MeshColliderComponent* collider = Object::GetComponent<MeshColliderComponent>(player_);
-	if (!collider) return;
+	XMFLOAT3 position = player_->world_position_vector();
+	constexpr float kGroundYOffset = 1.5f;
+	position.y += kGroundYOffset;
+	XMVECTOR ray_origin = XMLoadFloat3(&position);
+	position.y -= kGroundYOffset;
 
-	BoundingOrientedBox obb = collider->GetWorldOBB();
-	obb.Center = current_position;  // 필요 시 위치 보정
+	XMVECTOR ray_direction = XMLoadFloat3(&velocity);
+	ray_direction = XMVectorSetY(ray_direction, 0);
+	ray_direction = XMVector3Normalize(ray_direction);
 
+	if (0 == XMVectorGetX(XMVector3Length(ray_direction)))
+		return;
+
+	bool is_collide = false;
+	float distance{ std::numeric_limits<float>::max() };
 	for (auto& mesh_collider : checking_maps_mesh_collider_list_[stage_clear_num_])
 	{
-		if (mesh_collider->CheckWallCollisionByObb(obb))
+		float t{};
+		if (mesh_collider->CollisionCheckByRay(ray_origin, ray_direction, t))
 		{
-			player_->set_position_vector(old_position);
-			break;
+			if (t < distance)
+			{
+				distance = t;
+			}
 		}
 	}
+
+	constexpr float MAX_DISTANCE = 0.5f;
+	if (distance < MAX_DISTANCE)
+		is_collide = true;
+
+
+	if (stage_clear_num_ - 1 >= 0)
+	{
+		for (auto& mesh_collider : checking_maps_mesh_collider_list_[stage_clear_num_ - 1])
+		{
+			float t{};
+			if (mesh_collider->CollisionCheckByRay(ray_origin, ray_direction, t))
+			{
+				if (t < distance)
+				{
+					distance = t;
+				}
+			}
+		}
+		if (distance < MAX_DISTANCE)
+			is_collide = true;
+	}
+
+
+	if (is_collide)
+	{
+		player_->set_velocity({ 0, velocity.y, 0 });
+		return;
+	}
+
+
+	//if (!player_) return;
+
+	//auto mesh_colliders = Object::GetComponentsInChildren<MeshColliderComponent>(player_);
+	//
+	//auto collider = mesh_colliders.front();
+
+	//BoundingOrientedBox obb = collider->GetWorldOBB();
+	//XMVECTOR move_dir = XMLoadFloat3(&velocity);
+	//move_dir = XMVectorSetY(move_dir, 0);
+	//if (XMVector3Length(move_dir).m128_f32[0] < 0.001f) return;
+
+	//for (auto& mesh_collider : checking_maps_mesh_collider_list_[stage_clear_num_])
+	//{
+	//	if (mesh_collider->CheckWallCollisionByObb(obb, move_dir))
+	//	{
+	//		// 충돌 → 이동 취소
+	//		player_->set_velocity({ 0, velocity.y, 0 });
+	//		return;
+	//	}
+	//}
 }

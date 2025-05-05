@@ -19,7 +19,11 @@ public:
 
     bool CollisionCheckByObb(BoundingOrientedBox obb);
 
-    bool CheckWallCollisionByObb(BoundingOrientedBox& obb);
+    bool CheckWallCollisionByObb(const BoundingOrientedBox& curr_obb, const XMVECTOR& move_dir);
+
+    //bool CheckWallCollisionByObb(BoundingOrientedBox& obb);
+
+    //bool CheckWallCollisionByObb(BoundingOrientedBox& prev_obb, BoundingOrientedBox& curr_obb);
 
     BoundingOrientedBox GetWorldOBB() const;
 
