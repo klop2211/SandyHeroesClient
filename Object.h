@@ -2,6 +2,12 @@
 
 class Component;
 
+struct CollideType
+{
+	bool ground_check = false;	//지면 체크가 필요한가?	
+	bool wall_check = false;	//벽 체크가 필요한가?
+};
+
 // Scene에 등장하는 모든 오브젝트의 조상 클래스
 // 자식과 형제 노드를 가진 트리구조
 class Object
@@ -35,6 +41,7 @@ public:
 	Object* sibling() const;
 	Object* parent() const;
 	bool is_ground() const;	
+	CollideType collide_type() const;
 
 	//setter
 	// 변환행렬 및 각 벡터
@@ -51,7 +58,9 @@ public:
 	void set_name(const std::string& value);
 
 	void set_is_ground(bool on_ground);
-	
+	void set_collide_type(bool ground_check, bool wall_check);
+	void set_collide_type(const CollideType& collide_type);
+
 	void AddChild(Object* object);
 	void AddSibling(Object* object);
 	void AddComponent(Component* component);
@@ -162,7 +171,10 @@ protected:
 	std::string name_ = "None";
 
 	//물리 관련 변수들
-	bool is_ground_ = false;
+	bool is_ground_ = false;	//지면에 닿아있는가?
+
+	//충돌 체크 관련 변수
+	CollideType collide_type_ = { false, false };	//지면 체크, 벽 체크
 
 private:
 	// 오브젝트의 실제 월드 행렬(즉, 상위노드의 변환이 전부 적용된)

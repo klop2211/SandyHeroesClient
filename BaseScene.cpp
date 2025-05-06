@@ -153,33 +153,36 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 
 	//TODO: 맵 특정 위치에서 지정된 몬스터를 스폰하는 스포너 클래스 구현
 	Object* hit_dragon = FindModelInfo("Hit_Dragon")->GetInstance();
-	hit_dragon->set_position_vector(0, 15, 10);
+	hit_dragon->set_position_vector(0, 15, 5);
 	hit_dragon->AddComponent(new MonsterComponent(hit_dragon));
 	hit_dragon->AddComponent(new MovementComponent(hit_dragon));
-	object_list_.emplace_back();
-	object_list_.back().reset(hit_dragon);
-	ground_check_object_list_.push_back(hit_dragon);
+	hit_dragon->set_collide_type(true, false);
+	AddObject(hit_dragon);
 
 	Object* ui = new Object();
 	ui->AddComponent(new MeshComponent(ui, Scene::FindMesh("CrossHair", meshes_)));
-	object_list_.emplace_back();
-	object_list_.back().reset(ui);
+	AddObject(ui);
 
 	Object* skybox = new Object();
 	skybox->AddComponent(new MeshComponent(skybox, Scene::FindMesh("Skybox", meshes_)));
-
-	object_list_.emplace_back();
-	object_list_.back().reset(skybox);
+	AddObject(skybox);
 
 	//모델 오브젝트 배치
 	Object* player = model_infos_[0]->GetInstance();
 	player->set_name("Player");
 	player->set_position_vector(XMFLOAT3{ 0, 30, 0 });
+	player->set_collide_type(true, false);
 	player->AddComponent(new MovementComponent(player));
 	AnimatorComponent* animator = Object::GetComponent<AnimatorComponent>(player);
 	animator->set_animation_state(new PlayerAnimationState);
 
 	player_ = player;
+
+	auto mesh_colliders = Object::GetComponentsInChildren<MeshColliderComponent>(player_);
+	for (auto& mesh_collider : mesh_colliders)
+	{
+		
+	}
 
 	//FPS 조작용 컨트롤러 설정
 	FPSControllerComponent* fps_controller = new FPSControllerComponent(player);
@@ -216,9 +219,7 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 	main_camera_ = camera_component;
 
 	//씬 리스트에 추가
-	object_list_.emplace_back();
-	object_list_.back().reset(player);
-	ground_check_object_list_.push_back(player);
+	AddObject(player);
 
 	//자유시점 카메라
 	camera_object = new Object;
@@ -397,6 +398,29 @@ void BaseScene::Update(float elapsed_time)
 	UpdateObjectWorldMatrix();
 
 	UpdateObjectIsGround();
+}
+
+void BaseScene::AddObject(Object* object)
+{
+	Scene::AddObject(object);
+
+	CollideType collide_type = object->collide_type();
+	if (collide_type.ground_check)
+	{
+		ground_check_object_list_.push_back(object);
+	}
+	//TODO: 벽체크가 필요한 오브젝트는 따로 리스트를 생성 후 여기에 추가
+}
+
+void BaseScene::DeleteObject(Object* object)
+{
+	CollideType collide_type = object->collide_type();
+	if (collide_type.ground_check)
+	{
+		ground_check_object_list_.remove(object);
+	}
+
+	Scene::DeleteObject(object);
 }
 
 void BaseScene::UpdateObjectIsGround()

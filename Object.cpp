@@ -123,6 +123,11 @@ bool Object::is_ground() const
 	return is_ground_;
 }
 
+CollideType Object::collide_type() const
+{
+	return collide_type_;
+}
+
 void Object::set_transform_matrix(const XMFLOAT4X4& value)
 {
 	transform_matrix_ = value;
@@ -169,6 +174,17 @@ void Object::set_name(const std::string& value)
 void Object::set_is_ground(bool is_ground)
 {
 	is_ground_ = is_ground;
+}
+
+void Object::set_collide_type(bool ground_check, bool wall_check)
+{
+	collide_type_.ground_check = ground_check;
+	collide_type_.wall_check = wall_check;
+}
+
+void Object::set_collide_type(const CollideType& collide_type)
+{
+	collide_type_ = collide_type;
 }
 
 void Object::AddChild(Object* object)

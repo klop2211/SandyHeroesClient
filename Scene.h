@@ -35,6 +35,10 @@ public:
 
 	virtual bool CheckObjectByObjectCollisions() { return false; };
 
+	//씬에 오브젝트 추가 및 삭제(부가적인 오브젝트 리스트가 있다면 이 함수를 오버라이드하여	사용)
+	virtual void AddObject(Object* object);
+	virtual void DeleteObject(Object* object);
+
 	void ReleaseMeshUploadBuffer();
 
 	virtual void Render(ID3D12GraphicsCommandList* command_list) = 0;
