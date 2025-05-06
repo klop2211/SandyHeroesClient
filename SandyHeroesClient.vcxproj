@@ -167,6 +167,7 @@
     <ClInclude Include="Object.h" />
     <ClInclude Include="MovementComponent.h" />
     <ClInclude Include="PlayerAnimationState.h" />
+    <ClInclude Include="SpawnerComponent.h" />
     <ClInclude Include="UIMesh.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="SandyHeroesClient.h" />
@@ -218,6 +219,7 @@
     <ClCompile Include="Object.cpp" />
     <ClCompile Include="MovementComponent.cpp" />
     <ClCompile Include="PlayerAnimationState.cpp" />
+    <ClCompile Include="SpawnerComponent.cpp" />
     <ClCompile Include="UIMesh.cpp" />
     <ClCompile Include="SandyHeroesClient.cpp" />
     <ClCompile Include="Scene.cpp" />

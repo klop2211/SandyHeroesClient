@@ -7,9 +7,9 @@ class Object;
 class Component
 {
 public:
-	// 컴포넌트는 반드시 owner 즉, 주인 오브젝트가 있어야함
-	Component() = delete;
+	Component() {};
 	Component(Object* owner);
+	Component(Component&& other) = default; //이동 생성자
 
 	//복사 생성된 컴포넌트는 owner를 재지정해야함(의도 하지않은 오브젝트에 연결방지)
 	Component(const Component& other);

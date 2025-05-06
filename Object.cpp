@@ -26,7 +26,9 @@ Object::~Object()
 Object::Object(const Object& other) : 
 	transform_matrix_(other.transform_matrix_), 
 	world_matrix_(other.world_matrix_), 
-	name_(other.name_)
+	name_(other.name_),
+	is_ground_(other.is_ground_),
+	collide_type_(other.collide_type_)
 {
 	id_ = kObjectNextId;
 	++kObjectNextId;

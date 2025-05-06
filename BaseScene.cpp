@@ -27,6 +27,7 @@
 #include "UIMesh.h"
 #include "MonsterComponent.h"
 #include "MovementComponent.h"
+#include "SpawnerComponent.h"
 
 void BaseScene::BuildShader(ID3D12Device* device, ID3D12RootSignature* root_signature)
 {
@@ -151,7 +152,21 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 
 	ShowCursor(false);
 
-	//TODO: 맵 특정 위치에서 지정된 몬스터를 스폰하는 스포너 클래스 구현
+	//스포너 테스트
+	ModelInfo* hit_dragon_model_info = FindModelInfo("Hit_Dragon");
+	hit_dragon_model_info->hierarchy_root()->set_collide_type(true, false);
+	Object* test_spawner = new Object();
+	test_spawner->set_name("Test_Spawner");
+	test_spawner->set_position_vector(0.f, 15.f, 0);
+	SpawnerComponent* test_spawner_component = new SpawnerComponent(test_spawner, this, hit_dragon_model_info);
+	test_spawner_component->SetSpawnerInfo(10, 0.f, 3.f);
+	test_spawner_component->AddComponent(std::make_unique<MonsterComponent>(nullptr));
+	test_spawner_component->AddComponent(std::make_unique<MovementComponent>(nullptr));
+	test_spawner_component->ActivateSpawn();
+	test_spawner->AddComponent(test_spawner_component);
+	AddObject(test_spawner);
+
+
 	Object* hit_dragon = FindModelInfo("Hit_Dragon")->GetInstance();
 	hit_dragon->set_position_vector(0, 15, 5);
 	hit_dragon->AddComponent(new MonsterComponent(hit_dragon));
@@ -177,12 +192,6 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 	animator->set_animation_state(new PlayerAnimationState);
 
 	player_ = player;
-
-	auto mesh_colliders = Object::GetComponentsInChildren<MeshColliderComponent>(player_);
-	for (auto& mesh_collider : mesh_colliders)
-	{
-		
-	}
 
 	//FPS 조작용 컨트롤러 설정
 	FPSControllerComponent* fps_controller = new FPSControllerComponent(player);

@@ -13,7 +13,6 @@ public:
 
 	virtual void Update(float elapsed_time) override;
 
-
 	void set_box(const BoundingOrientedBox& box);
 
 	const BoundingOrientedBox& box() const;

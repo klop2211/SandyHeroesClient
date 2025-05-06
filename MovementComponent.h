@@ -50,5 +50,7 @@ private:
     bool is_friction_{ true };      //마찰을 적용하는지 여부
 
     XMFLOAT3 velocity_{};
+
+	XMFLOAT3 old_position_{};
 };
 
