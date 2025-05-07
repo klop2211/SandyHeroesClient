@@ -1,6 +1,7 @@
 #pragma once
 
 class Component;
+class BaseScene;
 
 struct CollideType
 {

@@ -130,6 +130,16 @@ CollideType Object::collide_type() const
 	return collide_type_;
 }
 
+const XMFLOAT3& Object::prev_position_vector() const
+{
+	return prev_position_;
+}
+
+void Object::set_prev_position_vector(const XMFLOAT3& pos)
+{
+	prev_position_ = pos;
+}
+
 void Object::set_transform_matrix(const XMFLOAT4X4& value)
 {
 	transform_matrix_ = value;
