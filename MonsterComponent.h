@@ -31,6 +31,8 @@ private:
 	float hp_{};
 	float attack_force_{};
 
+	bool alive_{true};
+
 	MonsterType monster_type_{ MonsterType::kNormal };
 
 	//TODO: 몬스터를 움직일 AI 추가

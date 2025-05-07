@@ -21,9 +21,14 @@ public:
 	virtual void DeleteObject(Object* object) override;
 
 	void UpdateObjectIsGround();
+	void UpdateObjectHitWall();
+	void UpdateObjectHitBullet();
 	void CheckObjectIsGround(Object* object);
 
 	void PrepareGroundChecking();	//맵 바닥체크를 위한 사전 작업
+
+	void CheckPlayerHitWall(Object* object, const XMFLOAT3& velocity);
+	void CheckObjectHitBullet(Object* object);
 
 private:
 	//TODO: Player 객체 구현
@@ -35,6 +40,7 @@ private:
 	int stage_clear_num_{ 0 };	// 플레이어의 스테이지 진행도
 	//TODO: 앞으로 충돌관련 리스트가 추가된다면(그럴 필요성이 있어서) 오브젝트 매니저 클래스를 구현하는 것을 고려할 것.
 	std::list<Object*> ground_check_object_list_;	//지면 체크가 필요한 객체들의 리스트(플레이어, monster, NPC)
+	std::list<Object*> wall_check_object_list_;	//벽 체크가 필요한 객체들의 리스트(플레이어, monster, NPC)
 
 	bool is_render_debug_mesh_ = false;	//디버그용 와이어프레임 obb를 렌더하는지 여부
 

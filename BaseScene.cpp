@@ -28,6 +28,7 @@
 #include "MonsterComponent.h"
 #include "MovementComponent.h"
 #include "SpawnerComponent.h"
+#include "BoxColliderComponent.h"
 
 void BaseScene::BuildShader(ID3D12Device* device, ID3D12RootSignature* root_signature)
 {
@@ -152,21 +153,7 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 
 	ShowCursor(false);
 
-	//½ºÆ÷³Ê Å×½ºÆ®
-	ModelInfo* hit_dragon_model_info = FindModelInfo("Hit_Dragon");
-	hit_dragon_model_info->hierarchy_root()->set_collide_type(true, false);
-	Object* test_spawner = new Object();
-	test_spawner->set_name("Test_Spawner");
-	test_spawner->set_position_vector(0.f, 15.f, 0);
-	SpawnerComponent* test_spawner_component = new SpawnerComponent(test_spawner, this, hit_dragon_model_info);
-	test_spawner_component->SetSpawnerInfo(10, 0.f, 3.f);
-	test_spawner_component->AddComponent(std::make_unique<MonsterComponent>(nullptr));
-	test_spawner_component->AddComponent(std::make_unique<MovementComponent>(nullptr));
-	test_spawner_component->ActivateSpawn();
-	test_spawner->AddComponent(test_spawner_component);
-	AddObject(test_spawner);
-
-
+	//TODO: ë§µ íŠ¹ì • ìœ„ì¹˜ì—ì„œ ì§€ì •ëœ ëª¬ìŠ¤í„°ë¥¼ ìŠ¤í°í•˜ëŠ” ìŠ¤í¬ë„ˆ í´ë˜ìŠ¤ êµ¬í˜„
 	Object* hit_dragon = FindModelInfo("Hit_Dragon")->GetInstance();
 	hit_dragon->set_position_vector(0, 15, 5);
 	hit_dragon->AddComponent(new MonsterComponent(hit_dragon));
@@ -186,10 +173,11 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 	Object* player = model_infos_[0]->GetInstance();
 	player->set_name("Player");
 	player->set_position_vector(XMFLOAT3{ 0, 30, 0 });
-	player->set_collide_type(true, false);
+	player->set_collide_type(true, true);
 	player->AddComponent(new MovementComponent(player));
 	AnimatorComponent* animator = Object::GetComponent<AnimatorComponent>(player);
 	animator->set_animation_state(new PlayerAnimationState);
+
 
 	player_ = player;
 
@@ -230,7 +218,7 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 	//¾À ¸®½ºÆ®¿¡ Ãß°¡
 	AddObject(player);
 
-	//ÀÚÀ¯½ÃÁ¡ Ä«¸Ş¶ó
+	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Ä«ï¿½Ş¶ï¿½
 	camera_object = new Object;
 	camera_object->set_name("CAMERA_2");
 	camera_component =
@@ -404,9 +392,13 @@ void BaseScene::Update(float elapsed_time)
 {
 	Scene::Update(elapsed_time);
 
+	UpdateObjectHitWall();
+	
 	UpdateObjectWorldMatrix();
 
 	UpdateObjectIsGround();
+
+	UpdateObjectHitBullet();
 }
 
 void BaseScene::AddObject(Object* object)
@@ -418,7 +410,10 @@ void BaseScene::AddObject(Object* object)
 	{
 		ground_check_object_list_.push_back(object);
 	}
-	//TODO: º®Ã¼Å©°¡ ÇÊ¿äÇÑ ¿ÀºêÁ§Æ®´Â µû·Î ¸®½ºÆ®¸¦ »ı¼º ÈÄ ¿©±â¿¡ Ãß°¡
+	if (collide_type.wall_check)
+	{
+		wall_check_object_list_.push_back(object);
+	}
 }
 
 void BaseScene::DeleteObject(Object* object)
@@ -428,8 +423,13 @@ void BaseScene::DeleteObject(Object* object)
 	{
 		ground_check_object_list_.remove(object);
 	}
+	if (collide_type.wall_check)
+	{
+		wall_check_object_list_.remove(object);
+	}
 
 	Scene::DeleteObject(object);
+
 }
 
 void BaseScene::UpdateObjectIsGround()
@@ -442,6 +442,33 @@ void BaseScene::UpdateObjectIsGround()
 	for (auto& object : ground_check_object_list_)
 	{
 		CheckObjectIsGround(object);
+	}
+}
+
+void BaseScene::UpdateObjectHitWall()
+{
+	if (!is_prepare_ground_checking_)
+	{
+		PrepareGroundChecking();
+	}
+
+	for (auto& object : wall_check_object_list_)
+	{
+		auto movement = Object::GetComponentInChildren<MovementComponent>(object);
+		XMFLOAT3 velocity = movement->velocity();
+		CheckPlayerHitWall(object, velocity);
+	}
+}
+
+void BaseScene::UpdateObjectHitBullet()
+{
+	if (!is_prepare_ground_checking_)
+	{
+		PrepareGroundChecking();
+	}
+	for (auto& object : ground_check_object_list_)
+	{
+		CheckObjectHitBullet(object);
 	}
 }
 
@@ -512,3 +539,113 @@ void BaseScene::PrepareGroundChecking()
 	is_prepare_ground_checking_ = true;
 }
 
+void BaseScene::CheckPlayerHitWall(Object* object, const XMFLOAT3& velocity)
+{
+	XMFLOAT3 position = object->world_position_vector();
+	constexpr float kGroundYOffset = 1.5f;
+	position.y += kGroundYOffset;
+	XMVECTOR ray_origin = XMLoadFloat3(&position);
+	position.y -= kGroundYOffset;
+
+	XMVECTOR ray_direction = XMLoadFloat3(&velocity);
+	ray_direction = XMVectorSetY(ray_direction, 0);
+	ray_direction = XMVector3Normalize(ray_direction);
+
+	if (0 == XMVectorGetX(XMVector3Length(ray_direction)))
+		return;
+
+	bool is_collide = false;
+	float distance{ std::numeric_limits<float>::max() };
+	for (auto& mesh_collider : checking_maps_mesh_collider_list_[stage_clear_num_])
+	{
+		float t{};
+		if (mesh_collider->CollisionCheckByRay(ray_origin, ray_direction, t))
+		{
+			if (t < distance)
+			{
+				distance = t;
+			}
+		}
+	}
+
+	constexpr float MAX_DISTANCE = 0.5f;
+	if (distance < MAX_DISTANCE)
+		is_collide = true;
+
+
+	if (stage_clear_num_ - 1 >= 0)
+	{
+		for (auto& mesh_collider : checking_maps_mesh_collider_list_[stage_clear_num_ - 1])
+		{
+			float t{};
+			if (mesh_collider->CollisionCheckByRay(ray_origin, ray_direction, t))
+			{
+				if (t < distance)
+				{
+					distance = t;
+				}
+			}
+		}
+		if (distance < MAX_DISTANCE)
+			is_collide = true;
+	}
+
+
+	if (is_collide)
+	{
+		auto movement = Object::GetComponentInChildren<MovementComponent>(object);
+		movement->Stop();
+		return;
+	}
+}
+
+void BaseScene::CheckObjectHitBullet(Object* object)
+{
+	GunComponent* gun = Object::GetComponentInChildren<GunComponent>(player_);
+	auto& bullet_list = gun->fired_bullet_list();
+
+	// ëŒ€ìƒ ì˜¤ë¸Œì íŠ¸ì˜ BoxColliderComponent ê°€ì ¸ì˜¤ê¸°
+	BoxColliderComponent* box_collider = Object::GetComponentInChildren<BoxColliderComponent>(object);
+	if (!box_collider)
+		return;
+
+	const BoundingOrientedBox& object_obb = box_collider->box();
+
+	/*XMFLOAT3 position = object->world_position_vector();
+	for (auto& mesh_collider : checking_maps_mesh_collider_list_[stage_clear_num_])
+	{
+
+	}*/
+
+	 for (auto& bullet : bullet_list)
+    {
+        //if (!bullet->IsVisible()) continue; // ê°€ì‹œì„±ì´ ì—†ëŠ” íƒ„í™˜ì€ ë¬´ì‹œ
+
+        // ê° íƒ„í™˜ì˜ BoxColliderComponent í™•ì¸
+        BoxColliderComponent* bullet_collider = Object::GetComponent<BoxColliderComponent>(bullet);
+        if (!bullet_collider)
+            continue;
+
+        const BoundingOrientedBox& bullet_obb = bullet_collider->box();
+
+        BoundingOrientedBox bullet_animated_obb = bullet_obb;
+        bullet_animated_obb.Transform(bullet_animated_obb, XMLoadFloat4x4(&bullet->world_matrix()));
+
+        BoundingOrientedBox object_animated_obb = object_obb;
+        //object_animated_obb.Transform(object_animated_obb, XMLoadFloat4x4(&object->world_matrix()));
+
+        if (object_animated_obb.Intersects(bullet_animated_obb))
+        {
+            // ì¶©ëŒ ì²˜ë¦¬ (ì˜ˆ: ì²´ë ¥ ê°ì†Œ)
+            MonsterComponent* monster = Object::GetComponent<MonsterComponent>(object);
+            if (monster)
+            {
+                monster->set_hp(monster->hp() - 10.f);
+				OutputDebugStringA("ì´ì•Œ ì¶©ëŒ ë°œìƒ\n");
+            }
+
+            // íƒ„í™˜ ë¹„í™œì„±í™” (ìˆ¨ê¹€ ì²˜ë¦¬ ë“±)
+            bullet->set_position_vector(0, -1000, 0); // ë©€ë¦¬ ì´ë™ì‹œì¼œ ìˆ¨ê¹€ íš¨ê³¼
+        }
+    }
+}

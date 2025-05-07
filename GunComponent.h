@@ -42,6 +42,7 @@ public:
 
     //getter
     GunFireType fire_type() const;
+    std::list<Object*> fired_bullet_list() const;
 
     //총기 정보를 로드하는 함수
     static void LoadGunInfosFromFile(const std::string& file_name); 
@@ -64,6 +65,6 @@ private:
     GunFireType fire_type_{ GunFireType::kSemiAuto };   // 발사 방식
     int burst_num_{ 0 };                                // 점사 총알 갯수(점사 방식의 총만 사용)
     BulletType bullet_type_{ BulletType::kNormal };     // 사용하는 총알 타입
-    float bullet_speed_{ 350.f };                       // 탄속
+    float bullet_speed_{ 200.f };                       // 탄속 (기본 : 350)
 };
 

@@ -19,6 +19,11 @@ public:
 
     bool CollisionCheckByObb(BoundingOrientedBox obb);
 
+    BoundingOrientedBox GetWorldOBB() const;
+
+    //getter
+    Mesh* mesh() const;
+
     //setter
     void set_mesh(Mesh* mesh);
 

@@ -4,6 +4,7 @@
 #include "Mesh.h"
 #include "MeshComponent.h"
 #include "MovementComponent.h"
+#include "BoxColliderComponent.h"
 
 std::unordered_map<std::string, GunInfo> GunComponent::kGunInfos{};
 
@@ -70,7 +71,13 @@ bool GunComponent::FireBullet(XMFLOAT3 direction, Mesh* bullet_mesh)
             Object* bullet = new Object();
             bullet->AddComponent(new MeshComponent(bullet, bullet_mesh));
             MovementComponent* movement = new MovementComponent(bullet);
+
+            BoundingOrientedBox obb;
+            constexpr float bullet_size = 0.1f;
+            obb.Extents = { bullet_size, bullet_size, bullet_size };
+            BoxColliderComponent* box = new BoxColliderComponent(bullet, obb);
             bullet->AddComponent(movement);
+            bullet->AddComponent(box);
             bullet->set_position_vector(owner_->world_position_vector());
             movement->DisableFriction();
             movement->set_gravity_acceleration(9.8f);
@@ -112,6 +119,10 @@ GunFireType GunComponent::fire_type() const
     return fire_type_;
 }
 
+std::list<Object*> GunComponent::fired_bullet_list() const
+{
+    return fired_bullet_list_;
+}
 
 void GunComponent::LoadGunInfosFromFile(const std::string& file_name)
 {
