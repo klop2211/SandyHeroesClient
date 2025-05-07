@@ -21,9 +21,6 @@ bool MeshColliderComponent::CollisionCheckByRay(FXMVECTOR ray_origin, FXMVECTOR 
 	XMMATRIX world = XMLoadFloat4x4(&owner_->world_matrix());
 	XMMATRIX inverse_world = XMMatrixInverse(&XMMatrixDeterminant(world), world);
 
-	//XMVECTOR ray_origin_local = XMVector3TransformCoord(ray_origin, inverse_world);
-	//XMVECTOR ray_direction_local = XMVector3Normalize(XMVector3Transform(ray_direction, inverse_world));
-
 	BoundingOrientedBox bounds;
 	BoundingOrientedBox::CreateFromBoundingBox(bounds, mesh_->bounds());
 	bounds.Transform(bounds, world);
@@ -33,6 +30,20 @@ bool MeshColliderComponent::CollisionCheckByRay(FXMVECTOR ray_origin, FXMVECTOR 
 	bool is_collide{ false };
 	if (bounds.Intersects(ray_origin, ray_direction, t))
 	{
+		std::string name = mesh()->name();
+		// 철장은 1차검사만 진행
+		if ("Fence_01" == name ||
+			"Fence_02" == name ||
+			"Fence_03" == name || 
+			"Fence_04" == name || 
+			"Fence_05" == name)
+		{
+			out_distance = t;
+			is_collide = true;
+			return is_collide;
+		}
+			
+
 		auto& positions = mesh_->positions();
 		auto& indices_array = mesh_->indices_array();
 
@@ -124,6 +135,11 @@ BoundingOrientedBox MeshColliderComponent::GetWorldOBB() const
 	obb.Transform(obb, world);
 
 	return obb;
+}
+
+Mesh* MeshColliderComponent::mesh() const
+{
+	return mesh_;
 }
 
 

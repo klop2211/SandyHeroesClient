@@ -176,13 +176,9 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 	player->set_name("Player");
 	player->set_position_vector(XMFLOAT3{ 0, 30, 0 });
 	player->AddComponent(new MovementComponent(player));
+	player->AddComponent(new MovementComponent(player));
 	AnimatorComponent* animator = Object::GetComponent<AnimatorComponent>(player);
 	animator->set_animation_state(new PlayerAnimationState);
-	
-	//auto* player_mesh = Scene::FindMesh("PlayerMesh", meshes_); // 이름은 실제 메쉬 이름
-	//auto* mesh_collider = new MeshColliderComponent(player_);
-	//mesh_collider->set_mesh(player_mesh);
-	//player->AddComponent(mesh_collider);
 
 
 	player_ = player;
@@ -400,18 +396,10 @@ void BaseScene::Update(float elapsed_time)
 {
 	Scene::Update(elapsed_time);
 
-	XMFLOAT3 velocity = player_->velocity();
-	XMFLOAT3 old_position = player_->position_vector(); //진짜 이전 위치 저장
+	auto player_movement = Object::GetComponentInChildren<MovementComponent>(player_);
+	XMFLOAT3 velocity = player_movement->velocity();
 
 	CheckPlayerHitWall(velocity);
-	velocity = player_->velocity();
-	// 여기서만 실제 이동
-	XMFLOAT3 new_position = {
-		old_position.x + velocity.x * elapsed_time,
-		old_position.y + velocity.y * elapsed_time,
-		old_position.z + velocity.z * elapsed_time
-	};
-	player_->set_position_vector(new_position);
 
 	UpdateObjectWorldMatrix();
 	UpdateObjectIsGround();
@@ -556,7 +544,8 @@ void BaseScene::CheckPlayerHitWall(const XMFLOAT3& velocity)
 
 	if (is_collide)
 	{
-		player_->set_velocity({ 0, velocity.y, 0 });
+		auto player_movement = Object::GetComponentInChildren<MovementComponent>(player_);
+		player_movement->Stop();
 		return;
 	}
 }

@@ -21,6 +21,9 @@ public:
 
     BoundingOrientedBox GetWorldOBB() const;
 
+    //getter
+    Mesh* mesh() const;
+
     //setter
     void set_mesh(Mesh* mesh);
 
