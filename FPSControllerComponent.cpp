@@ -82,7 +82,7 @@ bool FPSControllerComponent::ProcessInput(UINT message_id, WPARAM w_param, LPARA
 			// 3. 1¹ø¿¡¼­ 2¹øÀ» ÇâÇÏ´Â ÃÑ¾Ë ¹ß»ç
 			XMFLOAT3 bullet_dir{};
 			XMStoreFloat3(&bullet_dir, XMVector3Normalize(picking_point_w - XMLoadFloat3(&gun_shoting_point)));
-			Mesh* bullet_mesh = Scene::FindMesh("green_cube", scene_->meshes());
+			auto bullet_mesh = scene_->FindModelInfo("SM_Bullet_01")->GetInstance();
 			gun->FireBullet(bullet_dir, bullet_mesh);
 		}
 		break;
@@ -225,24 +225,19 @@ void FPSControllerComponent::Update(float elapsed_time)
 
 	if (is_firekey_down_)
 	{
-		//ï¿½Ñ¾ï¿½ï¿½ï¿½ ï¿½Ñ±ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Å· ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ß»ï¿½ï¿½Ç°ï¿½ ï¿½ï¿½ï¿½ï¿½
-		//2ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ê¿ï¿½ 1. ï¿½Ñ±ï¿½ ï¿½ï¿½Ä¡ 2. ï¿½ï¿½Å· ï¿½ï¿½ï¿½ï¿½
 		GunComponent* gun = Object::GetComponentInChildren<GunComponent>(owner_);
 		if (gun && (gun->fire_type() == GunFireType::kAuto))
 		{
-			// 1. ï¿½Ñ±ï¿½ ï¿½ï¿½Ä¡
 			XMFLOAT3 gun_shoting_point{ gun->owner()->world_position_vector() };
 
-			// 2. ï¿½ï¿½Å· ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ç¥ï¿½ï¿½)
 			int sx = mouse_xy_.x;
 			int sy = mouse_xy_.y;
 			Object* picked_object = nullptr;
 			XMVECTOR picking_point_w = scene_->GetPickingPointAtWorld(sx, sy, picked_object);
 
-			// 3. 1ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ 2ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½Ñ¾ï¿½ ï¿½ß»ï¿½
 			XMFLOAT3 bullet_dir{};
 			XMStoreFloat3(&bullet_dir, XMVector3Normalize(picking_point_w - XMLoadFloat3(&gun_shoting_point)));
-			Mesh* bullet_mesh = Scene::FindMesh("green_cube", scene_->meshes());
+			Object* bullet_mesh = scene_->FindModelInfo("SM_Bullet_01")->GetInstance();
 			gun->FireBullet(bullet_dir, bullet_mesh);
 		}
 	}

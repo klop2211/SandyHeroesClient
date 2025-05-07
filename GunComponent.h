@@ -36,13 +36,15 @@ public:
 
     void ReloadBullets();
 
-    bool FireBullet(XMFLOAT3 direction, Mesh* bullet_mesh);
+    bool FireBullet(XMFLOAT3 direction, Object* bullet_mesh);
 
     void LoadGunInfo(const std::string& gun_name);
 
     //getter
     GunFireType fire_type() const;
     std::list<Object*> fired_bullet_list() const;
+	int damage() const;
+	float critical_damage_rate() const;
 
     //총기 정보를 로드하는 함수
     static void LoadGunInfosFromFile(const std::string& file_name); 

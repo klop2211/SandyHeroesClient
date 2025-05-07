@@ -1,4 +1,6 @@
+#include "stdafx.h"
 #include "MonsterComponent.h"
+#include "Object.h"
 
 MonsterComponent::MonsterComponent(Object* owner) : Component(owner)
 {
@@ -16,8 +18,11 @@ Component* MonsterComponent::GetCopy()
 
 void MonsterComponent::Update(float elapsed_time)
 {
-    if (hp_ < 0)
-        alive_ = false;
+    if (hp_ <= 0)
+    {
+		//TODO: 몬스터 죽는 애니메이션 추가 및 애니메이션 종료 후 object 삭제
+		owner_->set_is_dead(true);
+    }
 
 
 	//TODO: 몬스터의 행동을 결정하는 AI 추가

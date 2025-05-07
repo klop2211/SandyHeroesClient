@@ -8,6 +8,14 @@
 
 int Mesh::kCBObjectCurrentIndex = 0;
 
+Mesh::~Mesh()
+{
+	for (auto& mesh_component : mesh_component_list_)
+	{
+		mesh_component->set_mesh(nullptr);
+	}
+}
+
 void Mesh::AddMeshComponent(MeshComponent* mesh_component)
 {
 	mesh_component_list_.push_back(mesh_component);
@@ -15,9 +23,9 @@ void Mesh::AddMeshComponent(MeshComponent* mesh_component)
 
 void Mesh::DeleteMeshComponent(MeshComponent* mesh_component)
 {
-	auto& delete_target = std::find(mesh_component_list_.begin(), mesh_component_list_.end(), mesh_component);
-
-	mesh_component_list_.erase(delete_target);
+	mesh_component_list_.remove_if([&mesh_component](const MeshComponent* component) {
+		return component == mesh_component;
+		});
 }
 
 void Mesh::AddMaterial(Material* material)

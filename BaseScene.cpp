@@ -99,6 +99,7 @@ void BaseScene::BuildMesh(ID3D12Device* device, ID3D12GraphicsCommandList* comma
 	model_infos_.reserve(40);
 	model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/Dog00.bin", meshes_, materials_));
 	model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/Gun/classic.bin", meshes_, materials_));
+	model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/Gun/SM_Bullet_01.bin", meshes_, materials_));
 	model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/Monster/Hit_Dragon.bin", meshes_, materials_));
 
 	//BuildScene("Base");
@@ -153,7 +154,19 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 
 	ShowCursor(false);
 
-	//TODO: 맵 특정 위치에서 지정된 몬스터를 스폰하는 스포너 클래스 구현
+	ModelInfo* hit_dragon_model_info = FindModelInfo("Hit_Dragon");
+	hit_dragon_model_info->hierarchy_root()->set_collide_type(true, false);
+	Object* test_spawner = new Object();
+	test_spawner->set_name("Test_Spawner");
+	test_spawner->set_position_vector(0.f, 15.f, 0);
+	SpawnerComponent* test_spawner_component = new SpawnerComponent(test_spawner, this, hit_dragon_model_info);
+	test_spawner_component->SetSpawnerInfo(10, 0.f, 3.f);
+	test_spawner_component->AddComponent(std::make_unique<MonsterComponent>(nullptr));
+	test_spawner_component->AddComponent(std::make_unique<MovementComponent>(nullptr));
+	test_spawner_component->ActivateSpawn();
+	test_spawner->AddComponent(test_spawner_component);
+	AddObject(test_spawner);
+
 	Object* hit_dragon = FindModelInfo("Hit_Dragon")->GetInstance();
 	hit_dragon->set_position_vector(0, 15, 5);
 	hit_dragon->AddComponent(new MonsterComponent(hit_dragon));
@@ -198,7 +211,7 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 	player_gun_frame->AddChild(model_infos_[1]->GetInstance());
 	player_gun_frame = player_gun_frame->child();
 	GunComponent* player_gun = new GunComponent(player_gun_frame);
-	player_gun->LoadGunInfo("specter");
+	player_gun->LoadGunInfo("classic");
 	player_gun_frame->AddComponent(player_gun);
 	player_gun_frame->Rotate(0, 170, -17);
 	//player_gun_frame->Scale(3);
@@ -399,6 +412,8 @@ void BaseScene::Update(float elapsed_time)
 	UpdateObjectIsGround();
 
 	UpdateObjectHitBullet();
+
+	DeleteDeadObjects();
 }
 
 void BaseScene::AddObject(Object* object)
@@ -430,6 +445,17 @@ void BaseScene::DeleteObject(Object* object)
 
 	Scene::DeleteObject(object);
 
+}
+
+void BaseScene::DeleteDeadObjects()
+{
+	ground_check_object_list_.remove_if([](const Object* object) {
+		return object->is_dead();
+		});
+	wall_check_object_list_.remove_if([](const Object* object) {
+		return object->is_dead();
+		});
+	Scene::DeleteDeadObjects();
 }
 
 void BaseScene::UpdateObjectIsGround()
@@ -604,48 +630,35 @@ void BaseScene::CheckObjectHitBullet(Object* object)
 	GunComponent* gun = Object::GetComponentInChildren<GunComponent>(player_);
 	auto& bullet_list = gun->fired_bullet_list();
 
-	// 대상 오브젝트의 BoxColliderComponent 가져오기
-	BoxColliderComponent* box_collider = Object::GetComponentInChildren<BoxColliderComponent>(object);
-	if (!box_collider)
+
+	auto& box_collider_list = Object::GetComponentsInChildren<BoxColliderComponent>(object);
+	if (!box_collider_list.size())
 		return;
 
-	const BoundingOrientedBox& object_obb = box_collider->box();
-
-	/*XMFLOAT3 position = object->world_position_vector();
-	for (auto& mesh_collider : checking_maps_mesh_collider_list_[stage_clear_num_])
+	for (auto& box_collider : box_collider_list)
 	{
+		for (auto& bullet : bullet_list)
+		{
+			if (bullet->is_dead())
+				continue;
+			BoxColliderComponent* bullet_collider = Object::GetComponent<BoxColliderComponent>(bullet);
+			if (!bullet_collider)
+				continue;
 
-	}*/
 
-	 for (auto& bullet : bullet_list)
-    {
-        //if (!bullet->IsVisible()) continue; // 가시성이 없는 탄환은 무시
+			if (bullet_collider->animated_box().Intersects(box_collider->animated_box()))
+			{
+				if (bullet->is_dead())
+					continue;
+				bullet->set_is_dead(true);
+				MonsterComponent* monster = Object::GetComponent<MonsterComponent>(object);
+				if (monster)
+				{
+					monster->set_hp(monster->hp() - gun->damage());
+				}
+				return;
+			}
+		}
+	}
 
-        // 각 탄환의 BoxColliderComponent 확인
-        BoxColliderComponent* bullet_collider = Object::GetComponent<BoxColliderComponent>(bullet);
-        if (!bullet_collider)
-            continue;
-
-        const BoundingOrientedBox& bullet_obb = bullet_collider->box();
-
-        BoundingOrientedBox bullet_animated_obb = bullet_obb;
-        bullet_animated_obb.Transform(bullet_animated_obb, XMLoadFloat4x4(&bullet->world_matrix()));
-
-        BoundingOrientedBox object_animated_obb = object_obb;
-        //object_animated_obb.Transform(object_animated_obb, XMLoadFloat4x4(&object->world_matrix()));
-
-        if (object_animated_obb.Intersects(bullet_animated_obb))
-        {
-            // 충돌 처리 (예: 체력 감소)
-            MonsterComponent* monster = Object::GetComponent<MonsterComponent>(object);
-            if (monster)
-            {
-                monster->set_hp(monster->hp() - 10.f);
-				OutputDebugStringA("총알 충돌 발생\n");
-            }
-
-            // 탄환 비활성화 (숨김 처리 등)
-            bullet->set_position_vector(0, -1000, 0); // 멀리 이동시켜 숨김 효과
-        }
-    }
 }

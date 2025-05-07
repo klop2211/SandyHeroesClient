@@ -9,6 +9,7 @@ class DebugMeshComponent :
 public:
     DebugMeshComponent(Object* owner, Mesh* cube_mesh, Mesh* source_mesh);
     DebugMeshComponent(Object* owner, Mesh* cube_mesh, const BoundingBox& bounds);
+    DebugMeshComponent(Object* owner, Mesh* cube_mesh, const BoundingOrientedBox& bounds);
     DebugMeshComponent(const DebugMeshComponent& other);
 
     virtual Component* GetCopy() override;

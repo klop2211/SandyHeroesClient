@@ -11,7 +11,7 @@ class Mesh
 {
 public:
 	Mesh() {}
-	virtual ~Mesh() {}
+	virtual ~Mesh();
 	// 메쉬 정보는 복사될 이유가 없음
 	Mesh(const Mesh&) = delete;
 	Mesh& operator=(const Mesh&) = delete;

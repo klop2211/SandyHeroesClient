@@ -13,6 +13,13 @@ DebugMeshComponent::DebugMeshComponent(Object* owner, Mesh* cube_mesh, const Bou
 {
 }
 
+DebugMeshComponent::DebugMeshComponent(Object* owner, Mesh* cube_mesh, const BoundingOrientedBox& bounds)
+	: MeshComponent(owner, cube_mesh)
+{
+	bounds_.Center = bounds.Center;
+	bounds_.Extents = bounds.Extents;
+}
+
 DebugMeshComponent::DebugMeshComponent(const DebugMeshComponent& other) 
 	: MeshComponent(other), bounds_(other.bounds_)
 {

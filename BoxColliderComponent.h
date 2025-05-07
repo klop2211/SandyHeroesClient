@@ -16,6 +16,7 @@ public:
 	void set_box(const BoundingOrientedBox& box);
 
 	const BoundingOrientedBox& box() const;
+	BoundingOrientedBox animated_box() const;
 
 private:
 	BoundingOrientedBox box_{};

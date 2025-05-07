@@ -31,7 +31,7 @@ bool MeshColliderComponent::CollisionCheckByRay(FXMVECTOR ray_origin, FXMVECTOR 
 	if (bounds.Intersects(ray_origin, ray_direction, t))
 	{
 		std::string name = mesh()->name();
-		// ì² ìž¥ì€ 1ì°¨ê²€ì‚¬ë§Œ ì§„í–‰
+		//Ã¶ÀåÀº 1Â÷°Ë»ç¸¸ ÁøÇà
 		if ("Fence_01" == name ||
 			"Fence_02" == name ||
 			"Fence_03" == name || 
@@ -85,13 +85,9 @@ bool MeshColliderComponent::CollisionCheckByRay(FXMVECTOR ray_origin, FXMVECTOR 
 bool MeshColliderComponent::CollisionCheckByObb(BoundingOrientedBox obb)
 {
 	XMMATRIX world = XMLoadFloat4x4(&owner_->world_matrix());
-	XMMATRIX inverse_world = XMMatrixInverse(&XMMatrixDeterminant(world), world);
-
-	BoundingOrientedBox obb_local{};
-	obb.Transform(obb_local, inverse_world);
 
 	bool is_collide{ false };
-	if (mesh_->bounds().Intersects(obb_local))
+	if (mesh_->bounds().Intersects(obb))
 	{
 		auto& positions = mesh_->positions();
 		auto& indices_array = mesh_->indices_array();
@@ -107,11 +103,11 @@ bool MeshColliderComponent::CollisionCheckByObb(BoundingOrientedBox obb)
 					UINT i1 = indices[i + 1];
 					UINT i2 = indices[i + 2];
 
-					XMVECTOR v0 = XMLoadFloat3(&positions[i0]);
-					XMVECTOR v1 = XMLoadFloat3(&positions[i1]);
-					XMVECTOR v2 = XMLoadFloat3(&positions[i2]);
+					XMVECTOR v0 = XMVector3TransformCoord(XMLoadFloat3(&positions[i0]), world);
+					XMVECTOR v1 = XMVector3TransformCoord(XMLoadFloat3(&positions[i1]), world);
+					XMVECTOR v2 = XMVector3TransformCoord(XMLoadFloat3(&positions[i2]), world);
 
-					if (obb_local.Intersects(v0, v1, v2))
+					if (obb.Intersects(v0, v1, v2))
 					{
 						is_collide = true;
 					}
@@ -130,7 +126,7 @@ BoundingOrientedBox MeshColliderComponent::GetWorldOBB() const
 	BoundingOrientedBox obb;
 	BoundingOrientedBox::CreateFromBoundingBox(obb, mesh_->bounds());
 
-	// ì›”ë“œ ì¢Œí‘œê³„ë¡œ ë³€í™˜
+	// ¿ùµå ÁÂÇ¥°è·Î º¯È¯
 	XMMATRIX world = XMLoadFloat4x4(&owner_->world_matrix());
 	obb.Transform(obb, world);
 

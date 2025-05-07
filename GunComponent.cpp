@@ -5,6 +5,8 @@
 #include "MeshComponent.h"
 #include "MovementComponent.h"
 #include "BoxColliderComponent.h"
+#include "DebugMeshComponent.h"
+#include "MeshColliderComponent.h"
 
 std::unordered_map<std::string, GunInfo> GunComponent::kGunInfos{};
 
@@ -45,7 +47,14 @@ void GunComponent::Update(float elapsed_time)
         bullet->Update(elapsed_time);
         bullet->UpdateWorldMatrix(nullptr);
     }
-
+	fired_bullet_list_.remove_if([](Object* bullet) {
+		if (bullet->is_dead())
+		{
+            delete bullet;
+			return true;
+		}
+		return false;
+		});
 }
 
 
@@ -60,7 +69,7 @@ void GunComponent::ReloadBullets()
     }
 }
 
-bool GunComponent::FireBullet(XMFLOAT3 direction, Mesh* bullet_mesh)
+bool GunComponent::FireBullet(XMFLOAT3 direction, Object* bullet_model)
 {
     if (loaded_bullets_ > 0)
     {
@@ -68,22 +77,29 @@ bool GunComponent::FireBullet(XMFLOAT3 direction, Mesh* bullet_mesh)
         if (rps * cooling_time_ >= 1.f)
         {
             cooling_time_ = 0.f;
-            Object* bullet = new Object();
-            bullet->AddComponent(new MeshComponent(bullet, bullet_mesh));
-            MovementComponent* movement = new MovementComponent(bullet);
+            Object* bullet = bullet_model;
+            XMFLOAT3 bullet_look = xmath_util_float3::Normalize(bullet->look_vector());
+			XMFLOAT3 rotate_axis = xmath_util_float3::CrossProduct(bullet_look, direction);
+			float angle = xmath_util_float3::AngleBetween(bullet_look, direction);
 
+			XMMATRIX rotation_matrix = XMMatrixRotationAxis(XMLoadFloat3(&rotate_axis), angle);
+			XMFLOAT4X4 transform_matrix = bullet->transform_matrix();
+            XMStoreFloat4x4(&transform_matrix, rotation_matrix * XMLoadFloat4x4(&transform_matrix));
+			bullet->set_transform_matrix(transform_matrix);
+
+			MeshComponent* bullet_mesh = Object::GetComponentInChildren<MeshComponent>(bullet);
             BoundingOrientedBox obb;
-            constexpr float bullet_size = 0.1f;
-            obb.Extents = { bullet_size, bullet_size, bullet_size };
-            BoxColliderComponent* box = new BoxColliderComponent(bullet, obb);
+			BoundingOrientedBox::CreateFromBoundingBox(obb, bullet_mesh->GetMesh()->bounds());
+			BoxColliderComponent* bullet_box_collider = new BoxColliderComponent(bullet, obb);
+            bullet->AddComponent(bullet_box_collider);
+            MovementComponent* movement = new MovementComponent(bullet);
             bullet->AddComponent(movement);
-            bullet->AddComponent(box);
             bullet->set_position_vector(owner_->world_position_vector());
             movement->DisableFriction();
             movement->set_gravity_acceleration(9.8f);
             movement->set_max_speed_xz_(bullet_speed_);
             movement->Move(direction, bullet_speed_);
-            bullet->Scale(0.1);
+            bullet->Scale(3.f);
             fired_bullet_list_.push_back(bullet);
             --loaded_bullets_;
         }
@@ -122,6 +138,16 @@ GunFireType GunComponent::fire_type() const
 std::list<Object*> GunComponent::fired_bullet_list() const
 {
     return fired_bullet_list_;
+}
+
+int GunComponent::damage() const
+{
+    return damage_;
+}
+
+float GunComponent::critical_damage_rate() const
+{
+    return critical_damage_rate_;
 }
 
 void GunComponent::LoadGunInfosFromFile(const std::string& file_name)

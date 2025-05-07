@@ -38,6 +38,7 @@ public:
 	//씬에 오브젝트 추가 및 삭제(부가적인 오브젝트 리스트가 있다면 이 함수를 오버라이드하여	사용)
 	virtual void AddObject(Object* object);
 	virtual void DeleteObject(Object* object);
+	virtual void DeleteDeadObjects();
 
 	void ReleaseMeshUploadBuffer();
 
@@ -50,6 +51,7 @@ public:
 	XMVECTOR GetPickingPointAtWorld(float sx, float sy, Object* picked_object);
 
 	virtual void Update(float elapsed_time);
+
 
 	void UpdateObjectWorldMatrix();
 

@@ -125,6 +125,11 @@ bool Object::is_ground() const
 	return is_ground_;
 }
 
+bool Object::is_dead() const
+{
+	return is_dead_;
+}
+
 CollideType Object::collide_type() const
 {
 	return collide_type_;
@@ -171,6 +176,11 @@ void Object::set_up_vector(const XMFLOAT3& value)
 void Object::set_name(const std::string& value)
 {
 	name_ = value;
+}
+
+void Object::set_is_dead(bool is_dead)
+{
+	is_dead_ = is_dead;
 }
 
 void Object::set_is_ground(bool is_ground)
@@ -250,6 +260,8 @@ void Object::UpdateWorldMatrix(const XMFLOAT4X4* const parent_world)
 
 void Object::Update(float elapsed_time)
 {
+	if (is_dead_)
+		return;
 	for (const std::unique_ptr<Component>& component : component_list_)
 	{
 		component->Update(elapsed_time);

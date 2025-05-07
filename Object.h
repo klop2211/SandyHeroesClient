@@ -18,11 +18,9 @@ public:
 	Object(const std::string& name);
 	virtual ~Object();
 
-	//ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(child, siblingï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
 	Object(const Object& other);
 
 	//getter
-	// ï¿½ï¿½È¯ï¿½ï¿½ï¿?ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 	XMFLOAT4X4 transform_matrix() const;
 	XMFLOAT3 position_vector() const;
 	XMFLOAT3 look_vector() const;
@@ -42,11 +40,11 @@ public:
 	Object* sibling() const;
 	Object* parent() const;
 	bool is_ground() const;	
+	bool is_dead() const;	//Á×Àº ¿ÀºêÁ§Æ®ÀÎ°¡?
 
 	CollideType collide_type() const;
 
 	//setter
-	// ï¿½ï¿½È¯ï¿½ï¿½ï¿?ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 	void set_transform_matrix(const XMFLOAT4X4& value);
 	void set_position_vector(const XMFLOAT3& value);
 	void set_position_vector(float x, float y, float z);
@@ -54,14 +52,13 @@ public:
 	void set_right_vector(const XMFLOAT3& value);
 	void set_up_vector(const XMFLOAT3& value);
 
-
-	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿?setterï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê´Â´ï¿½.(ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿?ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ® ï¿½Ç±ï¿½ ï¿½ï¿½ï¿½ï¿½)
-
 	void set_name(const std::string& value);
+	void set_is_dead(bool is_dead);
 
 	void set_is_ground(bool on_ground);
 	void set_collide_type(bool ground_check, bool wall_check);
 	void set_collide_type(const CollideType& collide_type);
+
 
 	void AddChild(Object* object);
 	void AddSibling(Object* object);
@@ -70,15 +67,14 @@ public:
 	Object* FindFrame(const std::string& name);
 	Object* GetHierarchyRoot();
 
-	// ï¿½ï¿½å¸?ï¿½ï¿½È¸ï¿½Ï¸ï¿½ world_matrixï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½Ñ´ï¿½.(ï¿½Ö»ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿?ï¿½ï¿½ï¿?ï¿½ï¿½ï¿½Ú¿ï¿½ nullptrï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½È´ï¿½)
 	void UpdateWorldMatrix(const XMFLOAT4X4* const parent_transform); 
 
 	virtual void Update(float elapsed_time);
 
 	void Rotate(float pitch, float yaw, float roll);
-	void Scale(float value);				// transform ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ valueï¿½ï¿½ ï¿½Õµï¿½ ï¿½ï¿½È¯ï¿½Ñ´ï¿½.
+	void Scale(float value);				
 
-	// func ï¿½Ô¼ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿?ï¿½ï¿½å¿?ï¿½ï¿½ï¿½ï¿½ï¿½Ï¶ï¿½.
+	// Applies the func to the object and all its descendants in the hierarchy.
 	void EnableFuncInHeirachy(std::function<void(Object*, void*)> func, void* value);
 
 	static Object* DeepCopy(Object* value, Object* parent = nullptr);
@@ -159,7 +155,6 @@ public:
 	}
 
 protected:
-	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½È¯ï¿½ï¿½ï¿?
 	XMFLOAT4X4 transform_matrix_ = xmath_util_float4x4::Identity();
 
 	Object* parent_ = nullptr;
@@ -167,11 +162,11 @@ protected:
 	Object* sibling_ = nullptr;
 
 
-	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ß°ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿?ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Æ®
 	std::list<std::unique_ptr<Component>> component_list_;
 
 	std::string name_ = "None";
 
+	bool is_dead_ = false;	//Á×Àº ¿ÀºêÁ§Æ®ÀÎ°¡?	
 
 	//¹°¸® °ü·Ã º¯¼öµé
 	bool is_ground_ = false;	//Áö¸é¿¡ ´ê¾ÆÀÖ´Â°¡?
@@ -180,10 +175,8 @@ protected:
 	CollideType collide_type_ = { false, false };	//Áö¸é Ã¼Å©, º® Ã¼Å©
 
 private:
-	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿?ï¿½ï¿½, ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿?ï¿½ï¿½È¯ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿?
 	XMFLOAT4X4 world_matrix_ = xmath_util_float4x4::Identity();		
 
-	// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ id, 1ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ñ´ï¿½. ï¿½ï¿½, id 0ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 	static UINT kObjectNextId;
 	UINT id_ = 0;
 	

@@ -24,6 +24,14 @@ MeshComponent& MeshComponent::operator=(const MeshComponent& rhs)
 	return *this;
 }
 
+MeshComponent::~MeshComponent()
+{
+	if (mesh_)
+	{
+		mesh_->DeleteMeshComponent(this);
+	}
+}
+
 Component* MeshComponent::GetCopy()
 {
 	return new MeshComponent(*this);
@@ -52,4 +60,9 @@ void MeshComponent::set_is_visible(bool value)
 Mesh* MeshComponent::GetMesh() const
 {
 	return mesh_;
+}
+
+void MeshComponent::set_mesh(Mesh* mesh)
+{
+	mesh_ = mesh;
 }

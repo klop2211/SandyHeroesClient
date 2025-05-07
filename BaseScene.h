@@ -19,6 +19,7 @@ public:
 
 	virtual void AddObject(Object* object) override;
 	virtual void DeleteObject(Object* object) override;
+	virtual void DeleteDeadObjects() override;
 
 	void UpdateObjectIsGround();
 	void UpdateObjectHitWall();

@@ -106,6 +106,13 @@ void Scene::Update(float elapsed_time)
 	}
 }
 
+void Scene::DeleteDeadObjects()
+{
+	object_list_.remove_if([](const std::unique_ptr<Object>& object) {
+		return object->is_dead();
+		});
+}
+
 void Scene::UpdateObjectWorldMatrix()
 {
 	for (const std::unique_ptr<Object>& object : object_list_)

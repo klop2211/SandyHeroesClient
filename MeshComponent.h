@@ -14,6 +14,8 @@ public:
     MeshComponent(const MeshComponent& other);
     MeshComponent& operator=(const MeshComponent& rhs);
 
+    virtual ~MeshComponent();
+
     virtual Component* GetCopy() override;
 
     virtual void UpdateConstantBuffer(FrameResource* current_frame_resource, int cb_index);
@@ -23,6 +25,8 @@ public:
     void set_is_visible(bool value);
 
     Mesh* GetMesh() const;
+
+    void set_mesh(Mesh* mesh);
 protected:
     Mesh* mesh_ = nullptr;
 

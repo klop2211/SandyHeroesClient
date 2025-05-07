@@ -137,6 +137,13 @@ namespace xmath_util_float3
 		return r_value.x;
 	}
 
+	inline float AngleBetween(const XMFLOAT3& vector1, const XMFLOAT3& vector2)
+	{
+		XMFLOAT3 r_value;
+		XMStoreFloat3(&r_value, XMVector3AngleBetweenNormals(XMLoadFloat3(&vector1), XMLoadFloat3(&vector2)));
+		return r_value.x;
+	}
+
 }
 
 namespace xmath_util_float4

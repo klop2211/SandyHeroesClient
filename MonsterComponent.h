@@ -28,10 +28,8 @@ public:
 
 private:
 	float shield_{};
-	float hp_{};
+	float hp_{10.f};
 	float attack_force_{};
-
-	bool alive_{true};
 
 	MonsterType monster_type_{ MonsterType::kNormal };
 
