@@ -3,7 +3,6 @@
 class Component;
 class BaseScene;
 
-
 struct CollideType
 {
 	bool ground_check = false;	//지면 체크가 필요한가?	

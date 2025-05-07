@@ -83,7 +83,7 @@ void BaseScene::BuildMesh(ID3D12Device* device, ID3D12GraphicsCommandList* comma
 	materials_.back().reset(material);
 
 	//debug mesh
-	material = materials_[0].get(); // ?��? ?�는 ?�무 머터리얼
+	material = materials_[0].get(); // 의미 없는 아무 머터리얼
 	Mesh* debug_mesh = new CubeMesh();
 	debug_mesh->ClearNormals();
 	debug_mesh->ClearNormals();
@@ -146,28 +146,13 @@ void BaseScene::BuildMesh(ID3D12Device* device, ID3D12GraphicsCommandList* comma
 
 void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* command_list)
 {
-	//TODO: �?메쉬??컴포?�트 ?�결 개수�??�악?�면 ?�래 ?�치�??�테?�하�??�정?????�을�?같다..
+	//TODO: 각 메쉬의 컴포넌트 연결 개수를 파악하면 아래 수치를 디테일하게 설정할 수 있을것 같다..
 	cb_object_capacity_ = 15000;
 	cb_skinned_mesh_object_capacity_ = 10000;
 
 	ShowCursor(false);
 
-
-	//������ �׽�Ʈ
-	ModelInfo* hit_dragon_model_info = FindModelInfo("Hit_Dragon");
-	hit_dragon_model_info->hierarchy_root()->set_collide_type(true, false);
-	Object* test_spawner = new Object();
-	test_spawner->set_name("Test_Spawner");
-	test_spawner->set_position_vector(0.f, 15.f, 0);
-	SpawnerComponent* test_spawner_component = new SpawnerComponent(test_spawner, this, hit_dragon_model_info);
-	test_spawner_component->SetSpawnerInfo(10, 0.f, 3.f);
-	test_spawner_component->AddComponent(std::make_unique<MonsterComponent>(nullptr));
-	test_spawner_component->AddComponent(std::make_unique<MovementComponent>(nullptr));
-	test_spawner_component->ActivateSpawn();
-	test_spawner->AddComponent(test_spawner_component);
-	AddObject(test_spawner);
-
-
+	//TODO: 맵 특정 위치에서 지정된 몬스터를 스폰하는 스포너 클래스 구현
 	Object* hit_dragon = FindModelInfo("Hit_Dragon")->GetInstance();
 	hit_dragon->set_position_vector(0, 15, 5);
 	hit_dragon->AddComponent(new MonsterComponent(hit_dragon));
@@ -183,12 +168,11 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 	skybox->AddComponent(new MeshComponent(skybox, Scene::FindMesh("Skybox", meshes_)));
 	AddObject(skybox);
 
-	//모델 ?�브?�트 배치
+	//모델 오브젝트 배치
 	Object* player = model_infos_[0]->GetInstance();
 	player->set_name("Player");
 	player->set_position_vector(XMFLOAT3{ 0, 30, 0 });
-	player->set_collide_type(true, false);
-	player->AddComponent(new MovementComponent(player));
+	player->set_collide_type(true, true);
 	player->AddComponent(new MovementComponent(player));
 	AnimatorComponent* animator = Object::GetComponent<AnimatorComponent>(player);
 	animator->set_animation_state(new PlayerAnimationState);
@@ -196,19 +180,19 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 
 	player_ = player;
 
-	//FPS 조작??컨트롤러 ?�정
+	//FPS 조작용 컨트롤러 설정
 	FPSControllerComponent* fps_controller = new FPSControllerComponent(player);
 	fps_controller->set_client_wnd(game_framework_->main_wnd());
 	fps_controller->set_scene(this);
 	player->AddComponent(fps_controller);
-	//메인 컨트롤러�??�정
+	//메인 컨트롤러로 설정
 	main_input_controller_ = fps_controller;
 
-	//모든 총기 ?�보 로드
+	//모든 총기 정보 로드
 	GunComponent::LoadGunInfosFromFile("./Resource/GunInfos.txt");
 
-	//?�레?�어 총기 ?�착
-	//TODO: 총기 메쉬 ?�착 구현
+	//플레이어 총기 장착
+	//TODO: 총기 메쉬 장착 구현
 	Object* player_gun_frame = player->FindFrame("WeaponR_locator");
 	player_gun_frame->AddChild(model_infos_[1]->GetInstance());
 	player_gun_frame = player_gun_frame->child();
@@ -218,7 +202,7 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 	player_gun_frame->Rotate(0, 170, -17);
 	//player_gun_frame->Scale(3);
 
-	//카메???�정
+	//카메라 설정
 	Object* camera_object = new Object();
 	player->AddChild(camera_object);
 	fps_controller->set_camera_object(camera_object);
@@ -230,11 +214,7 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 	camera_object->AddComponent(camera_component);
 	main_camera_ = camera_component;
 
-	//??리스?�에 추�?
-	object_list_.emplace_back();
-	object_list_.back().reset(player);
-	ground_check_object_list_.push_back(player);
-	//�� ����Ʈ�� �߰�
+	//씬 리스트에 추가
 	AddObject(player);
 
 	//�������� ī�޶�
@@ -253,8 +233,8 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 	object_list_.emplace_back();
 	object_list_.back().reset(camera_object);
 
-	//모든 메쉬 ?�는 객체??메쉬 콜라?�더 추�?(주의?�항: ?�롭�?만들?��???메쉬?�는 객체??메쉬콜라?�더가 ?�음)
-	//+ ?�버그용 메쉬 추�?
+	//모든 메쉬 있는 객체에 메쉬 콜라이더 추가(주의사항: 새롭게 만들어지는 메쉬있는 객체는 메쉬콜라이더가 없음)
+	//+ 디버그용 메쉬 추가
 	Mesh* debug_mesh = Scene::FindMesh("Debug_Mesh", meshes_);
 	for (auto& mesh : meshes_)
 	{
@@ -284,7 +264,7 @@ void BaseScene::Render(ID3D12GraphicsCommandList* command_list)
 	cb_pass.proj_matrix = xmath_util_float4x4::TransPose(main_camera_->projection_matrix());
 	cb_pass.camera_position = main_camera_->world_position();
 
-	//TODO: 조명 관???�래?��? ?�성??그것???�용?�여 ?�래 ?�보 ?�데?�트(?�재???�스?�용 ?�드코딩)
+	//TODO: 조명 관련 클래스를 생성후 그것을 사용하여 아래 정보 업데이트(현재는 테스트용 하드코딩)
 	cb_pass.ambient_light = XMFLOAT4{ 0.01,0.01,0.01, 1 };
 	cb_pass.lights[0].strength = XMFLOAT3{ 0.7, 0.7, 0.7 };
 	cb_pass.lights[0].direction = XMFLOAT3{ 0, -1, 0 };
@@ -306,8 +286,8 @@ void BaseScene::Render(ID3D12GraphicsCommandList* command_list)
 	FrameResourceManager* frame_resource_manager = game_framework_->frame_resource_manager();
 	frame_resource_manager->curr_frame_resource()->cb_pass.get()->CopyData(0, cb_pass);
 
-	//25.02.23 ?�정
-	//기존 루트 ?�스?�립???�이블에??루트 CBV�?변�?
+	//25.02.23 수정
+	//기존 루트 디스크립터 테이블에서 루트 CBV로 변경
 	D3D12_GPU_VIRTUAL_ADDRESS cb_pass_address =
 		frame_resource_manager->curr_frame_resource()->cb_pass.get()->Resource()->GetGPUVirtualAddress();
 
@@ -316,8 +296,8 @@ void BaseScene::Render(ID3D12GraphicsCommandList* command_list)
 	Mesh::ResetCBObjectCurrentIndex();
 	SkinnedMesh::ResetCBSkinnedMeshObjectCurrentIndex();
 
-	// ?�순??배치 처리 
-	// ?�에???�용?�는 ?�이?��? n개이�?SetPipelineState가 n�??�출?�다
+	// 단순한 배치 처리 
+	// 씬에서 사용하는 쉐이더가 n개이면 SetPipelineState가 n번 호출된다
 	for (const std::unique_ptr<Shader>& shader : shaders_)
 	{
 		command_list->SetPipelineState(shader->GetPipelineState());
@@ -347,16 +327,16 @@ bool BaseScene::ProcessInput(UINT id, WPARAM w_param, LPARAM l_param, float time
 	switch (id)
 	{
 	case WM_KEYDOWN:
-		// 카메???�환 ?�스??
+		// 카메라 전환 테스트
 		if (w_param == 'K')
 		{
 			ShowCursor(true);
-			//바�? 카메???�브?�트�?찾고
+			//바꿀 카메라 오브젝트를 찾고
 			Object* camera = FindObject("CAMERA_2");
 
-			//�??�브?�트??카메?��? 컨트롤러�??�으�?가?�온??
+			//그 오브젝트의 카메라와 컨트롤러를 씬으로 가져온다
 			CameraComponent* new_camera = Object::GetComponent<CameraComponent>(camera);
-			if (new_camera) // nullptr 방�?
+			if (new_camera) // nullptr 방지
 			{
 				main_camera_ = new_camera;
 			}
@@ -366,10 +346,10 @@ bool BaseScene::ProcessInput(UINT id, WPARAM w_param, LPARAM l_param, float time
 		if (w_param == 'L')
 		{
 			ShowCursor(false);
-			//바�? 카메???�브?�트�?찾고
-			//�??�브?�트??카메?��? 컨트롤러�??�으�?가?�온??
+			//바꿀 카메라 오브젝트를 찾고
+			//그 오브젝트의 카메라와 컨트롤러를 씬으로 가져온다
 			CameraComponent* new_camera = Object::GetComponentInChildren<CameraComponent>(player_);
-			if (new_camera) // nullptr 방�?
+			if (new_camera) // nullptr 방지
 			{
 				main_camera_ = new_camera;
 			}
@@ -411,12 +391,10 @@ void BaseScene::Update(float elapsed_time)
 {
 	Scene::Update(elapsed_time);
 
-	auto player_movement = Object::GetComponentInChildren<MovementComponent>(player_);
-	XMFLOAT3 velocity = player_movement->velocity();
-
-	CheckPlayerHitWall(velocity);
-
+	UpdateObjectHitWall();
+	
 	UpdateObjectWorldMatrix();
+
 	UpdateObjectIsGround();
 }
 
@@ -429,7 +407,10 @@ void BaseScene::AddObject(Object* object)
 	{
 		ground_check_object_list_.push_back(object);
 	}
-	//TODO: ��üũ�� �ʿ��� ������Ʈ�� ���� ����Ʈ�� ���� �� ���⿡ �߰�
+	if (collide_type.wall_check)
+	{
+		wall_check_object_list_.push_back(object);
+	}
 }
 
 void BaseScene::DeleteObject(Object* object)
@@ -439,8 +420,13 @@ void BaseScene::DeleteObject(Object* object)
 	{
 		ground_check_object_list_.remove(object);
 	}
+	if (collide_type.wall_check)
+	{
+		wall_check_object_list_.remove(object);
+	}
 
 	Scene::DeleteObject(object);
+
 }
 
 void BaseScene::UpdateObjectIsGround()
@@ -453,6 +439,21 @@ void BaseScene::UpdateObjectIsGround()
 	for (auto& object : ground_check_object_list_)
 	{
 		CheckObjectIsGround(object);
+	}
+}
+
+void BaseScene::UpdateObjectHitWall()
+{
+	if (!is_prepare_ground_checking_)
+	{
+		PrepareGroundChecking();
+	}
+
+	for (auto& object : wall_check_object_list_)
+	{
+		auto movement = Object::GetComponentInChildren<MovementComponent>(object);
+		XMFLOAT3 velocity = movement->velocity();
+		CheckPlayerHitWall(object, velocity);
 	}
 }
 
@@ -496,7 +497,7 @@ void BaseScene::CheckObjectIsGround(Object* object)
 	}
 	if (is_collide)
 	{
-		float distance_on_ground = distance - kGroundYOffset; //지면까지??거리
+		float distance_on_ground = distance - kGroundYOffset; //지면까지의 거리
 		if (distance_on_ground > 0.005f)
 		{
 			object->set_is_ground(false);
@@ -523,14 +524,9 @@ void BaseScene::PrepareGroundChecking()
 	is_prepare_ground_checking_ = true;
 }
 
-void BaseScene::CheckPlayerHitWall(const XMFLOAT3& velocity)
+void BaseScene::CheckPlayerHitWall(Object* object, const XMFLOAT3& velocity)
 {
-	if (!is_prepare_ground_checking_)
-	{
-		PrepareGroundChecking();
-	}
-
-	XMFLOAT3 position = player_->world_position_vector();
+	XMFLOAT3 position = object->world_position_vector();
 	constexpr float kGroundYOffset = 1.5f;
 	position.y += kGroundYOffset;
 	XMVECTOR ray_origin = XMLoadFloat3(&position);
@@ -582,8 +578,8 @@ void BaseScene::CheckPlayerHitWall(const XMFLOAT3& velocity)
 
 	if (is_collide)
 	{
-		auto player_movement = Object::GetComponentInChildren<MovementComponent>(player_);
-		player_movement->Stop();
+		auto movement = Object::GetComponentInChildren<MovementComponent>(object);
+		movement->Stop();
 		return;
 	}
 }
