@@ -22,11 +22,13 @@ public:
 
 	void UpdateObjectIsGround();
 	void UpdateObjectHitWall();
+	void UpdateObjectHitBullet();
 	void CheckObjectIsGround(Object* object);
 
 	void PrepareGroundChecking();	//맵 바닥체크를 위한 사전 작업
 
 	void CheckPlayerHitWall(Object* object, const XMFLOAT3& velocity);
+	void CheckObjectHitBullet(Object* object);
 
 private:
 	//TODO: Player 객체 구현

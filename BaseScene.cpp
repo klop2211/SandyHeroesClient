@@ -28,6 +28,7 @@
 #include "MonsterComponent.h"
 #include "MovementComponent.h"
 #include "SpawnerComponent.h"
+#include "BoxColliderComponent.h"
 
 void BaseScene::BuildShader(ID3D12Device* device, ID3D12RootSignature* root_signature)
 {
@@ -396,6 +397,8 @@ void BaseScene::Update(float elapsed_time)
 	UpdateObjectWorldMatrix();
 
 	UpdateObjectIsGround();
+
+	UpdateObjectHitBullet();
 }
 
 void BaseScene::AddObject(Object* object)
@@ -454,6 +457,18 @@ void BaseScene::UpdateObjectHitWall()
 		auto movement = Object::GetComponentInChildren<MovementComponent>(object);
 		XMFLOAT3 velocity = movement->velocity();
 		CheckPlayerHitWall(object, velocity);
+	}
+}
+
+void BaseScene::UpdateObjectHitBullet()
+{
+	if (!is_prepare_ground_checking_)
+	{
+		PrepareGroundChecking();
+	}
+	for (auto& object : ground_check_object_list_)
+	{
+		CheckObjectHitBullet(object);
 	}
 }
 
@@ -582,4 +597,55 @@ void BaseScene::CheckPlayerHitWall(Object* object, const XMFLOAT3& velocity)
 		movement->Stop();
 		return;
 	}
+}
+
+void BaseScene::CheckObjectHitBullet(Object* object)
+{
+	GunComponent* gun = Object::GetComponentInChildren<GunComponent>(player_);
+	auto& bullet_list = gun->fired_bullet_list();
+
+	// 대상 오브젝트의 BoxColliderComponent 가져오기
+	BoxColliderComponent* box_collider = Object::GetComponentInChildren<BoxColliderComponent>(object);
+	if (!box_collider)
+		return;
+
+	const BoundingOrientedBox& object_obb = box_collider->box();
+
+	/*XMFLOAT3 position = object->world_position_vector();
+	for (auto& mesh_collider : checking_maps_mesh_collider_list_[stage_clear_num_])
+	{
+
+	}*/
+
+	 for (auto& bullet : bullet_list)
+    {
+        //if (!bullet->IsVisible()) continue; // 가시성이 없는 탄환은 무시
+
+        // 각 탄환의 BoxColliderComponent 확인
+        BoxColliderComponent* bullet_collider = Object::GetComponent<BoxColliderComponent>(bullet);
+        if (!bullet_collider)
+            continue;
+
+        const BoundingOrientedBox& bullet_obb = bullet_collider->box();
+
+        BoundingOrientedBox bullet_animated_obb = bullet_obb;
+        bullet_animated_obb.Transform(bullet_animated_obb, XMLoadFloat4x4(&bullet->world_matrix()));
+
+        BoundingOrientedBox object_animated_obb = object_obb;
+        //object_animated_obb.Transform(object_animated_obb, XMLoadFloat4x4(&object->world_matrix()));
+
+        if (object_animated_obb.Intersects(bullet_animated_obb))
+        {
+            // 충돌 처리 (예: 체력 감소)
+            MonsterComponent* monster = Object::GetComponent<MonsterComponent>(object);
+            if (monster)
+            {
+                monster->set_hp(monster->hp() - 10.f);
+				OutputDebugStringA("총알 충돌 발생\n");
+            }
+
+            // 탄환 비활성화 (숨김 처리 등)
+            bullet->set_position_vector(0, -1000, 0); // 멀리 이동시켜 숨김 효과
+        }
+    }
 }

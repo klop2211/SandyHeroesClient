@@ -16,6 +16,10 @@ Component* MonsterComponent::GetCopy()
 
 void MonsterComponent::Update(float elapsed_time)
 {
+    if (hp_ < 0)
+        alive_ = false;
+
+
 	//TODO: 몬스터의 행동을 결정하는 AI 추가
 	//EX) ai->Update(owner_, elapsed_time);
 }

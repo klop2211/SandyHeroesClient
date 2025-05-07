@@ -204,7 +204,6 @@ void FPSControllerComponent::Update(float elapsed_time)
 	}
 
 	// 대쉬
-	// �뽬
 	constexpr float kDashSpeed = 70.f;
 	constexpr float kDashLength = 10.f;
 	if (is_dash_pressed_)
