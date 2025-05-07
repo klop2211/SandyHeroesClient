@@ -180,6 +180,19 @@ CameraComponent* Scene::main_camera() const
 	return main_camera_;
 }
 
+void Scene::AddObject(Object* object)
+{
+	object_list_.emplace_back();
+	object_list_.back().reset(object);
+}
+
+void Scene::DeleteObject(Object* object)
+{
+	object_list_.remove_if([&object](const std::unique_ptr<Object>& obj) {
+		return obj.get() == object;
+		});
+}
+
 void Scene::ReleaseMeshUploadBuffer()
 {
 	for (std::unique_ptr<Mesh>& mesh : meshes_)

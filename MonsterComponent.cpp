@@ -5,13 +5,19 @@ MonsterComponent::MonsterComponent(Object* owner) : Component(owner)
 }
 
 MonsterComponent::MonsterComponent(const MonsterComponent& other) : Component(other),
-    shield_(other.shield_), hp_(other.hp_), attack_force_(other.attack_force_)
+shield_(other.shield_), hp_(other.hp_), attack_force_(other.attack_force_), monster_type_(other.monster_type_)
 {
 }
 
 Component* MonsterComponent::GetCopy()
 {
     return new MonsterComponent(*this);
+}
+
+void MonsterComponent::Update(float elapsed_time)
+{
+	//TODO: 몬스터의 행동을 결정하는 AI 추가
+	//EX) ai->Update(owner_, elapsed_time);
 }
 
 void MonsterComponent::set_shield(float value)

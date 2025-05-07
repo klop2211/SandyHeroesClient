@@ -17,6 +17,9 @@ public:
 
 	virtual void Update(float elapsed_time) override;
 
+	virtual void AddObject(Object* object) override;
+	virtual void DeleteObject(Object* object) override;
+
 	void UpdateObjectIsGround();
 	void CheckObjectIsGround(Object* object);
 

@@ -17,6 +17,8 @@ Component* MovementComponent::GetCopy()
 
 void MovementComponent::Update(float elapsed_time)
 {
+	old_position_ = owner_->position_vector();  
+
     if (is_gravity_)
     {
         velocity_.y -= gravity_acceleration_ * elapsed_time;

@@ -140,6 +140,7 @@
     <ClInclude Include="AnimationTrack.h" />
     <ClInclude Include="AnimatorComponent.h" />
     <ClInclude Include="BaseScene.h" />
+    <ClInclude Include="BoxColliderComponent.h" />
     <ClInclude Include="CameraComponent.h" />
     <ClInclude Include="ColliderComponent.h" />
     <ClInclude Include="Component.h" />
@@ -166,6 +167,7 @@
     <ClInclude Include="Object.h" />
     <ClInclude Include="MovementComponent.h" />
     <ClInclude Include="PlayerAnimationState.h" />
+    <ClInclude Include="SpawnerComponent.h" />
     <ClInclude Include="UIMesh.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="SandyHeroesClient.h" />
@@ -192,6 +194,7 @@
     <ClCompile Include="AnimationTrack.cpp" />
     <ClCompile Include="AnimatorComponent.cpp" />
     <ClCompile Include="BaseScene.cpp" />
+    <ClCompile Include="BoxColliderComponent.cpp" />
     <ClCompile Include="CameraComponent.cpp" />
     <ClCompile Include="ColliderComponent.cpp" />
     <ClCompile Include="Component.cpp" />
@@ -216,6 +219,7 @@
     <ClCompile Include="Object.cpp" />
     <ClCompile Include="MovementComponent.cpp" />
     <ClCompile Include="PlayerAnimationState.cpp" />
+    <ClCompile Include="SpawnerComponent.cpp" />
     <ClCompile Include="UIMesh.cpp" />
     <ClCompile Include="SandyHeroesClient.cpp" />
     <ClCompile Include="Scene.cpp" />

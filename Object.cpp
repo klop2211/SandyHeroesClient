@@ -26,7 +26,9 @@ Object::~Object()
 Object::Object(const Object& other) : 
 	transform_matrix_(other.transform_matrix_), 
 	world_matrix_(other.world_matrix_), 
-	name_(other.name_)
+	name_(other.name_),
+	is_ground_(other.is_ground_),
+	collide_type_(other.collide_type_)
 {
 	id_ = kObjectNextId;
 	++kObjectNextId;
@@ -122,24 +124,12 @@ bool Object::is_ground() const
 {
 	return is_ground_;
 }
-// void Object::ApplyGravity(float elapsed_time)
-// {
-// 	if (!is_ground_)
-// 		velocity_.y += gravity_ * elapsed_time;
-// 	else
-// 		velocity_.y = 0.0f;
 
-// }
+CollideType Object::collide_type() const
+{
+	return collide_type_;
+}
 
-// const XMFLOAT3& Object::prev_position_vector() const
-// {
-// 	return prev_position_;
-// }
-
-// void Object::set_prev_position_vector(const XMFLOAT3& pos)
-// {
-// 	prev_position_ = pos;
-// }
 void Object::set_transform_matrix(const XMFLOAT4X4& value)
 {
 	transform_matrix_ = value;
@@ -186,6 +176,17 @@ void Object::set_name(const std::string& value)
 void Object::set_is_ground(bool is_ground)
 {
 	is_ground_ = is_ground;
+}
+
+void Object::set_collide_type(bool ground_check, bool wall_check)
+{
+	collide_type_.ground_check = ground_check;
+	collide_type_.wall_check = wall_check;
+}
+
+void Object::set_collide_type(const CollideType& collide_type)
+{
+	collide_type_ = collide_type;
 }
 
 void Object::AddChild(Object* object)

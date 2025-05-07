@@ -10,6 +10,8 @@
 #include "AnimatorComponent.h"
 #include "Scene.h"
 #include "PlayerAnimationState.h"
+#include "BoxColliderComponent.h"
+#include "DebugMeshComponent.h"
 
 ModelInfo::ModelInfo(const std::string& file_name, std::vector<std::unique_ptr<Mesh>>& meshes,
 	std::vector<std::unique_ptr<Material>>& materials)
@@ -100,6 +102,20 @@ Object* ModelInfo::LoadFrameInfoFromFile(std::ifstream& file, std::vector<std::u
 	frame->set_transform_matrix(transform);
 
 	ReadStringFromFile(file, load_token);
+
+	if (load_token == "<BoxCollider>:")
+	{
+		BoundingBox box;
+		box.Center = ReadFromFile<XMFLOAT3>(file);
+		box.Extents = ReadFromFile<XMFLOAT3>(file);
+		frame->AddComponent(new BoxColliderComponent(frame, box));
+#ifdef _DEBUG
+		frame->AddComponent(new DebugMeshComponent(frame, Scene::FindMesh("Debug_Mesh", meshes), box));
+#endif // _DEBUG
+
+		ReadStringFromFile(file, load_token);
+	}
+
 	if (load_token == "<Mesh>:")
 	{
 		Mesh* mesh = new Mesh;
