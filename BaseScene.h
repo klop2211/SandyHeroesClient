@@ -25,10 +25,6 @@ public:
 
 	void PrepareGroundChecking();	//맵 바닥체크를 위한 사전 작업
 
-	void CheckPlayerHitWall(const XMFLOAT3& velocity);
-
-	//void CheckPlayerHitWall();	// 벽 충돌체크
-
 private:
 	//TODO: Player 객체 구현
 	Object* player_ = nullptr;

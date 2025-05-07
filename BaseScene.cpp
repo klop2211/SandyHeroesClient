@@ -1,4 +1,4 @@
-ï»¿#include "stdafx.h"
+#include "stdafx.h"
 #include "BaseScene.h"
 #include "FrameResourceManager.h"
 #include "DescriptorManager.h"
@@ -83,7 +83,7 @@ void BaseScene::BuildMesh(ID3D12Device* device, ID3D12GraphicsCommandList* comma
 	materials_.back().reset(material);
 
 	//debug mesh
-	material = materials_[0].get(); // ì˜ë¯¸ ì—†ëŠ” ì•„ë¬´ ë¨¸í„°ë¦¬ì–¼
+	material = materials_[0].get(); // ÀÇ¹Ì ¾ø´Â ¾Æ¹« ¸ÓÅÍ¸®¾ó
 	Mesh* debug_mesh = new CubeMesh();
 	debug_mesh->ClearNormals();
 	debug_mesh->ClearNormals();
@@ -146,13 +146,13 @@ void BaseScene::BuildMesh(ID3D12Device* device, ID3D12GraphicsCommandList* comma
 
 void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* command_list)
 {
-	//TODO: ê° ë©”ì‰¬ì˜ ì»´í¬ë„ŒíŠ¸ ì—°ê²° ê°œìˆ˜ë¥¼ íŒŒì•…í•˜ë©´ ì•„ë˜ ìˆ˜ì¹˜ë¥¼ ë””í…Œì¼í•˜ê²Œ ì„¤ì •í•  ìˆ˜ ìˆì„ê²ƒ ê°™ë‹¤..
+	//TODO: °¢ ¸Ş½¬ÀÇ ÄÄÆ÷³ÍÆ® ¿¬°á °³¼ö¸¦ ÆÄ¾ÇÇÏ¸é ¾Æ·¡ ¼öÄ¡¸¦ µğÅ×ÀÏÇÏ°Ô ¼³Á¤ÇÒ ¼ö ÀÖÀ»°Í °°´Ù..
 	cb_object_capacity_ = 15000;
 	cb_skinned_mesh_object_capacity_ = 10000;
 
 	ShowCursor(false);
 
-	//ìŠ¤í¬ë„ˆ í…ŒìŠ¤íŠ¸
+	//½ºÆ÷³Ê Å×½ºÆ®
 	ModelInfo* hit_dragon_model_info = FindModelInfo("Hit_Dragon");
 	hit_dragon_model_info->hierarchy_root()->set_collide_type(true, false);
 	Object* test_spawner = new Object();
@@ -182,7 +182,7 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 	skybox->AddComponent(new MeshComponent(skybox, Scene::FindMesh("Skybox", meshes_)));
 	AddObject(skybox);
 
-	//ëª¨ë¸ ì˜¤ë¸Œì íŠ¸ ë°°ì¹˜
+	//¸ğµ¨ ¿ÀºêÁ§Æ® ¹èÄ¡
 	Object* player = model_infos_[0]->GetInstance();
 	player->set_name("Player");
 	player->set_position_vector(XMFLOAT3{ 0, 30, 0 });
@@ -190,28 +190,22 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 	player->AddComponent(new MovementComponent(player));
 	AnimatorComponent* animator = Object::GetComponent<AnimatorComponent>(player);
 	animator->set_animation_state(new PlayerAnimationState);
-	
-	//auto* player_mesh = Scene::FindMesh("PlayerMesh", meshes_); // ì´ë¦„ì€ ì‹¤ì œ ë©”ì‰¬ ì´ë¦„
-	//auto* mesh_collider = new MeshColliderComponent(player_);
-	//mesh_collider->set_mesh(player_mesh);
-	//player->AddComponent(mesh_collider);
-
 
 	player_ = player;
 
-	//FPS ì¡°ì‘ìš© ì»¨íŠ¸ë¡¤ëŸ¬ ì„¤ì •
+	//FPS Á¶ÀÛ¿ë ÄÁÆ®·Ñ·¯ ¼³Á¤
 	FPSControllerComponent* fps_controller = new FPSControllerComponent(player);
 	fps_controller->set_client_wnd(game_framework_->main_wnd());
 	fps_controller->set_scene(this);
 	player->AddComponent(fps_controller);
-	//ë©”ì¸ ì»¨íŠ¸ë¡¤ëŸ¬ë¡œ ì„¤ì •
+	//¸ŞÀÎ ÄÁÆ®·Ñ·¯·Î ¼³Á¤
 	main_input_controller_ = fps_controller;
 
-	//ëª¨ë“  ì´ê¸° ì •ë³´ ë¡œë“œ
+	//¸ğµç ÃÑ±â Á¤º¸ ·Îµå
 	GunComponent::LoadGunInfosFromFile("./Resource/GunInfos.txt");
 
-	//í”Œë ˆì´ì–´ ì´ê¸° ì¥ì°©
-	//TODO: ì´ê¸° ë©”ì‰¬ ì¥ì°© êµ¬í˜„
+	//ÇÃ·¹ÀÌ¾î ÃÑ±â ÀåÂø
+	//TODO: ÃÑ±â ¸Ş½¬ ÀåÂø ±¸Çö
 	Object* player_gun_frame = player->FindFrame("WeaponR_locator");
 	player_gun_frame->AddChild(model_infos_[1]->GetInstance());
 	player_gun_frame = player_gun_frame->child();
@@ -221,11 +215,11 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 	player_gun_frame->Rotate(0, 170, -17);
 	//player_gun_frame->Scale(3);
 
-	//ì¹´ë©”ë¼ ì„¤ì •
+	//Ä«¸Ş¶ó ¼³Á¤
 	Object* camera_object = new Object();
 	player->AddChild(camera_object);
 	fps_controller->set_camera_object(camera_object);
-	camera_object->set_position_vector(0, 0.4f, 0); // í”Œë ˆì´ì–´ ìºë¦­í„°ì˜ í‚¤ê°€ 150ì¸ê²ƒì„ ê³ ë ¤í•˜ì—¬ ë¨¸ë¦¬ìœ„ì¹˜ì— ë°°ì¹˜
+	camera_object->set_position_vector(0, 0.4f, 0); // ÇÃ·¹ÀÌ¾î Ä³¸¯ÅÍÀÇ Å°°¡ 150ÀÎ°ÍÀ» °í·ÁÇÏ¿© ¸Ó¸®À§Ä¡¿¡ ¹èÄ¡
 	camera_object->set_name("CAMERA_1");
 	CameraComponent* camera_component =
 		new CameraComponent(camera_object, 0.01, 10000,
@@ -233,10 +227,10 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 	camera_object->AddComponent(camera_component);
 	main_camera_ = camera_component;
 
-	//ì”¬ ë¦¬ìŠ¤íŠ¸ì— ì¶”ê°€
+	//¾À ¸®½ºÆ®¿¡ Ãß°¡
 	AddObject(player);
 
-	//ììœ ì‹œì  ì¹´ë©”ë¼
+	//ÀÚÀ¯½ÃÁ¡ Ä«¸Ş¶ó
 	camera_object = new Object;
 	camera_object->set_name("CAMERA_2");
 	camera_component =
@@ -252,8 +246,8 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 	object_list_.emplace_back();
 	object_list_.back().reset(camera_object);
 
-	//ëª¨ë“  ë©”ì‰¬ ìˆëŠ” ê°ì²´ì— ë©”ì‰¬ ì½œë¼ì´ë” ì¶”ê°€(ì£¼ì˜ì‚¬í•­: ìƒˆë¡­ê²Œ ë§Œë“¤ì–´ì§€ëŠ” ë©”ì‰¬ìˆëŠ” ê°ì²´ëŠ” ë©”ì‰¬ì½œë¼ì´ë”ê°€ ì—†ìŒ)
-	//+ ë””ë²„ê·¸ìš© ë©”ì‰¬ ì¶”ê°€
+	//¸ğµç ¸Ş½¬ ÀÖ´Â °´Ã¼¿¡ ¸Ş½¬ Äİ¶óÀÌ´õ Ãß°¡(ÁÖÀÇ»çÇ×: »õ·Ó°Ô ¸¸µé¾îÁö´Â ¸Ş½¬ÀÖ´Â °´Ã¼´Â ¸Ş½¬Äİ¶óÀÌ´õ°¡ ¾øÀ½)
+	//+ µğ¹ö±×¿ë ¸Ş½¬ Ãß°¡
 	Mesh* debug_mesh = Scene::FindMesh("Debug_Mesh", meshes_);
 	for (auto& mesh : meshes_)
 	{
@@ -283,7 +277,7 @@ void BaseScene::Render(ID3D12GraphicsCommandList* command_list)
 	cb_pass.proj_matrix = xmath_util_float4x4::TransPose(main_camera_->projection_matrix());
 	cb_pass.camera_position = main_camera_->world_position();
 
-	//TODO: ì¡°ëª… ê´€ë ¨ í´ë˜ìŠ¤ë¥¼ ìƒì„±í›„ ê·¸ê²ƒì„ ì‚¬ìš©í•˜ì—¬ ì•„ë˜ ì •ë³´ ì—…ë°ì´íŠ¸(í˜„ì¬ëŠ” í…ŒìŠ¤íŠ¸ìš© í•˜ë“œì½”ë”©)
+	//TODO: Á¶¸í °ü·Ã Å¬·¡½º¸¦ »ı¼ºÈÄ ±×°ÍÀ» »ç¿ëÇÏ¿© ¾Æ·¡ Á¤º¸ ¾÷µ¥ÀÌÆ®(ÇöÀç´Â Å×½ºÆ®¿ë ÇÏµåÄÚµù)
 	cb_pass.ambient_light = XMFLOAT4{ 0.01,0.01,0.01, 1 };
 	cb_pass.lights[0].strength = XMFLOAT3{ 0.7, 0.7, 0.7 };
 	cb_pass.lights[0].direction = XMFLOAT3{ 0, -1, 0 };
@@ -305,8 +299,8 @@ void BaseScene::Render(ID3D12GraphicsCommandList* command_list)
 	FrameResourceManager* frame_resource_manager = game_framework_->frame_resource_manager();
 	frame_resource_manager->curr_frame_resource()->cb_pass.get()->CopyData(0, cb_pass);
 
-	//25.02.23 ìˆ˜ì •
-	//ê¸°ì¡´ ë£¨íŠ¸ ë””ìŠ¤í¬ë¦½í„° í…Œì´ë¸”ì—ì„œ ë£¨íŠ¸ CBVë¡œ ë³€ê²½
+	//25.02.23 ¼öÁ¤
+	//±âÁ¸ ·çÆ® µğ½ºÅ©¸³ÅÍ Å×ÀÌºí¿¡¼­ ·çÆ® CBV·Î º¯°æ
 	D3D12_GPU_VIRTUAL_ADDRESS cb_pass_address =
 		frame_resource_manager->curr_frame_resource()->cb_pass.get()->Resource()->GetGPUVirtualAddress();
 
@@ -315,8 +309,8 @@ void BaseScene::Render(ID3D12GraphicsCommandList* command_list)
 	Mesh::ResetCBObjectCurrentIndex();
 	SkinnedMesh::ResetCBSkinnedMeshObjectCurrentIndex();
 
-	// ë‹¨ìˆœí•œ ë°°ì¹˜ ì²˜ë¦¬ 
-	// ì”¬ì—ì„œ ì‚¬ìš©í•˜ëŠ” ì‰ì´ë”ê°€ nê°œì´ë©´ SetPipelineStateê°€ në²ˆ í˜¸ì¶œëœë‹¤
+	// ´Ü¼øÇÑ ¹èÄ¡ Ã³¸® 
+	// ¾À¿¡¼­ »ç¿ëÇÏ´Â ½¦ÀÌ´õ°¡ n°³ÀÌ¸é SetPipelineState°¡ n¹ø È£ÃâµÈ´Ù
 	for (const std::unique_ptr<Shader>& shader : shaders_)
 	{
 		command_list->SetPipelineState(shader->GetPipelineState());
@@ -346,16 +340,16 @@ bool BaseScene::ProcessInput(UINT id, WPARAM w_param, LPARAM l_param, float time
 	switch (id)
 	{
 	case WM_KEYDOWN:
-		// ì¹´ë©”ë¼ ì „í™˜ í…ŒìŠ¤íŠ¸
+		// Ä«¸Ş¶ó ÀüÈ¯ Å×½ºÆ®
 		if (w_param == 'K')
 		{
 			ShowCursor(true);
-			//ë°”ê¿€ ì¹´ë©”ë¼ ì˜¤ë¸Œì íŠ¸ë¥¼ ì°¾ê³ 
+			//¹Ù²Ü Ä«¸Ş¶ó ¿ÀºêÁ§Æ®¸¦ Ã£°í
 			Object* camera = FindObject("CAMERA_2");
 
-			//ê·¸ ì˜¤ë¸Œì íŠ¸ì˜ ì¹´ë©”ë¼ì™€ ì»¨íŠ¸ë¡¤ëŸ¬ë¥¼ ì”¬ìœ¼ë¡œ ê°€ì ¸ì˜¨ë‹¤
+			//±× ¿ÀºêÁ§Æ®ÀÇ Ä«¸Ş¶ó¿Í ÄÁÆ®·Ñ·¯¸¦ ¾ÀÀ¸·Î °¡Á®¿Â´Ù
 			CameraComponent* new_camera = Object::GetComponent<CameraComponent>(camera);
-			if (new_camera) // nullptr ë°©ì§€
+			if (new_camera) // nullptr ¹æÁö
 			{
 				main_camera_ = new_camera;
 			}
@@ -365,10 +359,10 @@ bool BaseScene::ProcessInput(UINT id, WPARAM w_param, LPARAM l_param, float time
 		if (w_param == 'L')
 		{
 			ShowCursor(false);
-			//ë°”ê¿€ ì¹´ë©”ë¼ ì˜¤ë¸Œì íŠ¸ë¥¼ ì°¾ê³ 
-			//ê·¸ ì˜¤ë¸Œì íŠ¸ì˜ ì¹´ë©”ë¼ì™€ ì»¨íŠ¸ë¡¤ëŸ¬ë¥¼ ì”¬ìœ¼ë¡œ ê°€ì ¸ì˜¨ë‹¤
+			//¹Ù²Ü Ä«¸Ş¶ó ¿ÀºêÁ§Æ®¸¦ Ã£°í
+			//±× ¿ÀºêÁ§Æ®ÀÇ Ä«¸Ş¶ó¿Í ÄÁÆ®·Ñ·¯¸¦ ¾ÀÀ¸·Î °¡Á®¿Â´Ù
 			CameraComponent* new_camera = Object::GetComponentInChildren<CameraComponent>(player_);
-			if (new_camera) // nullptr ë°©ì§€
+			if (new_camera) // nullptr ¹æÁö
 			{
 				main_camera_ = new_camera;
 			}
@@ -406,45 +400,11 @@ bool BaseScene::ProcessInput(UINT id, WPARAM w_param, LPARAM l_param, float time
 	}
 }
 
-//void BaseScene::Update(float elapsed_time)
-//{
-//	Scene::Update(elapsed_time);
-//
-//	XMFLOAT3 old_position = player_->position_vector(); //ì§„ì§œ ì´ì „ ìœ„ì¹˜ ì €ì¥
-//	player_->set_prev_position_vector(old_position);
-//
-//	// ì—¬ê¸°ì„œë§Œ ì‹¤ì œ ì´ë™
-//	XMFLOAT3 velocity = player_->velocity();
-//	XMFLOAT3 new_position = {
-//		old_position.x + velocity.x * elapsed_time,
-//		old_position.y + velocity.y * elapsed_time,
-//		old_position.z + velocity.z * elapsed_time
-//	};
-//	player_->set_position_vector(new_position);
-//	UpdateObjectWorldMatrix();
-//
-//
-//	CheckPlayerIsGround();
-//
-//	CheckPlayerHitWall();
-//}
-
 void BaseScene::Update(float elapsed_time)
 {
 	Scene::Update(elapsed_time);
 
-	XMFLOAT3 velocity = player_->velocity();
-	XMFLOAT3 old_position = player_->position_vector(); //ì§„ì§œ ì´ì „ ìœ„ì¹˜ ì €ì¥
-
-	CheckPlayerHitWall(velocity);
-	velocity = player_->velocity();
-	// ì—¬ê¸°ì„œë§Œ ì‹¤ì œ ì´ë™
-	XMFLOAT3 new_position = {
-		old_position.x + velocity.x * elapsed_time,
-		old_position.y + velocity.y * elapsed_time,
-		old_position.z + velocity.z * elapsed_time
-	};
-	player_->set_position_vector(new_position);
+	UpdateObjectWorldMatrix();
 
 	UpdateObjectIsGround();
 }
@@ -458,7 +418,7 @@ void BaseScene::AddObject(Object* object)
 	{
 		ground_check_object_list_.push_back(object);
 	}
-	//TODO: ë²½ì²´í¬ê°€ í•„ìš”í•œ ì˜¤ë¸Œì íŠ¸ëŠ” ë”°ë¡œ ë¦¬ìŠ¤íŠ¸ë¥¼ ìƒì„± í›„ ì—¬ê¸°ì— ì¶”ê°€
+	//TODO: º®Ã¼Å©°¡ ÇÊ¿äÇÑ ¿ÀºêÁ§Æ®´Â µû·Î ¸®½ºÆ®¸¦ »ı¼º ÈÄ ¿©±â¿¡ Ãß°¡
 }
 
 void BaseScene::DeleteObject(Object* object)
@@ -472,7 +432,7 @@ void BaseScene::DeleteObject(Object* object)
 	Scene::DeleteObject(object);
 }
 
-void BaseScene::CheckPlayerIsGround()
+void BaseScene::UpdateObjectIsGround()
 {
 	if (!is_prepare_ground_checking_)
 	{
@@ -525,7 +485,7 @@ void BaseScene::CheckObjectIsGround(Object* object)
 	}
 	if (is_collide)
 	{
-		float distance_on_ground = distance - kGroundYOffset; //ì§€ë©´ê¹Œì§€ì˜ ê±°ë¦¬
+		float distance_on_ground = distance - kGroundYOffset; //Áö¸é±îÁöÀÇ °Å¸®
 		if (distance_on_ground > 0.005f)
 		{
 			object->set_is_ground(false);
@@ -552,88 +512,3 @@ void BaseScene::PrepareGroundChecking()
 	is_prepare_ground_checking_ = true;
 }
 
-void BaseScene::CheckPlayerHitWall(const XMFLOAT3& velocity)
-{
-	if (!is_prepare_ground_checking_)
-	{
-		PrepareGroundChecking();
-	}
-
-	XMFLOAT3 position = player_->world_position_vector();
-	constexpr float kGroundYOffset = 1.5f;
-	position.y += kGroundYOffset;
-	XMVECTOR ray_origin = XMLoadFloat3(&position);
-	position.y -= kGroundYOffset;
-
-	XMVECTOR ray_direction = XMLoadFloat3(&velocity);
-	ray_direction = XMVectorSetY(ray_direction, 0);
-	ray_direction = XMVector3Normalize(ray_direction);
-
-	if (0 == XMVectorGetX(XMVector3Length(ray_direction)))
-		return;
-
-	bool is_collide = false;
-	float distance{ std::numeric_limits<float>::max() };
-	for (auto& mesh_collider : checking_maps_mesh_collider_list_[stage_clear_num_])
-	{
-		float t{};
-		if (mesh_collider->CollisionCheckByRay(ray_origin, ray_direction, t))
-		{
-			if (t < distance)
-			{
-				distance = t;
-			}
-		}
-	}
-
-	constexpr float MAX_DISTANCE = 0.5f;
-	if (distance < MAX_DISTANCE)
-		is_collide = true;
-
-
-	if (stage_clear_num_ - 1 >= 0)
-	{
-		for (auto& mesh_collider : checking_maps_mesh_collider_list_[stage_clear_num_ - 1])
-		{
-			float t{};
-			if (mesh_collider->CollisionCheckByRay(ray_origin, ray_direction, t))
-			{
-				if (t < distance)
-				{
-					distance = t;
-				}
-			}
-		}
-		if (distance < MAX_DISTANCE)
-			is_collide = true;
-	}
-
-
-	if (is_collide)
-	{
-		player_->set_velocity({ 0, velocity.y, 0 });
-		return;
-	}
-
-
-	//if (!player_) return;
-
-	//auto mesh_colliders = Object::GetComponentsInChildren<MeshColliderComponent>(player_);
-	//
-	//auto collider = mesh_colliders.front();
-
-	//BoundingOrientedBox obb = collider->GetWorldOBB();
-	//XMVECTOR move_dir = XMLoadFloat3(&velocity);
-	//move_dir = XMVectorSetY(move_dir, 0);
-	//if (XMVector3Length(move_dir).m128_f32[0] < 0.001f) return;
-
-	//for (auto& mesh_collider : checking_maps_mesh_collider_list_[stage_clear_num_])
-	//{
-	//	if (mesh_collider->CheckWallCollisionByObb(obb, move_dir))
-	//	{
-	//		// ì¶©ëŒ â†’ ì´ë™ ì·¨ì†Œ
-	//		player_->set_velocity({ 0, velocity.y, 0 });
-	//		return;
-	//	}
-	//}
-}
