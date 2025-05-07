@@ -396,29 +396,6 @@ bool BaseScene::ProcessInput(UINT id, WPARAM w_param, LPARAM l_param, float time
 	}
 }
 
-//void BaseScene::Update(float elapsed_time)
-//{
-//	Scene::Update(elapsed_time);
-//
-//	XMFLOAT3 old_position = player_->position_vector(); //진짜 이전 위치 저장
-//	player_->set_prev_position_vector(old_position);
-//
-//	// 여기서만 실제 이동
-//	XMFLOAT3 velocity = player_->velocity();
-//	XMFLOAT3 new_position = {
-//		old_position.x + velocity.x * elapsed_time,
-//		old_position.y + velocity.y * elapsed_time,
-//		old_position.z + velocity.z * elapsed_time
-//	};
-//	player_->set_position_vector(new_position);
-//	UpdateObjectWorldMatrix();
-//
-//
-//	CheckPlayerIsGround();
-//
-//	CheckPlayerHitWall();
-//}
-
 void BaseScene::Update(float elapsed_time)
 {
 	Scene::Update(elapsed_time);
@@ -582,26 +559,4 @@ void BaseScene::CheckPlayerHitWall(const XMFLOAT3& velocity)
 		player_->set_velocity({ 0, velocity.y, 0 });
 		return;
 	}
-
-
-	//if (!player_) return;
-
-	//auto mesh_colliders = Object::GetComponentsInChildren<MeshColliderComponent>(player_);
-	//
-	//auto collider = mesh_colliders.front();
-
-	//BoundingOrientedBox obb = collider->GetWorldOBB();
-	//XMVECTOR move_dir = XMLoadFloat3(&velocity);
-	//move_dir = XMVectorSetY(move_dir, 0);
-	//if (XMVector3Length(move_dir).m128_f32[0] < 0.001f) return;
-
-	//for (auto& mesh_collider : checking_maps_mesh_collider_list_[stage_clear_num_])
-	//{
-	//	if (mesh_collider->CheckWallCollisionByObb(obb, move_dir))
-	//	{
-	//		// 충돌 → 이동 취소
-	//		player_->set_velocity({ 0, velocity.y, 0 });
-	//		return;
-	//	}
-	//}
 }
