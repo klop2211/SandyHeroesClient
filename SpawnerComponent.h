@@ -26,6 +26,7 @@ public:
 	void ActivateSpawn(); // 스폰 시작
 
 	void AddComponent(std::unique_ptr<Component> component);
+	void AddComponent(Component* component);
 
 	void ForceSpawn(); // 강제로 씬에 오브젝트를 스폰하는 함수 스폰 개수와 쿨타임을 무시하고 무조건 스폰한다.
 

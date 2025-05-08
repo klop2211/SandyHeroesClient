@@ -62,6 +62,12 @@ void SpawnerComponent::AddComponent(std::unique_ptr<Component> component)
 	component_list_.emplace_back(std::move(component));
 }
 
+void SpawnerComponent::AddComponent(Component* component)
+{
+	component_list_.emplace_back();
+	component_list_.back().reset(component);
+}
+
 void SpawnerComponent::ForceSpawn()
 {
 	Object* new_object{ nullptr };

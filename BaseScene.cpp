@@ -154,9 +154,64 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 
 	ShowCursor(false);
 
+	//플레이어 생성
+	Object* player = model_infos_[0]->GetInstance();
+	player->set_name("Player");
+	player->set_position_vector(XMFLOAT3{ 0, 30, 0 });
+	player->set_collide_type(true, true);
+	player->AddComponent(new MovementComponent(player));
+	AnimatorComponent* animator = Object::GetComponent<AnimatorComponent>(player);
+	animator->set_animation_state(new PlayerAnimationState);
+	player_ = player;
+
+	//player's mesh is invisible
+	auto& mesh_list = Object::GetComponentsInChildren<SkinnedMeshComponent>(player_);
+	for (auto& mesh : mesh_list)
+	{
+		mesh->set_is_visible(!mesh->IsVisible());
+	}
+
+	//Set FPS Controller with player
+	FPSControllerComponent* fps_controller = new FPSControllerComponent(player);
+	fps_controller->set_client_wnd(game_framework_->main_wnd());
+	fps_controller->set_scene(this);
+	player->AddComponent(fps_controller);
+
+	//Set Scene's main input controller
+	main_input_controller_ = fps_controller;
+
+	//Load All GunInfos
+	GunComponent::LoadGunInfosFromFile("./Resource/GunInfos.txt");
+
+	//Set player's gun
+	//TODO: 총기 메쉬 장착 구현
+	Object* player_gun_frame = player->FindFrame("WeaponR_locator");
+	player_gun_frame->AddChild(model_infos_[1]->GetInstance());
+	player_gun_frame = player_gun_frame->child();
+	GunComponent* player_gun = new GunComponent(player_gun_frame);
+	player_gun->LoadGunInfo("classic");
+	player_gun_frame->AddComponent(player_gun);
+	player_gun_frame->Rotate(0, 170, -17);
+
+	//Set player's camera
+	Object* camera_object = new Object();
+	player->AddChild(camera_object);
+	fps_controller->set_camera_object(camera_object);
+	camera_object->set_position_vector(0, 0.4f, 0); // 플레이어 캐릭터의 키가 150인것을 고려하여 머리위치에 배치
+	camera_object->set_name("CAMERA_1");
+	CameraComponent* camera_component =
+		new CameraComponent(camera_object, 0.01, 10000,
+			(float)kDefaultFrameBufferWidth / (float)kDefaultFrameBufferHeight, 58);
+	camera_object->AddComponent(camera_component);
+	main_camera_ = camera_component;
+
+	//Add player to scene
+	AddObject(player);
+
+	//Create Hit_Dragon and Test_Spawner
 	ModelInfo* hit_dragon_model_info = FindModelInfo("Hit_Dragon");
 	hit_dragon_model_info->hierarchy_root()->set_collide_type(true, false);
-	AnimatorComponent* animator = Object::GetComponentInChildren<AnimatorComponent>(hit_dragon_model_info->hierarchy_root());
+	animator = Object::GetComponentInChildren<AnimatorComponent>(hit_dragon_model_info->hierarchy_root());
 	animator->set_animation_state(new HitDragonAnimationState);
 
 	Object* test_spawner = new Object();
@@ -164,7 +219,9 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 	test_spawner->set_position_vector(0.f, 15.f, 0);
 	SpawnerComponent* test_spawner_component = new SpawnerComponent(test_spawner, this, hit_dragon_model_info);
 	test_spawner_component->SetSpawnerInfo(10, 0.f, 3.f);
-	test_spawner_component->AddComponent(std::make_unique<MonsterComponent>(nullptr));
+	auto monster = new MonsterComponent(nullptr);
+	monster->set_target(player_);
+	test_spawner_component->AddComponent(monster);
 	test_spawner_component->AddComponent(std::make_unique<MovementComponent>(nullptr));
 	test_spawner_component->ActivateSpawn();
 	test_spawner->AddComponent(test_spawner_component);
@@ -177,71 +234,17 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 	hit_dragon->set_collide_type(true, false);
 	AddObject(hit_dragon);
 
+	//Create CroosHair
 	Object* ui = new Object();
 	ui->AddComponent(new MeshComponent(ui, Scene::FindMesh("CrossHair", meshes_)));
 	AddObject(ui);
 
+	//Create Skybox
 	Object* skybox = new Object();
 	skybox->AddComponent(new MeshComponent(skybox, Scene::FindMesh("Skybox", meshes_)));
 	AddObject(skybox);
 
-	//모델 오브젝트 배치
-	Object* player = model_infos_[0]->GetInstance();
-	player->set_name("Player");
-	player->set_position_vector(XMFLOAT3{ 0, 30, 0 });
-	player->set_collide_type(true, true);
-	player->AddComponent(new MovementComponent(player));
-	animator = Object::GetComponent<AnimatorComponent>(player);
-	animator->set_animation_state(new PlayerAnimationState);
-	player_ = player;
-
-	//플레이어는 디폴트가 메쉬 투명상태
-	auto& mesh_list = Object::GetComponentsInChildren<SkinnedMeshComponent>(player_);
-	for (auto& mesh : mesh_list)
-	{
-		mesh->set_is_visible(!mesh->IsVisible());
-	}
-
-
-
-	//FPS 조작용 컨트롤러 설정
-	FPSControllerComponent* fps_controller = new FPSControllerComponent(player);
-	fps_controller->set_client_wnd(game_framework_->main_wnd());
-	fps_controller->set_scene(this);
-	player->AddComponent(fps_controller);
-	//메인 컨트롤러로 설정
-	main_input_controller_ = fps_controller;
-
-	//모든 총기 정보 로드
-	GunComponent::LoadGunInfosFromFile("./Resource/GunInfos.txt");
-
-	//플레이어 총기 장착
-	//TODO: 총기 메쉬 장착 구현
-	Object* player_gun_frame = player->FindFrame("WeaponR_locator");
-	player_gun_frame->AddChild(model_infos_[1]->GetInstance());
-	player_gun_frame = player_gun_frame->child();
-	GunComponent* player_gun = new GunComponent(player_gun_frame);
-	player_gun->LoadGunInfo("classic");
-	player_gun_frame->AddComponent(player_gun);
-	player_gun_frame->Rotate(0, 170, -17);
-	//player_gun_frame->Scale(3);
-
-	//카메라 설정
-	Object* camera_object = new Object();
-	player->AddChild(camera_object);
-	fps_controller->set_camera_object(camera_object);
-	camera_object->set_position_vector(0, 0.4f, 0); // 플레이어 캐릭터의 키가 150인것을 고려하여 머리위치에 배치
-	camera_object->set_name("CAMERA_1");
-	CameraComponent* camera_component =
-		new CameraComponent(camera_object, 0.01, 10000,
-			(float)kDefaultFrameBufferWidth / (float)kDefaultFrameBufferHeight, 58);
-	camera_object->AddComponent(camera_component);
-	main_camera_ = camera_component;
-
-	//씬 리스트에 추가
-	AddObject(player);
-
-	//占쏙옙占쏙옙占쏙옙占쏙옙 카占쌨띰옙
+	//Create sub camera (free view)
 	camera_object = new Object;
 	camera_object->set_name("CAMERA_2");
 	camera_component =
