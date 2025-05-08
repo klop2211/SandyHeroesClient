@@ -509,6 +509,8 @@ void BaseScene::Update(float elapsed_time)
 
 	UpdateObjectHitBullet();
 
+	UpdateObjectHitObject();
+
 	DeleteDeadObjects();
 }
 
@@ -593,6 +595,18 @@ void BaseScene::UpdateObjectHitBullet()
 		if (object == player_)
 			continue;
 		CheckObjectHitBullet(object);
+	}
+}
+
+void BaseScene::UpdateObjectHitObject()
+{
+	if (!is_prepare_ground_checking_)
+	{
+		PrepareGroundChecking();
+	}
+	for (auto& object : ground_check_object_list_)
+	{
+		CheckObjectHitObject(object);
 	}
 }
 
@@ -720,6 +734,61 @@ void BaseScene::CheckPlayerHitWall(Object* object, const XMFLOAT3& velocity)
 		auto movement = Object::GetComponentInChildren<MovementComponent>(object);
 		movement->Stop();
 		return;
+	}
+}
+
+void BaseScene::CheckObjectHitObject(Object* object)
+{
+	if (!object || object->is_dead()) return;
+
+	auto movement = Object::GetComponentInChildren<MovementComponent>(object);
+	if (!movement) return;
+
+	XMFLOAT3 object_pos = object->world_position_vector();
+
+	auto mesh_collider = Object::GetComponentInChildren<MeshColliderComponent>(object);
+	if (mesh_collider)
+	{
+		BoundingOrientedBox obb1 = mesh_collider->GetWorldOBB();
+
+		for (auto& other : ground_check_object_list_)
+		{
+			if (!other || other == object || other->is_dead()) continue;
+
+			auto other_box = Object::GetComponentInChildren<BoxColliderComponent>(other);
+			if (!other_box) continue;
+
+			if (obb1.Intersects(other_box->animated_box()))
+			{
+				XMFLOAT3 other_pos = other->world_position_vector();
+				XMFLOAT3 dir = xmath_util_float3::Normalize(object_pos - other_pos);
+				object->set_position_vector(object_pos + dir * 0.1f); // »ìÂ¦ ¹Ð¾î³¿
+				return;
+			}
+		}
+	}
+	else
+	{
+		auto box1 = Object::GetComponentInChildren<BoxColliderComponent>(object);
+		if (!box1) return;
+
+		BoundingOrientedBox obb1 = box1->animated_box();
+
+		for (auto& other : ground_check_object_list_)
+		{
+			if (!other || other == object || other->is_dead()) continue;
+
+			auto box2 = Object::GetComponentInChildren<BoxColliderComponent>(other);
+			if (!box2) continue;
+
+			if (obb1.Intersects(box2->animated_box()))
+			{
+				XMFLOAT3 other_pos = other->world_position_vector();
+				XMFLOAT3 dir = xmath_util_float3::Normalize(object_pos - other_pos);
+				object->set_position_vector(object_pos + dir * 0.1f);
+				return;
+			}
+		}
 	}
 }
 
