@@ -14,7 +14,6 @@
 #include "FPSControllerComponent.h"
 #include "AnimatorComponent.h"
 #include "PlayerAnimationState.h"
-#include "AnimatorComponent.h"
 #include "GameFramework.h"
 #include "GunComponent.h"
 #include "SkyboxShader.h"
@@ -29,6 +28,7 @@
 #include "MovementComponent.h"
 #include "SpawnerComponent.h"
 #include "BoxColliderComponent.h"
+#include "HitDragonAnimationState.h"
 
 void BaseScene::BuildShader(ID3D12Device* device, ID3D12RootSignature* root_signature)
 {
@@ -156,6 +156,9 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 
 	ModelInfo* hit_dragon_model_info = FindModelInfo("Hit_Dragon");
 	hit_dragon_model_info->hierarchy_root()->set_collide_type(true, false);
+	AnimatorComponent* animator = Object::GetComponentInChildren<AnimatorComponent>(hit_dragon_model_info->hierarchy_root());
+	animator->set_animation_state(new HitDragonAnimationState);
+
 	Object* test_spawner = new Object();
 	test_spawner->set_name("Test_Spawner");
 	test_spawner->set_position_vector(0.f, 15.f, 0);
@@ -188,11 +191,18 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 	player->set_position_vector(XMFLOAT3{ 0, 30, 0 });
 	player->set_collide_type(true, true);
 	player->AddComponent(new MovementComponent(player));
-	AnimatorComponent* animator = Object::GetComponent<AnimatorComponent>(player);
+	animator = Object::GetComponent<AnimatorComponent>(player);
 	animator->set_animation_state(new PlayerAnimationState);
-
-
 	player_ = player;
+
+	//플레이어는 디폴트가 메쉬 투명상태
+	auto& mesh_list = Object::GetComponentsInChildren<SkinnedMeshComponent>(player_);
+	for (auto& mesh : mesh_list)
+	{
+		mesh->set_is_visible(!mesh->IsVisible());
+	}
+
+
 
 	//FPS 조작용 컨트롤러 설정
 	FPSControllerComponent* fps_controller = new FPSControllerComponent(player);

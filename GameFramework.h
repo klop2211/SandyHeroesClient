@@ -24,6 +24,8 @@ public:
 
 	void OnResize();
 
+	void ChangeWindowMode();
+
 	void ProcessInput();
 	void ProcessInput(UINT id, WPARAM w_param, LPARAM l_param, float time);
 
@@ -89,6 +91,7 @@ private:
 	int client_width_ = kDefaultFrameBufferWidth;
 	int client_height_ = kDefaultFrameBufferHeight;
 	int client_refresh_rate_ = kDefaultRefreshRate;
+	BOOL client_full_screen_state_ = FALSE; // 전체화면 여부
 
 	D3D12_VIEWPORT client_viewport_;
 

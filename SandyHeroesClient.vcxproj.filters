@@ -121,6 +121,12 @@
     <Filter Include="7.Component\Movement">
       <UniqueIdentifier>{0cb99051-fcee-4ccd-9178-e1b47aff1cd6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Animation\State">
+      <UniqueIdentifier>{3ea76285-3a1d-4970-8537-7d79c5269a49}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Animation\State\Player">
+      <UniqueIdentifier>{85509d84-2cb1-4988-ba38-059c2cf4631c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="targetver.h">
@@ -222,12 +228,6 @@
     <ClInclude Include="AnimatorComponent.h">
       <Filter>7.Component\Animator</Filter>
     </ClInclude>
-    <ClInclude Include="PlayerAnimationState.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="AnimationState.h">
-      <Filter>Animation</Filter>
-    </ClInclude>
     <ClInclude Include="GunComponent.h">
       <Filter>7.Component\Gun</Filter>
     </ClInclude>
@@ -277,6 +277,15 @@
       <Filter>7.Component\Collider</Filter>
     </ClInclude>
     <ClInclude Include="SpawnerComponent.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="AnimationState.h">
+      <Filter>Animation\State</Filter>
+    </ClInclude>
+    <ClInclude Include="PlayerAnimationState.h">
+      <Filter>Animation\State\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="HitDragonAnimationState.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>
@@ -365,12 +374,6 @@
     <ClCompile Include="AnimatorComponent.cpp">
       <Filter>7.Component\Animator</Filter>
     </ClCompile>
-    <ClCompile Include="PlayerAnimationState.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="AnimationState.cpp">
-      <Filter>Animation</Filter>
-    </ClCompile>
     <ClCompile Include="GunComponent.cpp">
       <Filter>7.Component\Gun</Filter>
     </ClCompile>
@@ -420,6 +423,15 @@
       <Filter>7.Component\Collider</Filter>
     </ClCompile>
     <ClCompile Include="SpawnerComponent.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="AnimationState.cpp">
+      <Filter>Animation\State</Filter>
+    </ClCompile>
+    <ClCompile Include="PlayerAnimationState.cpp">
+      <Filter>Animation\State\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="HitDragonAnimationState.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>

@@ -87,11 +87,6 @@ bool GunComponent::FireBullet(XMFLOAT3 direction, Object* bullet_model)
             XMStoreFloat4x4(&transform_matrix, rotation_matrix * XMLoadFloat4x4(&transform_matrix));
 			bullet->set_transform_matrix(transform_matrix);
 
-			MeshComponent* bullet_mesh = Object::GetComponentInChildren<MeshComponent>(bullet);
-            BoundingOrientedBox obb;
-			BoundingOrientedBox::CreateFromBoundingBox(obb, bullet_mesh->GetMesh()->bounds());
-			BoxColliderComponent* bullet_box_collider = new BoxColliderComponent(bullet, obb);
-            bullet->AddComponent(bullet_box_collider);
             MovementComponent* movement = new MovementComponent(bullet);
             bullet->AddComponent(movement);
             bullet->set_position_vector(owner_->world_position_vector());

@@ -4,6 +4,7 @@
 #include "AnimationSet.h"
 #include "AnimationTrack.h"
 #include "AnimationState.h"
+#include "HitDragonAnimationState.h"
 
 AnimatorComponent::AnimatorComponent(Object* owner, 
 	const std::vector<std::unique_ptr<AnimationSet>>& animation_sets, 
@@ -42,7 +43,7 @@ void AnimatorComponent::Update(float elapsed_time)
 	if (track_state != track_index_)
 	{
 		track_index_ = track_state;
-		animation_tracks_[track_index_].Start(AnimationLoopType::kLoop);
+		animation_tracks_[track_index_].Start((AnimationLoopType)animation_state_->animation_loop_type());
 	}
 
 	XMFLOAT3 before_root_bone_position = root_bone_frame_->position_vector();
@@ -56,7 +57,7 @@ void AnimatorComponent::Update(float elapsed_time)
 		owner_->set_position_vector(owner_->position_vector() + delta_translation);
 		before_translation_ = root_bone_frame_->position_vector();
 	}
-	root_bone_frame_->set_position_vector(before_root_bone_position);
+	//root_bone_frame_->set_position_vector(before_root_bone_position);
 
 
 }

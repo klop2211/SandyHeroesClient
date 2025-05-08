@@ -33,6 +33,8 @@ private:
 
 	MonsterType monster_type_{ MonsterType::kNormal };
 
+	Object* target_{ nullptr };	//몬스터가 공격할 타겟
+
 	//TODO: 몬스터를 움직일 AI 추가
 };
 

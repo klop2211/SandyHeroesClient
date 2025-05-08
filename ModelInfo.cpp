@@ -71,6 +71,14 @@ void ModelInfo::LoadModelInfoFromFile(const std::string& file_name, std::vector<
 
 	LoadAnimationInfoFromFile(model_file);
 
+	if (animation_sets_.size())
+	{
+		//TODO: 모델 종류에 따라 알맞은 AS 클래스 분배가 필요
+		AnimatorComponent* animator = new AnimatorComponent(hierarchy_root_, animation_sets_, frame_names_, root_bone_name_, new PlayerAnimationState);
+		hierarchy_root_->AddComponent(animator);
+	}
+
+
 	ReadStringFromFile(model_file, load_token);
 #ifdef _DEBUG
 	PrintDebugStringLoadTokenError(model_name_, load_token, "</Animation>");
@@ -277,12 +285,6 @@ void ModelInfo::LoadAnimationInfoFromFile(std::ifstream& file)
 Object* ModelInfo::GetInstance() const
 {
 	Object* r_value = Object::DeepCopy(hierarchy_root_);
-	if (animation_sets_.size())
-	{
-		//TODO: 모델 종류에 따라 알맞은 AS 클래스 분배가 필요
-		AnimatorComponent* animator = new AnimatorComponent(r_value, animation_sets_, frame_names_, root_bone_name_, new PlayerAnimationState);
-		r_value->AddComponent(animator);
-	}
 
 	return r_value;
 }

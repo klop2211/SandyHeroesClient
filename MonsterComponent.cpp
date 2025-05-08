@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "MonsterComponent.h"
 #include "Object.h"
+#include "AnimatorComponent.h"
+#include "AnimationState.h"
 
 MonsterComponent::MonsterComponent(Object* owner) : Component(owner)
 {
@@ -20,8 +22,19 @@ void MonsterComponent::Update(float elapsed_time)
 {
     if (hp_ <= 0)
     {
-		//TODO: 몬스터 죽는 애니메이션 추가 및 애니메이션 종료 후 object 삭제
-		owner_->set_is_dead(true);
+		auto animation_state = Object::GetComponentInChildren<AnimatorComponent>(owner_)->animation_state();
+        if (animation_state)
+        {
+            if (animation_state->GetDeadAnimationTrack() == -1)
+            {
+				// 죽는 애니메이션이 없으면 그냥 죽는다.
+                owner_->set_is_dead(true);
+                return;
+            }
+			// 죽는 애니메이션으로 전환
+			animation_state->set_animation_track(animation_state->GetDeadAnimationTrack());
+			animation_state->set_animation_loop_type(1); // Once
+        }
     }
 
 

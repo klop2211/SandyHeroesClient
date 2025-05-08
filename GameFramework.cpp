@@ -28,6 +28,11 @@ GameFramework::~GameFramework()
     if (d3d_device_)
     {
         FlushCommandQueue();
+        //TODO: 전체화면 모드에서 종료시 오류 발생 해결
+		if (client_full_screen_state_)
+		{
+            ChangeWindowMode();
+		}
     }
 }
 
@@ -39,6 +44,8 @@ void GameFramework::Initialize(HINSTANCE hinstance, HWND hwnd)
     InitDirect3D();
 
     OnResize();
+
+    ChangeWindowMode();
 
     d3d_command_list_->Reset(d3d_command_allocator_.Get(), nullptr);
 
@@ -175,7 +182,7 @@ void GameFramework::CreateSwapChain()
     swap_chain_desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
     swap_chain_desc.BufferCount = kSwapChainBufferCount;
     swap_chain_desc.OutputWindow = main_wnd_;
-    swap_chain_desc.Windowed = true;
+    swap_chain_desc.Windowed = !client_full_screen_state_;
     swap_chain_desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
     swap_chain_desc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
 
@@ -369,6 +376,24 @@ void GameFramework::OnResize()
     scissor_rect_ = { 0, 0, client_width_, client_height_ };
 }
 
+void GameFramework::ChangeWindowMode()
+{
+	client_full_screen_state_ = !client_full_screen_state_;
+	dxgi_swap_chain_->SetFullscreenState(client_full_screen_state_, nullptr);
+
+    DXGI_MODE_DESC dxgiTargetParameters;
+    dxgiTargetParameters.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+    dxgiTargetParameters.Width = client_width_;
+    dxgiTargetParameters.Height = client_height_;
+    dxgiTargetParameters.RefreshRate.Numerator = 60;
+    dxgiTargetParameters.RefreshRate.Denominator = 1;
+    dxgiTargetParameters.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
+    dxgiTargetParameters.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
+    dxgi_swap_chain_->ResizeTarget(&dxgiTargetParameters);
+
+    OnResize();
+}
+
 void GameFramework::ProcessInput()
 {
     while (!input_manager_->IsEmpty())
@@ -412,6 +437,10 @@ void GameFramework::ProcessInput(UINT id, WPARAM w_param, LPARAM l_param, float 
             scene_->ReleaseMeshUploadBuffer();
 
         }
+		if (w_param == VK_F9)
+		{
+			ChangeWindowMode();
+		}
         break;
     default:
         break;
