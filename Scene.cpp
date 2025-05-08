@@ -42,11 +42,10 @@ XMVECTOR Scene::GetPickingPointAtWorld(float sx, float sy, Object* picked_object
 		{
 			XMMATRIX world = XMLoadFloat4x4(&mesh_component->owner()->world_matrix());
 			XMMATRIX inverse_world = XMMatrixInverse(&XMMatrixDeterminant(world), world);
-			XMMATRIX to_local = inverse_view * inverse_world;
 
 			// 메쉬 로컬좌표의 피킹반직선
-			XMVECTOR ray_origin_local = XMVector3TransformCoord(ray_origin, to_local);
-			XMVECTOR ray_direction_local = XMVector3Normalize(XMVector3Transform(ray_direction, to_local));
+			XMVECTOR ray_origin_local = XMVector3TransformCoord(ray_origin, inverse_world);
+			XMVECTOR ray_direction_local = XMVector3Normalize(XMVector3Transform(ray_direction, inverse_world));
 
 			float t_min{ 0 }; // 반직선 교점 매개변수 최저값, 즉 가장 가까운 교점의 매개변수
 			if (mesh->bounds().Intersects(ray_origin_local, ray_direction_local, t_min))

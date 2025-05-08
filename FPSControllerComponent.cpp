@@ -77,7 +77,10 @@ bool FPSControllerComponent::ProcessInput(UINT message_id, WPARAM w_param, LPARA
 			int sx = mouse_xy_.x;
 			int sy = mouse_xy_.y;
 			Object* picked_object = nullptr;
-			XMVECTOR picking_point_w = scene_->GetPickingPointAtWorld(sx, sy, picked_object);
+
+			//TODO: 피킹 처리 디버깅 후 아래 코드를 피킹된 좌표로 변경
+			XMVECTOR picking_point_w = XMLoadFloat3(&(camera_object_->world_position_vector() + (camera_object_->world_look_vector() * 100.f)));
+
 
 			// 3. 1번에서 2번을 향하는 총알 발사
 			XMFLOAT3 bullet_dir{};

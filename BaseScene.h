@@ -2,6 +2,7 @@
 #include "Scene.h"
 
 class MeshColliderComponent;
+class SpawnerComponent;
 
 class BaseScene :
     public Scene
@@ -10,6 +11,11 @@ public:
 	virtual void BuildShader(ID3D12Device* device, ID3D12RootSignature* root_signature) override;
 	virtual void BuildMesh(ID3D12Device* device, ID3D12GraphicsCommandList* command_list) override;
 	virtual void BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* command_list) override;
+
+	//Create spawner each stage
+	void CreateMonsterSpawner();
+
+	void ActivateStageMonsterSpawner(int stage_num);
 
 	virtual void Render(ID3D12GraphicsCommandList* command_list) override;
 
@@ -37,8 +43,14 @@ private:
 
 	static constexpr int kStageMaxCount{ 8 };	// 게임 스테이지 총 개수
 	bool is_prepare_ground_checking_ = false;
-	std::array<std::list<MeshColliderComponent*>, kStageMaxCount> checking_maps_mesh_collider_list_;	//맵 바닥체크를 위한 메쉬 콜라이더 리스트 배열
-	int stage_clear_num_{ 0 };	// 플레이어의 스테이지 진행도
+	//맵 바닥체크를 위한 메쉬 콜라이더 리스트 배열
+	std::array<std::list<MeshColliderComponent*>, kStageMaxCount> checking_maps_mesh_collider_list_;	
+	// 플레이어의 스테이지 진행도
+	int stage_clear_num_{ 0 };
+
+	//스테이지별 몬스터 스포너 리스트
+	std::array<std::list<SpawnerComponent*>, kStageMaxCount> stage_monster_spawner_list_;
+
 	//TODO: 앞으로 충돌관련 리스트가 추가된다면(그럴 필요성이 있어서) 오브젝트 매니저 클래스를 구현하는 것을 고려할 것.
 	std::list<Object*> ground_check_object_list_;	//지면 체크가 필요한 객체들의 리스트(플레이어, monster, NPC)
 	std::list<Object*> wall_check_object_list_;	//벽 체크가 필요한 객체들의 리스트(플레이어, monster, NPC)
