@@ -92,7 +92,7 @@ bool GunComponent::FireBullet(XMFLOAT3 direction, Object* bullet_model)
             bullet->set_position_vector(owner_->world_position_vector());
             movement->DisableFriction();
             movement->set_gravity_acceleration(1.f);
-            movement->set_max_speed_xz_(bullet_speed_);
+            movement->set_max_speed_xz(bullet_speed_);
             movement->Move(direction, bullet_speed_);
             bullet->Scale(3.f);
             fired_bullet_list_.push_back(bullet);

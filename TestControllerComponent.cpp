@@ -175,6 +175,6 @@ void TestControllerComponent::Update(float elapsed_time)
 
 	if (is_key_down_[VK_SHIFT]) speed *= 2.f;
 
-	movement->set_max_speed_xz_(speed);
+	movement->set_max_speed_xz(speed);
 	movement->Move(velocity, speed);
 }

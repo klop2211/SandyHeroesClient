@@ -167,6 +167,7 @@
     <ClInclude Include="MonsterComponent.h" />
     <ClInclude Include="Object.h" />
     <ClInclude Include="MovementComponent.h" />
+    <ClInclude Include="ParticleSystem.h" />
     <ClInclude Include="PlayerAnimationState.h" />
     <ClInclude Include="RecordingScene.h" />
     <ClInclude Include="ShotDragonAnimationState.h" />
@@ -222,6 +223,7 @@
     <ClCompile Include="MonsterComponent.cpp" />
     <ClCompile Include="Object.cpp" />
     <ClCompile Include="MovementComponent.cpp" />
+    <ClCompile Include="ParticleSystem.cpp" />
     <ClCompile Include="PlayerAnimationState.cpp" />
     <ClCompile Include="RecordingScene.cpp" />
     <ClCompile Include="ShotDragonAnimationState.cpp" />

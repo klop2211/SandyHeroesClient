@@ -69,7 +69,7 @@ void MonsterComponent::Update(float elapsed_time)
             }
 
 			movement->MoveXZ(direction.x, direction.z, 5.f);
-            movement->set_max_speed_xz_(5.f);
+            movement->set_max_speed_xz(5.f);
 		}
 	}
 

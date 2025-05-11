@@ -1,5 +1,6 @@
 #pragma once
 #include "Scene.h"
+#include "ParticleSystem.h"
 
 class MeshColliderComponent;
 class SpawnerComponent;
@@ -8,6 +9,8 @@ class BaseScene :
     public Scene
 {
 public:
+	virtual void Initialize(ID3D12Device* device, ID3D12GraphicsCommandList* command_list,
+		ID3D12RootSignature* root_signature, GameFramework* game_framework) override;
 	virtual void BuildShader(ID3D12Device* device, ID3D12RootSignature* root_signature) override;
 	virtual void BuildMesh(ID3D12Device* device, ID3D12GraphicsCommandList* command_list) override;
 	virtual void BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* command_list) override;
@@ -58,6 +61,8 @@ private:
 	std::list<Object*> wall_check_object_list_;	//벽 체크가 필요한 객체들의 리스트(플레이어, monster, NPC)
 
 	bool is_render_debug_mesh_ = false;	//디버그용 와이어프레임 obb를 렌더하는지 여부
+
+	std::unique_ptr<ParticleSystem> particle_system_{ nullptr };	//파티클 시스템
 
 };
 

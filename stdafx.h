@@ -28,6 +28,7 @@
 #include <sstream>
 #include <numeric>
 #include <functional>
+#include <random>
 
 // DirectX 관련 헤더 파일 및 선언문
 #include <wrl.h>
@@ -58,6 +59,11 @@ constexpr int kDefaultFrameBufferHeight = 1080;
 constexpr UINT kDefaultRefreshRate = 60;
 constexpr int kMaxBoneCount = 128; //skinned mesh의 본 최대 개수
 constexpr int kMaxLights = 16;		// 조명처리의 최대 개수
+
+//랜덤 머신
+static std::random_device kRandomDevice;
+static std::mt19937 kRandomGenerator(kRandomDevice());
+
 
 enum class RootParameterIndex{ kWorldMatrix = 0, kBoneTransform, kBoneOffset, kRenderPass, 
 	kMaterial, kAlbedoMap, kSpecGlosMap, kMetalGlosMap, kEmissionMap, kNormalMap, kCubeMap

@@ -33,7 +33,8 @@ public:
 
     //setter
     void set_gravity_acceleration(float value);
-    void set_max_speed_xz_(float value);
+    void set_max_speed_xz(float value);
+	void set_max_speed(float value);
 
     //getter
     XMFLOAT3 velocity() const;
@@ -46,6 +47,7 @@ private:
     float jump_before_y_{};
 
     float max_speed_xz_{ 10.f };    //최대 속력
+    float max_speed_{ 999.f };
 
     bool is_friction_{ true };      //마찰을 적용하는지 여부
 

@@ -212,12 +212,12 @@ void FPSControllerComponent::Update(float elapsed_time)
 	if (is_dash_pressed_)
 	{
 		is_dash_pressed_ = false;
-		movement->set_max_speed_xz_(kDashSpeed);
+		movement->set_max_speed_xz(kDashSpeed);
 		movement->MoveXZ(dash_velocity_.x, dash_velocity_.z, kDashSpeed);
 	}
 	if (xmath_util_float3::Length(owner_->position_vector() - dash_before_position_) >= kDashLength)
 	{
-		movement->set_max_speed_xz_(speed);
+		movement->set_max_speed_xz(speed);
 		AnimatorComponent* animator = Object::GetComponent<AnimatorComponent>(owner_);
 		if (animator)
 		{

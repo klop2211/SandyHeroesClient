@@ -31,6 +31,13 @@
 #include "HitDragonAnimationState.h"
 #include "ShotDragonAnimationState.h"
 
+void BaseScene::Initialize(ID3D12Device* device, ID3D12GraphicsCommandList* command_list, ID3D12RootSignature* root_signature, GameFramework* game_framework)
+{
+	Scene::Initialize(device, command_list, root_signature, game_framework);
+
+	particle_system_ = std::make_unique<ParticleSystem>(Scene::FindMesh("green_cube", meshes_));
+}
+
 void BaseScene::BuildShader(ID3D12Device* device, ID3D12RootSignature* root_signature)
 {
 	constexpr int shader_count = 5;
@@ -501,6 +508,8 @@ void BaseScene::Update(float elapsed_time)
 {
 	Scene::Update(elapsed_time);
 
+	particle_system_->Update(elapsed_time);
+
 	UpdateObjectHitWall();
 	
 	UpdateObjectWorldMatrix();
@@ -817,6 +826,7 @@ void BaseScene::CheckObjectHitBullet(Object* object)
 			{
 				if (bullet->is_dead())
 					continue;
+				particle_system_->SpawnParticle(this, box_collider->animated_box().Center, 10, 0.5f);
 				bullet->set_is_dead(true);
 				MonsterComponent* monster = Object::GetComponent<MonsterComponent>(object);
 				if (monster)
