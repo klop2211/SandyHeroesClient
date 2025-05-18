@@ -169,6 +169,7 @@
     <ClInclude Include="MovementComponent.h" />
     <ClInclude Include="ParticleSystem.h" />
     <ClInclude Include="PlayerAnimationState.h" />
+    <ClInclude Include="RecorderScene.h" />
     <ClInclude Include="RecordingScene.h" />
     <ClInclude Include="ShotDragonAnimationState.h" />
     <ClInclude Include="SpawnerComponent.h" />
@@ -225,6 +226,7 @@
     <ClCompile Include="MovementComponent.cpp" />
     <ClCompile Include="ParticleSystem.cpp" />
     <ClCompile Include="PlayerAnimationState.cpp" />
+    <ClCompile Include="RecorderScene.cpp" />
     <ClCompile Include="RecordingScene.cpp" />
     <ClCompile Include="ShotDragonAnimationState.cpp" />
     <ClCompile Include="SpawnerComponent.cpp" />

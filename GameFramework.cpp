@@ -45,8 +45,6 @@ void GameFramework::Initialize(HINSTANCE hinstance, HWND hwnd)
 
     OnResize();
 
-    ChangeWindowMode();
-
     d3d_command_list_->Reset(d3d_command_allocator_.Get(), nullptr);
 
     BuildRootSignature();

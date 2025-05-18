@@ -57,7 +57,7 @@ void BaseScene::BuildShader(ID3D12Device* device, ID3D12RootSignature* root_sign
 using namespace file_load_util;
 void BaseScene::BuildMesh(ID3D12Device* device, ID3D12GraphicsCommandList* command_list)
 {
-	meshes_.reserve(50);
+	meshes_.reserve(60);
 	meshes_.push_back(std::make_unique<CubeMesh>());
 	Material* material = new Material{};
 	material->set_albedo_color(0, 1, 0, 1);
@@ -369,67 +369,6 @@ void BaseScene::ActivateStageMonsterSpawner(int stage_num)
 	{
 		spawner->ActivateSpawn();
 	}
-}
-
-void BaseScene::Render(ID3D12GraphicsCommandList* command_list)
-{
-	main_camera_->UpdateCameraInfo();
-
-	CBPass cb_pass{};
-	cb_pass.view_matrix = xmath_util_float4x4::TransPose(main_camera_->view_matrix());
-	cb_pass.proj_matrix = xmath_util_float4x4::TransPose(main_camera_->projection_matrix());
-	cb_pass.camera_position = main_camera_->world_position();
-
-	//TODO: 조명 관련 클래스를 생성후 그것을 사용하여 아래 정보 업데이트(현재는 테스트용 하드코딩)
-	cb_pass.ambient_light = XMFLOAT4{ 0.01,0.01,0.01, 1 };
-	cb_pass.lights[0].strength = XMFLOAT3{ 0.7, 0.7, 0.7 };
-	cb_pass.lights[0].direction = XMFLOAT3{ 0, -1, 0 };
-	cb_pass.lights[0].enable = true;
-	cb_pass.lights[0].type = 0;
-
-	//cb_pass.lights[1].strength = XMFLOAT3{ 1, 0, 0 };
-	//cb_pass.lights[1].falloff_start = 0.1;
-	//cb_pass.lights[1].direction = xmath_util_float3::Normalize(main_camera_->owner()->world_look_vector());
-	//cb_pass.lights[1].falloff_end = 100.f;
-	//cb_pass.lights[1].position = main_camera_->owner()->world_position_vector();
-	//cb_pass.lights[1].spot_power = 14;
-	//cb_pass.lights[1].enable = true;
-	//cb_pass.lights[1].type = 2;
-
-	for (int i = 1; i < 16; ++i)
-		cb_pass.lights[i].enable = false;
-
-	FrameResourceManager* frame_resource_manager = game_framework_->frame_resource_manager();
-	frame_resource_manager->curr_frame_resource()->cb_pass.get()->CopyData(0, cb_pass);
-
-	//25.02.23 수정
-	//기존 루트 디스크립터 테이블에서 루트 CBV로 변경
-	D3D12_GPU_VIRTUAL_ADDRESS cb_pass_address =
-		frame_resource_manager->curr_frame_resource()->cb_pass.get()->Resource()->GetGPUVirtualAddress();
-
-	command_list->SetGraphicsRootConstantBufferView((int)RootParameterIndex::kRenderPass, cb_pass_address);
-
-	Mesh::ResetCBObjectCurrentIndex();
-	SkinnedMesh::ResetCBSkinnedMeshObjectCurrentIndex();
-
-	// 단순한 배치 처리 
-	// 씬에서 사용하는 쉐이더가 n개이면 SetPipelineState가 n번 호출된다
-	for (const std::unique_ptr<Shader>& shader : shaders_)
-	{
-		command_list->SetPipelineState(shader->GetPipelineState());
-		if (shader->shader_type() == ShaderType::kDebug && !is_render_debug_mesh_)
-		{
-			continue;
-		}
-		for (const std::unique_ptr<Mesh>& mesh : meshes_)
-		{
-			if (mesh->shader_type() == (int)shader->shader_type())
-			{
-				mesh->Render(command_list, frame_resource_manager, game_framework_->descriptor_manager());
-			}
-		}
-	}
-
 }
 
 bool BaseScene::ProcessInput(UINT id, WPARAM w_param, LPARAM l_param, float time)

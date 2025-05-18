@@ -31,7 +31,7 @@ public:
 	virtual void BuildConstantBufferViews(ID3D12Device* device) {};
 	virtual void BuildShaderResourceViews(ID3D12Device* device);
 	
-	void BuildScene(const std::string& scene_name);
+	void BuildScene();
 
 	virtual bool CheckObjectByObjectCollisions() { return false; };
 
@@ -42,7 +42,9 @@ public:
 
 	void ReleaseMeshUploadBuffer();
 
-	virtual void Render(ID3D12GraphicsCommandList* command_list) = 0;
+	virtual void UpdateRenderPassConstantBuffer(ID3D12GraphicsCommandList* command_list);
+
+	virtual void Render(ID3D12GraphicsCommandList* command_list);
 
 	virtual bool ProcessInput(UINT id, WPARAM w_param, LPARAM l_param, float time) = 0;
 
@@ -82,6 +84,8 @@ protected:
 
 	CameraComponent* main_camera_{ nullptr };
 	InputControllerComponent* main_input_controller_{ nullptr };
+
+	bool is_render_debug_mesh_ = false;	//디버그용 와이어프레임 obb를 렌더하는지 여부
 
 };
 

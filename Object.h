@@ -44,6 +44,10 @@ public:
 
 	CollideType collide_type() const;
 
+	XMFLOAT3 local_scale() const { return local_scale_; }
+	XMFLOAT3 local_rotation() const { return local_rotation_; }
+	XMFLOAT3 local_position() const { return local_position_; }	//로컬 좌표계
+
 	//setter
 	void set_transform_matrix(const XMFLOAT4X4& value);
 	void set_position_vector(const XMFLOAT3& value);
@@ -59,6 +63,12 @@ public:
 	void set_collide_type(bool ground_check, bool wall_check);
 	void set_collide_type(const CollideType& collide_type);
 
+	void set_local_scale(const XMFLOAT3& value); 
+	void set_local_rotation(const XMFLOAT3& value); 
+	void set_local_position(const XMFLOAT3& value); 
+
+	//SRT 정보를 transform_matrix_로 초기화한다.
+	void ResetSRTFromTransformMatrix();
 
 	void AddChild(Object* object);
 	void AddSibling(Object* object);
@@ -156,6 +166,10 @@ public:
 
 protected:
 	XMFLOAT4X4 transform_matrix_ = xmath_util_float4x4::Identity();
+
+	XMFLOAT3 local_scale_{ 1.f, 1.f, 1.f };	
+	XMFLOAT3 local_rotation_{}; //오일러각
+	XMFLOAT3 local_position_{};
 
 	Object* parent_ = nullptr;
 	Object* child_ = nullptr;

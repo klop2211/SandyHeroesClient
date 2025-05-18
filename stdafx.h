@@ -48,14 +48,13 @@
 #pragma comment(lib, "dxguid.lib")
 
 #include "d3dx12.h"
-#include <DirectXMath.h>
 
 using Microsoft::WRL::ComPtr;
 using namespace DirectX;
 
 // 상수값
-constexpr int kDefaultFrameBufferWidth = 1920;
-constexpr int kDefaultFrameBufferHeight = 1080;
+constexpr int kDefaultFrameBufferWidth = 1280;
+constexpr int kDefaultFrameBufferHeight = 720;
 constexpr UINT kDefaultRefreshRate = 60;
 constexpr int kMaxBoneCount = 128; //skinned mesh의 본 최대 개수
 constexpr int kMaxLights = 16;		// 조명처리의 최대 개수

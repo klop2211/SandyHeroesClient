@@ -173,8 +173,8 @@ void TestControllerComponent::Update(float elapsed_time)
 	if (is_key_down_['E']) velocity += up;
 	if (is_key_down_['Q']) velocity -= up;
 
-	if (is_key_down_[VK_SHIFT]) speed *= 2.f;
+	if (is_key_down_[VK_SHIFT]) speed *= 5.f;
 
-	movement->set_max_speed_xz(speed);
+	movement->set_max_speed_xz(speed * 2.f);
 	movement->Move(velocity, speed);
 }

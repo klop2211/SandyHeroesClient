@@ -7,6 +7,7 @@
 #include "InputControllerComponent.h"
 #include "GameFramework.h"
 #include "MeshComponent.h"
+#include "SkinnedMesh.h"
 
 
 XMVECTOR Scene::GetPickingPointAtWorld(float sx, float sy, Object* picked_object)
@@ -207,6 +208,73 @@ void Scene::ReleaseMeshUploadBuffer()
 	}
 }
 
+void Scene::UpdateRenderPassConstantBuffer(ID3D12GraphicsCommandList* command_list)
+{
+	main_camera_->UpdateCameraInfo();
+
+	CBPass cb_pass{};
+	cb_pass.view_matrix = xmath_util_float4x4::TransPose(main_camera_->view_matrix());
+	cb_pass.proj_matrix = xmath_util_float4x4::TransPose(main_camera_->projection_matrix());
+	cb_pass.camera_position = main_camera_->world_position();
+
+	//TODO: 조명 관련 클래스를 생성후 그것을 사용하여 아래 정보 업데이트(현재는 테스트용 하드코딩)
+	cb_pass.ambient_light = XMFLOAT4{ 0.01,0.01,0.01, 1 };
+	cb_pass.lights[0].strength = XMFLOAT3{ 0.7, 0.7, 0.7 };
+	cb_pass.lights[0].direction = XMFLOAT3{ 0, -1, 0 };
+	cb_pass.lights[0].enable = true;
+	cb_pass.lights[0].type = 0;
+
+	//cb_pass.lights[1].strength = XMFLOAT3{ 1, 0, 0 };
+	//cb_pass.lights[1].falloff_start = 0.1;
+	//cb_pass.lights[1].direction = xmath_util_float3::Normalize(main_camera_->owner()->world_look_vector());
+	//cb_pass.lights[1].falloff_end = 100.f;
+	//cb_pass.lights[1].position = main_camera_->owner()->world_position_vector();
+	//cb_pass.lights[1].spot_power = 14;
+	//cb_pass.lights[1].enable = true;
+	//cb_pass.lights[1].type = 2;
+
+	for (int i = 1; i < 16; ++i)
+		cb_pass.lights[i].enable = false;
+
+	FrameResourceManager* frame_resource_manager = game_framework_->frame_resource_manager();
+	frame_resource_manager->curr_frame_resource()->cb_pass.get()->CopyData(0, cb_pass);
+
+	//25.02.23 수정
+	//기존 루트 디스크립터 테이블에서 루트 CBV로 변경
+	D3D12_GPU_VIRTUAL_ADDRESS cb_pass_address =
+		frame_resource_manager->curr_frame_resource()->cb_pass.get()->Resource()->GetGPUVirtualAddress();
+
+	command_list->SetGraphicsRootConstantBufferView((int)RootParameterIndex::kRenderPass, cb_pass_address);
+}
+
+void Scene::Render(ID3D12GraphicsCommandList* command_list)
+{
+	FrameResourceManager* frame_resource_manager = game_framework_->frame_resource_manager();
+
+	UpdateRenderPassConstantBuffer(command_list);
+
+	Mesh::ResetCBObjectCurrentIndex();
+	SkinnedMesh::ResetCBSkinnedMeshObjectCurrentIndex();
+
+	// 단순한 배치 처리 
+	// 씬에서 사용하는 쉐이더가 n개이면 SetPipelineState가 n번 호출된다
+	for (const std::unique_ptr<Shader>& shader : shaders_)
+	{
+		command_list->SetPipelineState(shader->GetPipelineState());
+		if (shader->shader_type() == ShaderType::kDebug && !is_render_debug_mesh_)
+		{
+			continue;
+		}
+		for (const std::unique_ptr<Mesh>& mesh : meshes_)
+		{
+			if (mesh->shader_type() == (int)shader->shader_type())
+			{
+				mesh->Render(command_list, frame_resource_manager, game_framework_->descriptor_manager());
+			}
+		}
+	}
+}
+
 void Scene::Initialize(ID3D12Device* device, ID3D12GraphicsCommandList* command_list, 
 	ID3D12RootSignature* root_signature, GameFramework* game_framework)
 {
@@ -257,9 +325,9 @@ void Scene::BuildShaderResourceViews(ID3D12Device* device)
 }
 
 using namespace file_load_util;
-void Scene::BuildScene(const std::string& scene_name)
+void Scene::BuildScene()
 {
-	std::ifstream scene_file{ "./Resource/Model/" + scene_name + ".bin", std::ios::binary };
+	std::ifstream scene_file{ "./Resource/Model/World/Scene.bin", std::ios::binary };
 
 	int root_object_count = ReadFromFile<int>(scene_file);
 
@@ -285,7 +353,7 @@ void Scene::BuildScene(const std::string& scene_name)
 			ReadStringFromFile(scene_file, load_token); // <Transfrom>
 			XMFLOAT4X4 transfrom = ReadFromFile<XMFLOAT4X4>(scene_file);
 
-			model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/" + object_name + ".bin", meshes_, materials_));
+			model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/World/" + object_name + ".bin", meshes_, materials_));
 
 			object_list_.emplace_back();
 			object_list_.back().reset(model_infos_.back()->GetInstance());
