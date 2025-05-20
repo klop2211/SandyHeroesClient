@@ -839,3 +839,13 @@ void BaseScene::CheckObjectHitBullet(Object* object)
 	}
 
 }
+
+std::list<MeshColliderComponent*> BaseScene::checking_maps_mesh_collider_list(int index)
+{
+	return checking_maps_mesh_collider_list_[index];
+}
+
+int BaseScene::stage_clear_num()
+{
+	return stage_clear_num_;
+}

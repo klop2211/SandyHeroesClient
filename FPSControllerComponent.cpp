@@ -13,6 +13,8 @@
 #include "AnimationSet.h"
 #include "GunComponent.h"
 #include "MovementComponent.h"
+#include "BaseScene.h"
+#include "MeshColliderComponent.h"
 
 FPSControllerComponent::FPSControllerComponent(Object* owner) : InputControllerComponent(owner)
 {
@@ -208,13 +210,49 @@ void FPSControllerComponent::Update(float elapsed_time)
 
 	// 대쉬
 	constexpr float kDashSpeed = 70.f;
-	constexpr float kDashLength = 10.f;
+	float kDashLength = 10.f;
 	if (is_dash_pressed_)
 	{
 		is_dash_pressed_ = false;
+		
+		// 대쉬 진행방향으로 레이캐스팅 -> 진행 거리 = 진행거리 - 충돌거리;
+
+		XMFLOAT3 position = owner_->world_position_vector();
+
+		constexpr float kGroundYOffset = 1.5f;
+		position.y += kGroundYOffset;
+		XMVECTOR ray_origin = XMLoadFloat3(&position);
+		position.y -= kGroundYOffset;
+
+		XMVECTOR ray_direction = XMLoadFloat3(&dash_velocity_);
+		ray_direction = XMVectorSetY(ray_direction, 0);
+		ray_direction = XMVector3Normalize(ray_direction);
+
+		if (0 == XMVectorGetX(XMVector3Length(ray_direction)))
+			return;
+
+		float distance{ std::numeric_limits<float>::max() };
+		BaseScene* base_scene = dynamic_cast<BaseScene*>(scene_);
+		for (auto& mesh_collider : base_scene->checking_maps_mesh_collider_list(base_scene->stage_clear_num()))
+		{
+			float t{};
+			if (mesh_collider->CollisionCheckByRay(ray_origin, ray_direction, t))
+			{
+				if (t < distance)
+				{
+					distance = t;
+				}
+			}
+		}
+
+		if (distance > 0 && distance < kDashLength)
+			kDashLength = distance;
+
 		movement->set_max_speed_xz(kDashSpeed);
 		movement->MoveXZ(dash_velocity_.x, dash_velocity_.z, kDashSpeed);
 	}
+	
+
 	if (xmath_util_float3::Length(owner_->position_vector() - dash_before_position_) >= kDashLength)
 	{
 		movement->set_max_speed_xz(speed);
@@ -245,6 +283,46 @@ void FPSControllerComponent::Update(float elapsed_time)
 		}
 	}
 }
+
+XMFLOAT3 FPSControllerComponent::GetSafeDashVector(float dash_length)
+{
+	XMFLOAT3 dash_vec = dash_velocity_;
+	if (xmath_util_float3::Length(dash_vec) <= 0.001f)
+		return XMFLOAT3(0, 0, 0);
+
+	dash_vec = xmath_util_float3::Normalize(dash_vec);
+
+	XMFLOAT3 start_pos = owner_->world_position_vector();
+	start_pos.y += 1.5f; // GroundOffset
+	XMVECTOR ray_origin = XMLoadFloat3(&start_pos);
+	XMVECTOR ray_dir = XMLoadFloat3(&dash_vec);
+
+	float min_t = dash_length;
+	bool is_collide = false;
+
+	BaseScene* base_scene = dynamic_cast<BaseScene*>(scene_);
+	if (!base_scene)
+		return dash_vec * dash_length;
+
+	auto& mesh_list = base_scene->checking_maps_mesh_collider_list(base_scene->stage_clear_num());
+	for (auto& mesh_collider : mesh_list)
+	{
+		float t{};
+		if (mesh_collider->CollisionCheckByRay(ray_origin, ray_dir, t))
+		{
+			if (t < min_t)
+			{
+				is_collide = true;
+				min_t = t;
+			}
+		}
+	}
+
+	// 닿기 직전까지만
+	float safe_length = is_collide ? std::max(min_t - 0.1f, 0.0f) : dash_length;
+	return dash_vec * safe_length;
+}
+
 
 void FPSControllerComponent::set_camera_object(Object* value)
 {
