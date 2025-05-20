@@ -127,6 +127,9 @@
     <Filter Include="Animation\State\Player">
       <UniqueIdentifier>{85509d84-2cb1-4988-ba38-059c2cf4631c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="7.Component\Particle">
+      <UniqueIdentifier>{345badb1-0b20-42b3-967a-bbb94d3aab70}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="targetver.h">
@@ -297,6 +300,9 @@
     <ClInclude Include="ParticleSystem.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="ParticleComponent.h">
+      <Filter>7.Component\Particle</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="SandyHeroesClient.cpp">
@@ -452,6 +458,9 @@
     <ClCompile Include="ParticleSystem.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="ParticleComponent.cpp">
+      <Filter>7.Component\Particle</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="SandyHeroesClient.rc">
@@ -474,5 +483,6 @@
     <FxCompile Include="SkyboxShader.hlsl" />
     <FxCompile Include="DebugShader.hlsl" />
     <FxCompile Include="UIShader.hlsl" />
+    <FxCompile Include="ParticleShader.hlsl" />
   </ItemGroup>
 </Project>
