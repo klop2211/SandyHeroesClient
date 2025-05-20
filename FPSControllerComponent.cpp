@@ -124,6 +124,7 @@ bool FPSControllerComponent::ProcessInput(UINT message_id, WPARAM w_param, LPARA
 				is_dash_pressed_ = true;
 				dash_cool_delta_time_ = dash_cool_time_;
 				dash_velocity_ = { 0,0,0 };
+				dash_length_ = 10.f;
 				dash_before_position_ = owner_->position_vector();
 				XMFLOAT3 look = owner_->look_vector();
 				XMFLOAT3 right = owner_->right_vector();
@@ -210,12 +211,9 @@ void FPSControllerComponent::Update(float elapsed_time)
 
 	// 대쉬
 	constexpr float kDashSpeed = 70.f;
-	float kDashLength = 10.f;
 	if (is_dash_pressed_)
 	{
 		is_dash_pressed_ = false;
-		
-		// 대쉬 진행방향으로 레이캐스팅 -> 진행 거리 = 진행거리 - 충돌거리;
 
 		XMFLOAT3 position = owner_->world_position_vector();
 
@@ -245,15 +243,20 @@ void FPSControllerComponent::Update(float elapsed_time)
 			}
 		}
 
-		if (distance > 0 && distance < kDashLength)
-			kDashLength = distance;
+		if (distance > 0 && distance < dash_length_)
+		{
+			if (distance < 1.5)
+				dash_length_ = 0.0f;
+			else
+				dash_length_ = distance - 1.5f;
+		}
 
 		movement->set_max_speed_xz(kDashSpeed);
 		movement->MoveXZ(dash_velocity_.x, dash_velocity_.z, kDashSpeed);
 	}
 	
 
-	if (xmath_util_float3::Length(owner_->position_vector() - dash_before_position_) >= kDashLength)
+	if (xmath_util_float3::Length(owner_->position_vector() - dash_before_position_) >= dash_length_)
 	{
 		movement->set_max_speed_xz(speed);
 		AnimatorComponent* animator = Object::GetComponent<AnimatorComponent>(owner_);
@@ -283,46 +286,6 @@ void FPSControllerComponent::Update(float elapsed_time)
 		}
 	}
 }
-
-XMFLOAT3 FPSControllerComponent::GetSafeDashVector(float dash_length)
-{
-	XMFLOAT3 dash_vec = dash_velocity_;
-	if (xmath_util_float3::Length(dash_vec) <= 0.001f)
-		return XMFLOAT3(0, 0, 0);
-
-	dash_vec = xmath_util_float3::Normalize(dash_vec);
-
-	XMFLOAT3 start_pos = owner_->world_position_vector();
-	start_pos.y += 1.5f; // GroundOffset
-	XMVECTOR ray_origin = XMLoadFloat3(&start_pos);
-	XMVECTOR ray_dir = XMLoadFloat3(&dash_vec);
-
-	float min_t = dash_length;
-	bool is_collide = false;
-
-	BaseScene* base_scene = dynamic_cast<BaseScene*>(scene_);
-	if (!base_scene)
-		return dash_vec * dash_length;
-
-	auto& mesh_list = base_scene->checking_maps_mesh_collider_list(base_scene->stage_clear_num());
-	for (auto& mesh_collider : mesh_list)
-	{
-		float t{};
-		if (mesh_collider->CollisionCheckByRay(ray_origin, ray_dir, t))
-		{
-			if (t < min_t)
-			{
-				is_collide = true;
-				min_t = t;
-			}
-		}
-	}
-
-	// 닿기 직전까지만
-	float safe_length = is_collide ? std::max(min_t - 0.1f, 0.0f) : dash_length;
-	return dash_vec * safe_length;
-}
-
 
 void FPSControllerComponent::set_camera_object(Object* value)
 {
