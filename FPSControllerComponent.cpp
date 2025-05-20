@@ -124,7 +124,6 @@ bool FPSControllerComponent::ProcessInput(UINT message_id, WPARAM w_param, LPARA
 				is_dash_pressed_ = true;
 				dash_cool_delta_time_ = dash_cool_time_;
 				dash_velocity_ = { 0,0,0 };
-				dash_length_ = 10.f;
 				dash_before_position_ = owner_->position_vector();
 				XMFLOAT3 look = owner_->look_vector();
 				XMFLOAT3 right = owner_->right_vector();
@@ -211,11 +210,12 @@ void FPSControllerComponent::Update(float elapsed_time)
 
 	// 대쉬
 	constexpr float kDashSpeed = 70.f;
+	float kDashLength = 10.f;
 	if (is_dash_pressed_)
 	{
 		is_dash_pressed_ = false;
 		
-		// 대쉬 진행방향으로 레이캐스팅 -> 진행 거리 = 충돌거리;
+		// 대쉬 진행방향으로 레이캐스팅 -> 진행 거리 = 진행거리 - 충돌거리;
 
 		XMFLOAT3 position = owner_->world_position_vector();
 
@@ -245,20 +245,15 @@ void FPSControllerComponent::Update(float elapsed_time)
 			}
 		}
 
-		if (distance > 0 && distance < dash_length_)
-		{
-			if (distance < 1.5)
-				dash_length_ = 0.0;
-			else
-				dash_length_ = distance - 1.5;
-		}
+		if (distance > 0 && distance < kDashLength)
+			kDashLength = distance;
 
 		movement->set_max_speed_xz(kDashSpeed);
 		movement->MoveXZ(dash_velocity_.x, dash_velocity_.z, kDashSpeed);
 	}
 	
 
-	if (xmath_util_float3::Length(owner_->position_vector() - dash_before_position_) >= dash_length_)
+	if (xmath_util_float3::Length(owner_->position_vector() - dash_before_position_) >= kDashLength)
 	{
 		movement->set_max_speed_xz(speed);
 		AnimatorComponent* animator = Object::GetComponent<AnimatorComponent>(owner_);
