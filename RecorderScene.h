@@ -1,6 +1,6 @@
 #pragma once
 #include "Scene.h"
-#include "CutSceneRecorder.h"
+#include "CutSceneTrack.h"
 
 //ÄÆ½ÅÀ» ³ìÈ­ÇÏ´Â ¾À
 class RecorderScene :
@@ -15,8 +15,11 @@ public:
 
 	virtual bool ProcessInput(UINT id, WPARAM w_param, LPARAM l_param, float time) override;
 
+	virtual void Update(float elapsed_time) override;
+
 private:
 	std::unique_ptr<CutSceneRecorder> cut_scene_recorder_{ nullptr };
 
+	std::vector<CutSceneTrack> cut_scene_tracks_{};
 };
 

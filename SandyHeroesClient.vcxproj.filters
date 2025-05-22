@@ -127,6 +127,9 @@
     <Filter Include="Animation\State\Player">
       <UniqueIdentifier>{85509d84-2cb1-4988-ba38-059c2cf4631c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="2.Scene\Recorder">
+      <UniqueIdentifier>{0f5d1cc9-d56c-4578-ab12-5832039f449c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="targetver.h">
@@ -298,6 +301,9 @@
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="RecorderScene.h">
+      <Filter>2.Scene\Recorder</Filter>
+    </ClInclude>
+    <ClInclude Include="CutSceneTrack.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>
@@ -456,6 +462,9 @@
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="RecorderScene.cpp">
+      <Filter>2.Scene\Recorder</Filter>
+    </ClCompile>
+    <ClCompile Include="CutSceneTrack.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>

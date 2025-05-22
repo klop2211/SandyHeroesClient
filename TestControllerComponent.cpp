@@ -25,18 +25,53 @@ bool TestControllerComponent::ProcessInput(UINT message_id, WPARAM w_param, LPAR
 {
 	switch (message_id)
 	{
+	case WM_MOUSEWHEEL:
+	{
+		int delta = GET_WHEEL_DELTA_WPARAM(w_param);
+		if (delta > 0)
+		{
+			move_speed_ += 5.f;
+		}
+		else
+		{
+			move_speed_ -= 5.f;
+		}
+		if (move_speed_ < move_min_speed_)
+		{
+			move_speed_ = move_min_speed_;
+		}
+		if (move_speed_ > move_max_speed_)
+		{
+			move_speed_ = move_max_speed_;
+		}
+	}
+		break;
 	case WM_MOUSEMOVE:
 		if (is_key_down_[VK_LBUTTON])
 		{
 			int x = LOWORD(l_param), y = HIWORD(l_param);
-			owner_->Rotate((y - mouse_xy_.y) * 0.1, (x - mouse_xy_.x) * 0.1, 0.f);
-			mouse_xy_.x = x;
-			mouse_xy_.y = y;
+			owner_->Rotate((y - mouse_xy_.y) * rotate_speed_, (x - mouse_xy_.x) * rotate_speed_, 0.f);
+
+			RECT client_rect;
+			GetClientRect(client_wnd_, &client_rect);
+
+			POINT center;
+			center.x = (client_rect.right - client_rect.left) / 2;
+			center.y = (client_rect.bottom - client_rect.top) / 2;
+			mouse_xy_.x = center.x;
+			mouse_xy_.y = center.y;
+
+			ClientToScreen(client_wnd_, &center);
+
+			SetCursorPos(center.x, center.y);
+
 		}
 		break;
 	case WM_LBUTTONDOWN:
 		if (!is_key_down_[VK_LBUTTON])
 		{
+			ShowCursor(false);
+			SetCapture(client_wnd_);
 			is_key_down_[VK_LBUTTON] = true;
 			mouse_xy_.x = LOWORD(l_param);
 			mouse_xy_.y = HIWORD(l_param);
@@ -45,6 +80,8 @@ bool TestControllerComponent::ProcessInput(UINT message_id, WPARAM w_param, LPAR
 	case WM_LBUTTONUP:
 		if (is_key_down_[VK_LBUTTON])
 		{
+			ShowCursor(true);
+			ReleaseCapture();
 			is_key_down_[VK_LBUTTON] = false;
 		}
 		break;
@@ -87,6 +124,7 @@ bool TestControllerComponent::ProcessInput(UINT message_id, WPARAM w_param, LPAR
 			{
 				is_key_down_['E'] = true;
 			}
+			break;
 		case VK_SHIFT:
 			is_key_down_[VK_SHIFT] = true;
 			break;
@@ -129,15 +167,11 @@ bool TestControllerComponent::ProcessInput(UINT message_id, WPARAM w_param, LPAR
 			}
 			break;
 		case 'E':
-			if (is_key_down_['E'])
-			{
-				is_key_down_['E'] = false;
-			}
+			is_key_down_['E'] = false;
 			break;
 		case VK_SHIFT:
 			is_key_down_[VK_SHIFT] = false;
 			break;
-
 		default:
 			return false;
 			break;
@@ -162,10 +196,10 @@ void TestControllerComponent::Update(float elapsed_time)
 	movement->Stop();
 
 	XMFLOAT3 velocity{ 0,0,0 };
-	float speed = 15;
 	XMFLOAT3 look = owner_->look_vector();
 	XMFLOAT3 right = owner_->right_vector();
 	XMFLOAT3 up{ 0,1,0 };
+	float speed_rate = 1.f;
 	if (is_key_down_['W']) velocity += look;
 	if (is_key_down_['S']) velocity -= look;
 	if (is_key_down_['A']) velocity -= right;
@@ -173,8 +207,11 @@ void TestControllerComponent::Update(float elapsed_time)
 	if (is_key_down_['E']) velocity += up;
 	if (is_key_down_['Q']) velocity -= up;
 
-	if (is_key_down_[VK_SHIFT]) speed *= 5.f;
-
-	movement->set_max_speed_xz(speed * 2.f);
-	movement->Move(velocity, speed);
+	if (is_key_down_[VK_SHIFT])
+	{
+		speed_rate = 2.f;
+	}
+	movement->set_max_speed_xz(move_speed_ * speed_rate);
+	movement->set_max_speed(move_speed_ * speed_rate);
+	movement->Move(velocity, move_speed_ * speed_rate);
 }

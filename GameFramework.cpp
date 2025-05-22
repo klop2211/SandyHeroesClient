@@ -13,6 +13,7 @@
 #include "Material.h"
 #include "AnimationSet.h"
 #include "BaseScene.h"
+#include "RecorderScene.h"
 
 GameFramework* GameFramework::kGameFramework = nullptr;
 
@@ -54,7 +55,7 @@ void GameFramework::Initialize(HINSTANCE hinstance, HWND hwnd)
     input_manager_ = std::make_unique<InputManager>();
 
     //씬 생성 및 초기화
-    scene_ = std::make_unique<BaseScene>();
+    scene_ = std::make_unique<RecorderScene>();
     scene_->Initialize(d3d_device_.Get(), d3d_command_list_.Get(), d3d_root_signature_.Get(), 
         this);
 
@@ -551,6 +552,7 @@ LRESULT GameFramework::ProcessWindowMessage(HWND h_wnd, UINT message_id, WPARAM 
 {
     switch (message_id)
     {
+    case WM_MOUSEWHEEL:
     case WM_LBUTTONDOWN:
     case WM_RBUTTONDOWN:
     case WM_LBUTTONUP:

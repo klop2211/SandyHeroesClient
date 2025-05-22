@@ -150,6 +150,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     case WM_RBUTTONUP:
     case WM_KEYDOWN:
     case WM_KEYUP:
+	case WM_MOUSEWHEEL:
         game_framework.ProcessWindowMessage(hWnd, message, wParam, lParam);
         break;
     case WM_COMMAND:

@@ -68,6 +68,9 @@ public:
 	const std::vector<std::unique_ptr<Mesh>>& meshes() const;
 	CameraComponent* main_camera() const;
 
+	//setter
+	void set_main_camera(CameraComponent* value);
+
 protected:
 	std::list<std::unique_ptr<Object>> object_list_;
 	std::vector<std::unique_ptr<Shader>> shaders_;

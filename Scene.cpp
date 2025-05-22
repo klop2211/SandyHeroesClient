@@ -187,6 +187,11 @@ CameraComponent* Scene::main_camera() const
 	return main_camera_;
 }
 
+void Scene::set_main_camera(CameraComponent* value)
+{
+	main_camera_ = value;
+}
+
 void Scene::AddObject(Object* object)
 {
 	object_list_.emplace_back();
