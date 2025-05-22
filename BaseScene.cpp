@@ -86,7 +86,7 @@ void BaseScene::BuildMesh(ID3D12Device* device, ID3D12GraphicsCommandList* comma
 	materials_.back().reset(material);
 
 	//skybox
-	material = SkyboxMesh::CreateSkyboxMaterial("Skybox_Cube");
+	material = SkyboxMesh::CreateSkyboxMaterial("Skybox_Cube2");
 	meshes_.push_back(std::make_unique<SkyboxMesh>(meshes_[0].get(), material));
 	materials_.emplace_back();
 	materials_.back().reset(material);
@@ -237,6 +237,7 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 		new CameraComponent(camera_object, 0.3, 10000,
 			(float)kDefaultFrameBufferWidth / (float)kDefaultFrameBufferHeight, 58);
 	TestControllerComponent* controller = new TestControllerComponent(camera_object);
+	controller->set_client_wnd(game_framework_->main_wnd());
 	MovementComponent* movement = new MovementComponent(camera_object);
 	movement->DisableGarvity();
 	camera_object->AddComponent(movement);
@@ -373,7 +374,6 @@ void BaseScene::ActivateStageMonsterSpawner(int stage_num)
 
 bool BaseScene::ProcessInput(UINT id, WPARAM w_param, LPARAM l_param, float time)
 {
-
 	if (main_input_controller_)
 	{
 		if (main_input_controller_->ProcessInput(id, w_param, l_param, time))
@@ -395,7 +395,7 @@ bool BaseScene::ProcessInput(UINT id, WPARAM w_param, LPARAM l_param, float time
 			{
 				main_camera_ = new_camera;
 			}
-			main_input_controller_ = Object::GetComponent<InputControllerComponent>(camera);
+			main_input_controller_ = Object::GetComponent<TestControllerComponent>(camera);
 			return true;
 		}
 		if (w_param == 'L')

@@ -55,7 +55,7 @@ void GameFramework::Initialize(HINSTANCE hinstance, HWND hwnd)
     input_manager_ = std::make_unique<InputManager>();
 
     //씬 생성 및 초기화
-    scene_ = std::make_unique<RecorderScene>();
+    scene_ = std::make_unique<BaseScene>();
     scene_->Initialize(d3d_device_.Get(), d3d_command_list_.Get(), d3d_root_signature_.Get(), 
         this);
 
