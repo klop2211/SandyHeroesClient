@@ -41,7 +41,7 @@ public:
 	void PrepareGroundChecking();	//맵 바닥체크를 위한 사전 작업
 
 	void CheckPlayerHitWall(Object* object, const XMFLOAT3& velocity);
-	void CheckObjectHitObject(Object* object);
+	void CheckObjectHitObject(Object* object, const XMFLOAT3& velocity);
 	void CheckObjectHitBullet(Object* object);
 
 	//getter
