@@ -22,7 +22,7 @@ struct CBPass
 	XMFLOAT4X4 view_matrix;
 	XMFLOAT4X4 proj_matrix;
 	XMFLOAT3 camera_position;
-	float pad;
+	float total_time;
 	XMFLOAT4 ambient_light;
 	LightInfo lights[kMaxLights];
 };

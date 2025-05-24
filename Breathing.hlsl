@@ -33,5 +33,8 @@ VertexOut VS(VertexIn v_in)
 
 float4 PS(VertexOut p_in) : SV_Target
 {
-    return float4(1, 1, 1, 0.0f);
+    // 알파를 사인파로 조절 (0.3 ~ 1.0 사이 반복)
+    float alpha = 0.35f * sin(g_time * 2.0f) + 0.65f;
+
+    return float4(1.0f, 1.0f, 1.0f, alpha);
 }

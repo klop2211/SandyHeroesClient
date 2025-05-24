@@ -162,8 +162,8 @@ void BaseScene::BuildMesh(ID3D12Device* device, ID3D12GraphicsCommandList* comma
 	{
 		if (meshes_[i]->name() == "Cube")
 		{
-			meshes_[i]->set_shader_type((int)ShaderType::kTransparent);
-			//meshes_[i]->set_shader_type((int)ShaderType::kBreathing);
+			//meshes_[i]->set_shader_type((int)ShaderType::kTransparent);
+			meshes_[i]->set_shader_type((int)ShaderType::kBreathing);
 		}
 	}
 }
@@ -392,6 +392,7 @@ void BaseScene::Render(ID3D12GraphicsCommandList* command_list)
 	cb_pass.view_matrix = xmath_util_float4x4::TransPose(main_camera_->view_matrix());
 	cb_pass.proj_matrix = xmath_util_float4x4::TransPose(main_camera_->projection_matrix());
 	cb_pass.camera_position = main_camera_->world_position();
+	cb_pass.total_time = total_time;
 
 	//TODO: 조명 관련 클래스를 생성후 그것을 사용하여 아래 정보 업데이트(현재는 테스트용 하드코딩)
 	cb_pass.ambient_light = XMFLOAT4{ 0.01,0.01,0.01, 1 };
@@ -537,6 +538,8 @@ void BaseScene::Update(float elapsed_time)
 	DeleteDeadObjects();
 
 	UpdateStageClear();
+
+	total_time += elapsed_time;
 }
 
 void BaseScene::AddObject(Object* object)

@@ -24,7 +24,7 @@ cbuffer RenderPass : register(b3)
     matrix g_view_matrix;
     matrix g_projection_matrix;
     float3 g_camera_position;
-    float pad;
+    float g_time;
     float4 g_ambient_light;
     Light g_lights[MAX_LIGHTS];
 }
