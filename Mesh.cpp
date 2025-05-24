@@ -33,6 +33,11 @@ void Mesh::AddMaterial(Material* material)
 	materials_.push_back(material);
 }
 
+void Mesh::SetMaterial(Material* material, int index)
+{
+	materials_[index] = material;
+}
+
 void Mesh::CreateShaderVariables(ID3D12Device* device, ID3D12GraphicsCommandList* command_list)
 {
 	if (positions_.size())

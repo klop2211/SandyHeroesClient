@@ -20,6 +20,7 @@ public:
 	void DeleteMeshComponent(MeshComponent* mesh_component);
 
 	void AddMaterial(Material* material);
+	void SetMaterial(Material* material, int index);
 
 	virtual void CreateShaderVariables(ID3D12Device* device, ID3D12GraphicsCommandList* command_list);
 

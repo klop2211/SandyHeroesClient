@@ -28,6 +28,7 @@ void MonsterComponent::Update(float elapsed_time)
 
     if (hp_ <= 0)
     {
+
 		auto animation_state = Object::GetComponentInChildren<AnimatorComponent>(owner_)->animation_state();
         if (animation_state)
         {
@@ -109,5 +110,3 @@ float MonsterComponent::attack_force() const
 {
     return attack_force_;
 }
-
-

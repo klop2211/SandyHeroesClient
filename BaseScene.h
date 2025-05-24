@@ -36,17 +36,20 @@ public:
 	void UpdateObjectHitWall();
 	void UpdateObjectHitBullet();
 	void UpdateObjectHitObject();
-	void CheckObjectIsGround(Object* object);
+	void UpdateStageClear();
 
 	void PrepareGroundChecking();	//맵 바닥체크를 위한 사전 작업
 
+	void CheckObjectIsGround(Object* object);
 	void CheckPlayerHitWall(Object* object, const XMFLOAT3& velocity);
-	void CheckObjectHitObject(Object* object, const XMFLOAT3& velocity);
+	void CheckObjectHitObject(Object* object);
 	void CheckObjectHitBullet(Object* object);
+	void CheckPlayerHitPyramid(Object* object);
 
 	//getter
 	std::list<MeshColliderComponent*> checking_maps_mesh_collider_list(int index);
 	int stage_clear_num();
+	void add_catch_monster_num();
 private:
 	//TODO: Player 객체 구현
 	Object* player_ = nullptr;
@@ -60,6 +63,11 @@ private:
 
 	//스테이지별 몬스터 스포너 리스트
 	std::array<std::list<SpawnerComponent*>, kStageMaxCount> stage_monster_spawner_list_;
+
+	// 몬스터 잡은 횟수
+	int catch_monster_num_{ 0 };
+	// 열쇠를 먹은 횟수
+	int get_key_num_{ 0 };
 
 	//TODO: 앞으로 충돌관련 리스트가 추가된다면(그럴 필요성이 있어서) 오브젝트 매니저 클래스를 구현하는 것을 고려할 것.
 	std::list<Object*> ground_check_object_list_;	//지면 체크가 필요한 객체들의 리스트(플레이어, monster, NPC)

@@ -141,6 +141,7 @@
     <ClInclude Include="AnimatorComponent.h" />
     <ClInclude Include="BaseScene.h" />
     <ClInclude Include="BoxColliderComponent.h" />
+    <ClInclude Include="BreathingShader.h" />
     <ClInclude Include="CameraComponent.h" />
     <ClInclude Include="ColliderComponent.h" />
     <ClInclude Include="Component.h" />
@@ -172,6 +173,7 @@
     <ClInclude Include="RecordingScene.h" />
     <ClInclude Include="ShotDragonAnimationState.h" />
     <ClInclude Include="SpawnerComponent.h" />
+    <ClInclude Include="TransparentShader.h" />
     <ClInclude Include="UIMesh.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="SandyHeroesClient.h" />
@@ -199,6 +201,7 @@
     <ClCompile Include="AnimatorComponent.cpp" />
     <ClCompile Include="BaseScene.cpp" />
     <ClCompile Include="BoxColliderComponent.cpp" />
+    <ClCompile Include="BreathingShader.cpp" />
     <ClCompile Include="CameraComponent.cpp" />
     <ClCompile Include="ColliderComponent.cpp" />
     <ClCompile Include="Component.cpp" />
@@ -228,6 +231,7 @@
     <ClCompile Include="RecordingScene.cpp" />
     <ClCompile Include="ShotDragonAnimationState.cpp" />
     <ClCompile Include="SpawnerComponent.cpp" />
+    <ClCompile Include="TransparentShader.cpp" />
     <ClCompile Include="UIMesh.cpp" />
     <ClCompile Include="SandyHeroesClient.cpp" />
     <ClCompile Include="Scene.cpp" />
@@ -253,6 +257,14 @@
     <Image Include="small.ico" />
   </ItemGroup>
   <ItemGroup>
+    <FxCompile Include="Breathing.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
     <FxCompile Include="DebugShader.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
@@ -300,6 +312,16 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="Transparent.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0_level_9_3</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0_level_9_3</ShaderModel>
     </FxCompile>
     <FxCompile Include="UIShader.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>

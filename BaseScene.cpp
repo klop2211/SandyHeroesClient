@@ -24,6 +24,8 @@
 #include "SkinnedMeshComponent.h"
 #include "UIShader.h"
 #include "UIMesh.h"
+#include "TransparentShader.h"
+#include "BreathingShader.h"
 #include "MonsterComponent.h"
 #include "MovementComponent.h"
 #include "SpawnerComponent.h"
@@ -40,13 +42,15 @@ void BaseScene::Initialize(ID3D12Device* device, ID3D12GraphicsCommandList* comm
 
 void BaseScene::BuildShader(ID3D12Device* device, ID3D12RootSignature* root_signature)
 {
-	constexpr int shader_count = 5;
+	constexpr int shader_count = 6;
 	shaders_.reserve(shader_count);
 	shaders_.push_back(std::make_unique<StandardMeshShader>());
 	shaders_.push_back(std::make_unique<StandardSkinnedMeshShader>());
 	shaders_.push_back(std::make_unique<SkyboxShader>());
 	shaders_.push_back(std::make_unique<DebugShader>());
 	shaders_.push_back(std::make_unique<UIShader>());
+	shaders_.push_back(std::make_unique<TransparentShader>());
+	shaders_.push_back(std::make_unique<BreathingShader>());
 
 	for (int i = 0; i < shaders_.size(); ++i)
 	{
@@ -153,6 +157,15 @@ void BaseScene::BuildMesh(ID3D12Device* device, ID3D12GraphicsCommandList* comma
 	{
 		mesh->CreateShaderVariables(device, command_list);
 	}
+
+	for (int i = 0; i < meshes_.size(); ++i)
+	{
+		if (meshes_[i]->name() == "Cube")
+		{
+			meshes_[i]->set_shader_type((int)ShaderType::kTransparent);
+			//meshes_[i]->set_shader_type((int)ShaderType::kBreathing);
+		}
+	}
 }
 
 void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* command_list)
@@ -166,7 +179,7 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 	//플레이어 생성
 	Object* player = model_infos_[0]->GetInstance();
 	player->set_name("Player");
-	player->set_position_vector(XMFLOAT3{ 0, 30, 0 });
+	player->set_position_vector(XMFLOAT3{ -15, 30, 0 });
 	player->set_collide_type(true, true);
 	player->AddComponent(new MovementComponent(player));
 	AnimatorComponent* animator = Object::GetComponent<AnimatorComponent>(player);
@@ -480,7 +493,8 @@ bool BaseScene::ProcessInput(UINT id, WPARAM w_param, LPARAM l_param, float time
 		if (w_param == 'P')
 		{
 			ActivateStageMonsterSpawner(stage_clear_num_);
-			++stage_clear_num_;
+			catch_monster_num_ = 8;
+			//++stage_clear_num_;
 			return true;
 		}
 		if (w_param == 'N')
@@ -521,6 +535,8 @@ void BaseScene::Update(float elapsed_time)
 	UpdateObjectHitObject();
 
 	DeleteDeadObjects();
+
+	UpdateStageClear();
 }
 
 void BaseScene::AddObject(Object* object)
@@ -616,8 +632,41 @@ void BaseScene::UpdateObjectHitObject()
 	for (auto& object : ground_check_object_list_)
 	{
 		auto movement = Object::GetComponentInChildren<MovementComponent>(object);
-		XMFLOAT3 velocity = movement->velocity();
-		CheckObjectHitObject(object, velocity);
+		CheckObjectHitObject(object);
+	}
+}
+
+void BaseScene::UpdateStageClear()
+{
+	if (!is_prepare_ground_checking_)
+	{
+		PrepareGroundChecking();
+	}
+	if (catch_monster_num_ > 7)
+	{
+		// 현재 스테이지에서 "Cube" 메쉬 제거
+		auto& mesh_list = checking_maps_mesh_collider_list_[stage_clear_num_];
+		mesh_list.remove_if([](MeshColliderComponent* collider) {
+			return collider->mesh() && collider->mesh()->name() == "Cube";
+			});
+
+		// 스테이지 넘버 증가
+		++stage_clear_num_;
+		catch_monster_num_ = 0;
+	}
+	for (auto& object : ground_check_object_list_)
+	{
+		auto movement = Object::GetComponentInChildren<MovementComponent>(object);
+		CheckPlayerHitPyramid(object);
+	}
+	if (get_key_num_ == 3)
+	{
+		auto& mesh_list = checking_maps_mesh_collider_list_[stage_clear_num_];
+		mesh_list.remove_if([](MeshColliderComponent* collider) {
+			return collider->mesh() && collider->mesh()->name() == "Cube";
+			});
+		++stage_clear_num_;
+		get_key_num_ = 0;
 	}
 }
 
@@ -748,7 +797,7 @@ void BaseScene::CheckPlayerHitWall(Object* object, const XMFLOAT3& velocity)
 	}
 }
 
-void BaseScene::CheckObjectHitObject(Object* object, const XMFLOAT3& velocity)
+void BaseScene::CheckObjectHitObject(Object* object)
 {
 	if (!object || object->is_dead()) return;
 
@@ -897,12 +946,52 @@ void BaseScene::CheckObjectHitBullet(Object* object)
 				if (monster)
 				{
 					monster->set_hp(monster->hp() - gun->damage());
+					catch_monster_num_++;
 				}
 				return;
 			}
 		}
 	}
 
+}
+
+void BaseScene::CheckPlayerHitPyramid(Object* object)
+{
+	if (stage_clear_num_ != 6) return; // 스테이지 6에서만 체크
+
+	auto mesh_collider = Object::GetComponentInChildren<MeshColliderComponent>(object);
+	if (!mesh_collider) return;
+
+	BoundingOrientedBox player_obb = mesh_collider->GetWorldOBB();
+
+	for (auto& pyramid_collider : checking_maps_mesh_collider_list_[6])
+	{
+		if (!pyramid_collider || !pyramid_collider->mesh()) continue;
+
+		auto name = pyramid_collider->mesh()->name();
+
+		if (name != "Pyramid_01") continue;
+		BoundingOrientedBox pyramid_obb = pyramid_collider->GetWorldOBB();
+
+		if (player_obb.Intersects(pyramid_obb))
+		{
+			// 피라미드 획득 처리
+			get_key_num_++;
+
+			// 피라미드 제거 (Scene과 충돌 리스트에서 제거)
+			Object* pyramid_object = pyramid_collider->owner();
+			MeshComponent* mesh_component = Object::GetComponent<MeshComponent>(pyramid_object);
+			MeshColliderComponent* mesh_collider_component = Object::GetComponent<MeshColliderComponent>(pyramid_object);
+			mesh_component->set_is_visible(false);
+			//DeleteObject(pyramid_object); // Scene::DeleteObject 호출 포함됨
+			auto& mesh_list = checking_maps_mesh_collider_list_[6];
+			mesh_list.remove_if([&](MeshColliderComponent* collider) {
+				return collider == mesh_collider_component;
+				});
+
+			break;
+		}
+	}
 }
 
 std::list<MeshColliderComponent*> BaseScene::checking_maps_mesh_collider_list(int index)
@@ -913,4 +1002,10 @@ std::list<MeshColliderComponent*> BaseScene::checking_maps_mesh_collider_list(in
 int BaseScene::stage_clear_num()
 {
 	return stage_clear_num_;
+}
+
+void BaseScene::add_catch_monster_num()
+{
+	catch_monster_num_++;
+	return ;
 }
