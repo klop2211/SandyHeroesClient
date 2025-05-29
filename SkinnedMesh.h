@@ -7,18 +7,13 @@ public:
     virtual void CreateShaderVariables(ID3D12Device* device, ID3D12GraphicsCommandList* command_list) override;
     virtual void ReleaseUploadBuffer() override;
 
-    virtual void UpdateConstantBuffer(FrameResource* curr_frame_resource) override;
+    virtual void UpdateConstantBuffer(FrameResource* curr_frame_resource, int& cb_index) override;
 
-    virtual void Render(ID3D12GraphicsCommandList* command_list,
-        FrameResourceManager* frame_resource_manager, DescriptorManager* descriptor_manager) override;
+    virtual void Render(ID3D12GraphicsCommandList* command_list, int material_index) override;
 
     void LoadSkinnedMeshFromFile(std::ifstream& file);
 
-    static void ResetCBSkinnedMeshObjectCurrentIndex();
-
 private:
-    static int kCBSkinnedMeshObjectCurrentIndex;
-
     int bones_per_vertex_ = 4;
 
     std::vector<std::string> bone_names_;

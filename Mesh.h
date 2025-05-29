@@ -19,17 +19,14 @@ public:
 	void AddMeshComponent(MeshComponent* mesh_component);
 	void DeleteMeshComponent(MeshComponent* mesh_component);
 
-	void AddMaterial(Material* material);
-
 	virtual void CreateShaderVariables(ID3D12Device* device, ID3D12GraphicsCommandList* command_list);
 
 	virtual void ReleaseUploadBuffer();
 
 	//이 메쉬를 사용하는 object의 개수만큼 cb를 업데이트
-	virtual void UpdateConstantBuffer(FrameResource* curr_frame_resource);
+	virtual void UpdateConstantBuffer(FrameResource* curr_frame_resource, int& start_index);
 
-	virtual void Render(ID3D12GraphicsCommandList* command_list,
-		FrameResourceManager* frame_resource_manager, DescriptorManager* descriptor_manager);
+	virtual void Render(ID3D12GraphicsCommandList* command_list, int material_index);
 
 	void LoadMeshFromFile(std::ifstream& file);
 
@@ -40,7 +37,6 @@ public:
 	void ClearTangents();
 
 	//getter
-	int shader_type() const;
 	std::string name() const;
 
 	const std::list<MeshComponent*>& mesh_component_list() const;
@@ -50,14 +46,10 @@ public:
 	D3D12_PRIMITIVE_TOPOLOGY primitive_topology() const;
 
 	//setter
-	void set_shader_type(int value);
 	void set_name(const std::string& name);
 
-	static void ResetCBObjectCurrentIndex();
 
 protected:
-	std::vector<Material*> materials_;
-
 	D3D12_PRIMITIVE_TOPOLOGY primitive_topology_ = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 
 	std::vector<XMFLOAT3> positions_;
@@ -99,12 +91,5 @@ protected:
 
 	// 이 메쉬를 참조중인 컴포넌트 리스트
 	std::list<MeshComponent*> mesh_component_list_;
-
-	// 메쉬가 사용하는 쉐이더의 타입 Shader.h 참고
-	int shader_type_ = 0;
-
-private:
-	//업데이트 되어야 할 cb의 인덱스를 갖는 변수 Scene 렌더시 0으로 초기화 해야한다. (Reset함수로)
-	static int kCBObjectCurrentIndex;
 };
 

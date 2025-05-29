@@ -46,8 +46,8 @@ void TestScene::BuildShader(ID3D12Device* device, ID3D12RootSignature* root_sign
 	//씬에서 사용하는 쉐이더 개수만큼 예약
 	int shader_count = 2;
 	shaders_.reserve(shader_count);
-	shaders_.push_back(std::make_unique<StandardMeshShader>());
-	shaders_.push_back(std::make_unique<StandardSkinnedMeshShader>());
+	shaders_[(int)ShaderType::kStandardMesh] = std::make_unique<StandardMeshShader>();
+	shaders_[(int)ShaderType::kStandardSkinnedMesh] = std::make_unique<StandardSkinnedMeshShader>();
 
 	for (int i = 0; i < shader_count; ++i)
 	{
@@ -62,13 +62,13 @@ void TestScene::BuildMesh(ID3D12Device* device, ID3D12GraphicsCommandList* comma
 	meshes_.push_back(std::make_unique<CubeMesh>());
 	Material* material = new Material{};
 	material->set_albedo_color(0, 1, 0, 1);
-	meshes_[0].get()->AddMaterial(material);
+	material->set_name("green");
 	meshes_[0].get()->set_name("green_cube");
 	materials_.emplace_back();
 	materials_.back().reset(material);
 
 	model_infos_.reserve(3);
-	model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/Dog00.bin", meshes_, materials_));
+	model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/Dog00.bin", meshes_, materials_, textures_));
 
 	BuildScene();
 
@@ -111,7 +111,8 @@ void TestScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 	GunComponent* player_gun = new GunComponent(player_gun_frame);
 	player_gun->LoadGunInfo("classic");
 	player_gun_frame->AddComponent(player_gun);
-	player_gun_frame->AddComponent(new MeshComponent(player_gun_frame, Scene::FindMesh("green_cube", meshes_)));
+	player_gun_frame->AddComponent(new MeshComponent(player_gun_frame, 
+		Scene::FindMesh("green_cube", meshes_), Scene::FindMaterial("green", materials_)));
 	player_gun_frame->Scale(0.3);
 
 	//카메라 설정
@@ -263,7 +264,7 @@ void TestScene::BuildScene()
 			ReadStringFromFile(scene_file, load_token); // <Transfrom>
 			XMFLOAT4X4 transfrom = ReadFromFile<XMFLOAT4X4>(scene_file);
 
-			model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/" + object_name + ".bin", meshes_, materials_));
+			model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/" + object_name + ".bin", meshes_, materials_, textures_));
 
 			object_list_.emplace_back();
 			object_list_.back().reset(model_infos_.back()->GetInstance());
@@ -317,55 +318,6 @@ bool TestScene::CheckObjectByObjectCollisions()
 	}
 	player_->set_is_ground(false); // 아무 것도 닿지 않으면 공중
 	return false;
-}
-
-void TestScene::Render(ID3D12GraphicsCommandList* command_list)
-{
-	main_camera_->UpdateCameraInfo();
-
-	CBPass cb_pass{};
-	cb_pass.view_matrix = xmath_util_float4x4::TransPose(main_camera_->view_matrix());
-	cb_pass.proj_matrix = xmath_util_float4x4::TransPose(main_camera_->projection_matrix());
-	cb_pass.camera_position = main_camera_->world_position();
-
-	//TODO: 조명 관련 클래스를 생성후 그것을 사용하여 아래 정보 업데이트(현재는 테스트용 하드코딩)
-	cb_pass.ambient_light = XMFLOAT4{ 0.1,0.1,0.1, 1 };
-	cb_pass.lights[0].strength = XMFLOAT3{ 1,1,1 };
-	cb_pass.lights[0].direction = XMFLOAT3{ 1,-1, -0.5 };
-	cb_pass.lights[0].enable = true;
-	cb_pass.lights[0].type = 0;
-
-	for (int i = 1; i < 16; ++i)
-		cb_pass.lights[i].enable = false;
-
-	FrameResourceManager* frame_resource_manager = game_framework_->frame_resource_manager();
-	frame_resource_manager->curr_frame_resource()->cb_pass.get()->CopyData(0, cb_pass);
-
-	//25.02.23 수정
-	//기존 루트 디스크립터 테이블에서 루트 CBV로 변경
-	D3D12_GPU_VIRTUAL_ADDRESS cb_pass_address =
-		frame_resource_manager->curr_frame_resource()->cb_pass.get()->Resource()->GetGPUVirtualAddress();
-
-	command_list->SetGraphicsRootConstantBufferView((int)RootParameterIndex::kRenderPass, cb_pass_address);
-
-	Mesh::ResetCBObjectCurrentIndex();
-	SkinnedMesh::ResetCBSkinnedMeshObjectCurrentIndex();
-
-	// 단순한 배치 처리 
-	// 씬에서 사용하는 쉐이더가 n개이면 SetPipelineState가 n번 호출된다
-	for (const std::unique_ptr<Shader>& shader : shaders_)
-	{
-		command_list->SetPipelineState(shader->GetPipelineState());
-
-		for (const std::unique_ptr<Mesh>& mesh : meshes_)
-		{
-			if (mesh->shader_type() == (int)shader->shader_type())
-			{
-				mesh->Render(command_list, frame_resource_manager, game_framework_->descriptor_manager());
-			}
-		}
-
-	}
 }
 
 bool TestScene::ProcessInput(UINT id, WPARAM w_param, LPARAM l_param, float time)

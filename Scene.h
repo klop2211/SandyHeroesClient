@@ -10,7 +10,6 @@ class DescriptorManager;
 class CameraComponent;
 class InputManager;
 class InputControllerComponent;
-class Material;
 class GameFramework;
 class ColliderComponent;
 
@@ -18,7 +17,7 @@ class Scene
 {
 public:
 	Scene() {}
-	virtual ~Scene() {};
+	virtual ~Scene();
 
 	virtual void Initialize(ID3D12Device* device, ID3D12GraphicsCommandList* command_list, 
 		ID3D12RootSignature* root_signature, GameFramework* game_framework);
@@ -44,6 +43,8 @@ public:
 
 	virtual void UpdateRenderPassConstantBuffer(ID3D12GraphicsCommandList* command_list);
 
+	void UpdateObjectConstantBuffer(FrameResource* curr_frame_resource);
+
 	virtual void Render(ID3D12GraphicsCommandList* command_list);
 
 	virtual bool ProcessInput(UINT id, WPARAM w_param, LPARAM l_param, float time) = 0;
@@ -55,7 +56,6 @@ public:
 
 	virtual void Update(float elapsed_time);
 
-
 	void UpdateObjectWorldMatrix();
 
 	Object* FindObject(const std::string& object_name);
@@ -63,6 +63,7 @@ public:
 
 	static Mesh* FindMesh(const std::string& mesh_name, const std::vector<std::unique_ptr<Mesh>>& meshes);
 	static Material* FindMaterial(const std::string& material_name, const std::vector<std::unique_ptr<Material>>& materials);
+	static Texture* FindTexture(const std::string& texture_name, const std::vector<std::unique_ptr<Texture>>& textures);
 
 	//getter
 	const std::vector<std::unique_ptr<Mesh>>& meshes() const;
@@ -73,10 +74,11 @@ public:
 
 protected:
 	std::list<std::unique_ptr<Object>> object_list_;
-	std::vector<std::unique_ptr<Shader>> shaders_;
+	std::unordered_map<int, std::unique_ptr<Shader>> shaders_;
 	std::vector<std::unique_ptr<Mesh>> meshes_;
 	std::vector<std::unique_ptr<ModelInfo>> model_infos_;
 	std::vector<std::unique_ptr<Material>> materials_;
+	std::vector<std::unique_ptr<Texture>> textures_;
 
 	GameFramework* game_framework_{ nullptr };
 

@@ -76,6 +76,8 @@ float4 PS(VertexOut p_in) : SV_Target
         diffuse_albedo = g_albedo_map.Sample(g_anisotropic_warp, p_in.uv) * g_material.albedo_color;
     }
     
+    clip(diffuse_albedo.a - 0.01);
+    
     float3 fresnel_r0 = g_material.fresnel_r0;
     float glossiness = g_material.glossiness;
     if (g_texture_mask & TEXTURE_MASK_SPECGLOS)

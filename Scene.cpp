@@ -8,6 +8,7 @@
 #include "GameFramework.h"
 #include "MeshComponent.h"
 #include "SkinnedMesh.h"
+#include "DDSTextureLoader.h"
 
 
 XMVECTOR Scene::GetPickingPointAtWorld(float sx, float sy, Object* picked_object)
@@ -177,6 +178,19 @@ Material* Scene::FindMaterial(const std::string& material_name, const std::vecto
 	return nullptr;
 }
 
+Texture* Scene::FindTexture(const std::string& texture_name, const std::vector<std::unique_ptr<Texture>>& textures)
+{
+	auto it = std::find_if(textures.begin(), textures.end(), [&texture_name](const std::unique_ptr<Texture>& tex) {
+		return tex.get()->name == texture_name;
+		});
+
+	if (it != textures.end())
+	{
+		return (*it).get();
+	}
+	return nullptr;
+}
+
 const std::vector<std::unique_ptr<Mesh>>& Scene::meshes() const
 {
 	return meshes_;
@@ -252,35 +266,52 @@ void Scene::UpdateRenderPassConstantBuffer(ID3D12GraphicsCommandList* command_li
 	command_list->SetGraphicsRootConstantBufferView((int)RootParameterIndex::kRenderPass, cb_pass_address);
 }
 
-void Scene::Render(ID3D12GraphicsCommandList* command_list)
+void Scene::UpdateObjectConstantBuffer(FrameResource* curr_frame_resource)
 {
-	FrameResourceManager* frame_resource_manager = game_framework_->frame_resource_manager();
-
-	UpdateRenderPassConstantBuffer(command_list);
-
-	Mesh::ResetCBObjectCurrentIndex();
-	SkinnedMesh::ResetCBSkinnedMeshObjectCurrentIndex();
-
-	// 단순한 배치 처리 
-	// 씬에서 사용하는 쉐이더가 n개이면 SetPipelineState가 n번 호출된다
-	for (const std::unique_ptr<Shader>& shader : shaders_)
+	int cb_object_index = 0;
+	int cb_skinned_mesh_index = 0;
+	for (const auto& mesh : meshes_)
 	{
-		command_list->SetPipelineState(shader->GetPipelineState());
-		if (shader->shader_type() == ShaderType::kDebug && !is_render_debug_mesh_)
+		auto skinned_mesh = dynamic_cast<SkinnedMesh*>(mesh.get());
+		if (skinned_mesh)
 		{
-			continue;
+			skinned_mesh->UpdateConstantBuffer(curr_frame_resource, cb_skinned_mesh_index);
 		}
-		for (const std::unique_ptr<Mesh>& mesh : meshes_)
+		else
 		{
-			if (mesh->shader_type() == (int)shader->shader_type())
-			{
-				mesh->Render(command_list, frame_resource_manager, game_framework_->descriptor_manager());
-			}
+			mesh->UpdateConstantBuffer(curr_frame_resource, cb_object_index);
 		}
 	}
 }
 
-void Scene::Initialize(ID3D12Device* device, ID3D12GraphicsCommandList* command_list, 
+void Scene::Render(ID3D12GraphicsCommandList* command_list)
+{
+	FrameResourceManager* frame_resource_manager = game_framework_->frame_resource_manager();
+	auto curr_frame_resource = frame_resource_manager->curr_frame_resource();
+
+	UpdateRenderPassConstantBuffer(command_list);
+	UpdateObjectConstantBuffer(curr_frame_resource);
+
+	for (const auto& [type, shader] : shaders_)
+	{
+		if (shader->shader_type() == ShaderType::kDebug && !is_render_debug_mesh_)
+		{
+			continue;
+		}
+		shader->Render(command_list, curr_frame_resource, game_framework_->descriptor_manager());
+	}
+}
+
+Scene::~Scene()
+{
+	object_list_.clear();
+	model_infos_.clear();
+	materials_.clear();
+	meshes_.clear();
+
+}
+
+void Scene::Initialize(ID3D12Device* device, ID3D12GraphicsCommandList* command_list,
 	ID3D12RootSignature* root_signature, GameFramework* game_framework)
 {
 	game_framework_ = game_framework;
@@ -300,9 +331,19 @@ void Scene::BuildMaterial(ID3D12Device* device, ID3D12GraphicsCommandList* comma
 	int frame_resource_index = 0;
 	for (std::unique_ptr<Material>& material : materials_)
 	{
-		material->CreateShaderVariables(device, command_list);
+		shaders_[material->shader_type()]->AddMaterial(material.get());
 		material->set_frame_resource_index(frame_resource_index);
 		++frame_resource_index;
+	}
+
+	for (const auto& const texture : textures_)
+	{
+		std::string file_name = "./Resource/Model/Texture/DDS/" + texture->name + ".dds";
+		std::wstring file_name_w;
+		file_name_w.assign(file_name.begin(), file_name.end());
+		DirectX::CreateDDSTextureFromFile12(device, command_list,
+			file_name_w.c_str(),
+			texture->resource, texture->upload_heap);
 	}
 }
 
@@ -317,7 +358,7 @@ void Scene::BuildDescriptorHeap(ID3D12Device* device)
 {
 	game_framework_->descriptor_manager()->
 		ResetDescriptorHeap(device,
-			Material::GetTextureCount());
+			textures_.size());
 }
 
 void Scene::BuildShaderResourceViews(ID3D12Device* device)
@@ -358,7 +399,7 @@ void Scene::BuildScene()
 			ReadStringFromFile(scene_file, load_token); // <Transfrom>
 			XMFLOAT4X4 transfrom = ReadFromFile<XMFLOAT4X4>(scene_file);
 
-			model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/World/" + object_name + ".bin", meshes_, materials_));
+			model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/World/" + object_name + ".bin", meshes_, materials_, textures_));
 
 			object_list_.emplace_back();
 			object_list_.back().reset(model_infos_.back()->GetInstance());

@@ -26,11 +26,11 @@ void RecorderScene::Initialize(ID3D12Device* device, ID3D12GraphicsCommandList* 
 
 void RecorderScene::BuildShader(ID3D12Device* device, ID3D12RootSignature* root_signature)
 {
-	constexpr int shader_count = 5;
+	constexpr int shader_count = 3;
 	shaders_.reserve(shader_count);
-	shaders_.push_back(std::make_unique<StandardMeshShader>());
-	shaders_.push_back(std::make_unique<StandardSkinnedMeshShader>());
-	shaders_.push_back(std::make_unique<SkyboxShader>());
+	shaders_[(int)ShaderType::kStandardMesh] = std::make_unique<StandardMeshShader>();
+	shaders_[(int)ShaderType::kStandardSkinnedMesh] = std::make_unique<StandardSkinnedMeshShader>();
+	shaders_[(int)ShaderType::kSkybox] = std::make_unique<SkyboxShader>();
 
 	for (int i = 0; i < shaders_.size(); ++i)
 	{
@@ -41,39 +41,29 @@ void RecorderScene::BuildShader(ID3D12Device* device, ID3D12RootSignature* root_
 using namespace file_load_util;
 void RecorderScene::BuildMesh(ID3D12Device* device, ID3D12GraphicsCommandList* command_list)
 {
-	meshes_.reserve(50);
+	constexpr UINT kMeshCount{ 60 };
+	meshes_.reserve(kMeshCount);
 	meshes_.push_back(std::make_unique<CubeMesh>());
-	Material* material = new Material{};
-	material->set_albedo_color(0, 1, 0, 1);
-	meshes_.back().get()->AddMaterial(material);
 	meshes_.back().get()->set_name("green_cube");
-	materials_.emplace_back();
-	materials_.back().reset(material);
 
 	//skybox
-	material = SkyboxMesh::CreateSkyboxMaterial("Skybox_Cube");
-	meshes_.push_back(std::make_unique<SkyboxMesh>(meshes_[0].get(), material));
-	materials_.emplace_back();
-	materials_.back().reset(material);
+	meshes_.push_back(std::make_unique<SkyboxMesh>(meshes_[0].get()));
 
 	//debug mesh
-	material = materials_[0].get(); // 의미 없는 아무 머터리얼
 	Mesh* debug_mesh = new CubeMesh();
 	debug_mesh->ClearNormals();
 	debug_mesh->ClearNormals();
 	debug_mesh->ClearTangents();
-	debug_mesh->AddMaterial(material);
-	debug_mesh->set_shader_type((int)ShaderType::kDebug);
 	debug_mesh->set_name("Debug_Mesh");
 	meshes_.emplace_back();
 	meshes_.back().reset(debug_mesh);
 
 	model_infos_.reserve(40);
-	model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/Dog00.bin", meshes_, materials_));
-	model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/Gun/classic.bin", meshes_, materials_));
-	model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/Gun/SM_Bullet_01.bin", meshes_, materials_));
-	model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/Monster/Hit_Dragon.bin", meshes_, materials_));
-	model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/Monster/Shot_Dragon.bin", meshes_, materials_));
+	model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/Dog00.bin", meshes_, materials_, textures_));
+	model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/Gun/classic.bin", meshes_, materials_, textures_));
+	model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/Gun/SM_Bullet_01.bin", meshes_, materials_, textures_));
+	model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/Monster/Hit_Dragon.bin", meshes_, materials_, textures_));
+	model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/Monster/Shot_Dragon.bin", meshes_, materials_, textures_));
 
 	BuildScene();
 
@@ -81,6 +71,23 @@ void RecorderScene::BuildMesh(ID3D12Device* device, ID3D12GraphicsCommandList* c
 	{
 		mesh->CreateShaderVariables(device, command_list);
 	}
+}
+
+void RecorderScene::BuildMaterial(ID3D12Device* device, ID3D12GraphicsCommandList* command_list)
+{
+	Material* material = new Material{ "green", (int)ShaderType::kStandardMesh, {0, 1, 0, 1} };
+	materials_.emplace_back();
+	materials_.back().reset(material);
+
+	material = new Material{ "Skybox_Cube2", (int)ShaderType::kSkybox };
+	textures_.push_back(std::make_unique<Texture>());
+	textures_.back()->name = "Skybox_Cube2";
+	textures_.back()->type = TextureType::kCubeMap;
+	material->AddTexture(textures_.back().get());
+	materials_.emplace_back();
+	materials_.back().reset(material);
+
+	Scene::BuildMaterial(device, command_list);
 }
 
 void RecorderScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* command_list)

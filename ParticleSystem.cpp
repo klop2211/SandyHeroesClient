@@ -1,11 +1,13 @@
 #include "stdafx.h"
 #include "ParticleSystem.h"
 #include "Mesh.h"
+#include "Material.h"
 #include "Scene.h"
 #include "MovementComponent.h"
 #include "MeshComponent.h"
 
-ParticleSystem::ParticleSystem(Mesh* paricle_mesh) : particle_mesh_(paricle_mesh)
+ParticleSystem::ParticleSystem(Mesh* particle_mesh, Material* particle_material) 
+	: particle_mesh_(particle_mesh), particle_material_(particle_material)
 {
 }
 
@@ -14,7 +16,7 @@ Object* ParticleSystem::CreateParticle(XMFLOAT3 position, XMFLOAT3 direction, fl
 	Object* particle = new Object();
 	particle->Scale(0.1f);
 	particle->set_position_vector(position);
-	particle->AddComponent(new MeshComponent(particle, particle_mesh_));
+	particle->AddComponent(new MeshComponent(particle, particle_mesh_, particle_material_));
 	MovementComponent* movement_component = new MovementComponent(particle);
 	movement_component->DisableFriction();
 	movement_component->DisableGarvity();

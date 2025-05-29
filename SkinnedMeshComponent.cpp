@@ -28,6 +28,11 @@ Component* SkinnedMeshComponent::GetCopy()
 
 void SkinnedMeshComponent::UpdateConstantBuffer(FrameResource* current_frame_resource, int cb_index)
 {
+	if (!is_visible_)
+		return;
+
+	constant_buffer_index_ = cb_index;
+
 	CBBoneTransform bone_transform_buffer{};
 
 	for (int i = 0; i < bone_frames_.size(); ++i)
@@ -38,6 +43,30 @@ void SkinnedMeshComponent::UpdateConstantBuffer(FrameResource* current_frame_res
 	UploadBuffer<CBBoneTransform>* bone_transform_cb = current_frame_resource->cb_bone_transform.get();
 	bone_transform_cb->CopyData(cb_index, bone_transform_buffer);
 
+}
+
+void SkinnedMeshComponent::Render(Material* material, ID3D12GraphicsCommandList* command_list, FrameResource* curr_frame_resource)
+{
+	if (!is_visible_)
+		return;
+
+	auto gpu_address = curr_frame_resource->cb_bone_transform->Resource()->GetGPUVirtualAddress();
+	const auto cb_size = d3d_util::CalculateConstantBufferSize((sizeof(CBBoneTransform)));
+	gpu_address += cb_size * constant_buffer_index_;
+
+	command_list->SetGraphicsRootConstantBufferView((int)RootParameterIndex::kBoneTransform, gpu_address);
+
+	int material_index{};
+	for (int i = 0; i < materials_.size(); ++i)
+	{
+		if (material == materials_[i])
+		{
+			material_index = i;
+			break;
+		}
+	}
+
+	mesh_->Render(command_list, material_index);
 }
 
 void SkinnedMeshComponent::AttachBoneFrames(const std::vector<std::string>& bone_names)

@@ -32,6 +32,8 @@ Component* DebugMeshComponent::GetCopy()
 
 void DebugMeshComponent::UpdateConstantBuffer(FrameResource* current_frame_resource, int cb_index)
 {
+	constant_buffer_index_ = cb_index;
+
 	CBObject object_buffer{};
 	XMMATRIX scale = XMMatrixScaling(bounds_.Extents.x, bounds_.Extents.y, bounds_.Extents.z);
 	XMMATRIX translate = XMMatrixTranslation(bounds_.Center.x, bounds_.Center.y, bounds_.Center.z);

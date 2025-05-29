@@ -5,8 +5,6 @@
 UIMesh::UIMesh(float screen_x, float screen_y, float screen_width, float screen_height)
     :screen_position_(screen_x, screen_y), screen_size_(screen_width, screen_height)
 {
-    shader_type_ = (int)ShaderType::kUI;
-
     positions_.reserve(4);
 
     float left = screen_x;
