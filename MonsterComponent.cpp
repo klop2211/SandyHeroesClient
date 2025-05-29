@@ -4,6 +4,7 @@
 #include "AnimatorComponent.h"
 #include "AnimationState.h"
 #include "MovementComponent.h"
+#include "UiMeshComponent.h"
 
 MonsterComponent::MonsterComponent(Object* owner) : Component(owner)
 {
@@ -26,6 +27,19 @@ void MonsterComponent::Update(float elapsed_time)
         return;
     }
 
+    auto head_socket = owner_->FindFrame("Ui_Head");
+    if (head_socket)
+    {
+        auto ui_meshes = Object::GetComponents<UiMeshComponent>(head_socket);
+        for (const auto& ui_mesh : ui_meshes)
+        {
+            if (ui_mesh->name() == "ProgressBar")
+            {
+                ui_mesh->set_ui_ratio({ hp_ / max_hp_, 1.f });
+            }
+        }
+    }
+
     if (hp_ <= 0)
     {
 		auto animation_state = Object::GetComponentInChildren<AnimatorComponent>(owner_)->animation_state();
@@ -44,7 +58,6 @@ void MonsterComponent::Update(float elapsed_time)
             return;
         }
     }
-
 
 	//TODO: 몬스터의 행동을 결정하는 AI 추가
 	//EX) ai->Update(owner_, elapsed_time);

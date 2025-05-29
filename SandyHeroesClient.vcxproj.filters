@@ -306,6 +306,9 @@
     <ClInclude Include="CutSceneTrack.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="UiMeshComponent.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="SandyHeroesClient.cpp">
@@ -465,6 +468,9 @@
       <Filter>2.Scene\Recorder</Filter>
     </ClCompile>
     <ClCompile Include="CutSceneTrack.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="UiMeshComponent.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>

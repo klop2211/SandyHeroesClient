@@ -44,6 +44,7 @@ public:
 	FrameResourceManager* frame_resource_manager() const;
 	DescriptorManager* descriptor_manager() const;
 	HWND main_wnd() const;
+	XMFLOAT2 client_size() const;
 
 
 private:

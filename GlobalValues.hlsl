@@ -18,8 +18,15 @@ cbuffer BoneOffsets : register(b2)
     matrix g_bone_offset_matrix[SKINNED_ANIMATION_BONES];
 }
 
+cbuffer UiInfo : register(b3)
+{
+    float2 g_screen_offset; // 좌상단 스크린 좌표 (픽셀)
+    float g_width_ratio;    // ui 크기 배율 0.0 ~ 1.0
+    float g_height_ratio; 
+}
+
 // 프레임 당 1번 갱신되는 상수 버퍼
-cbuffer RenderPass : register(b3)
+cbuffer RenderPass : register(b4)
 {
     matrix g_view_matrix;
     matrix g_projection_matrix;
@@ -27,6 +34,8 @@ cbuffer RenderPass : register(b3)
     float pad;
     float4 g_ambient_light;
     Light g_lights[MAX_LIGHTS];
+    float2 g_screen_size;
+    float2 pad_2;
 }
 
 #define TEXTURE_MASK_ALBEDO (1 << 0)
@@ -36,7 +45,7 @@ cbuffer RenderPass : register(b3)
 #define TEXTURE_MASK_NORMAL (1 << 4)
 #define TEXTURE_MASK_CUBE (1 << 5)
 
-cbuffer Material : register(b4)
+cbuffer Material : register(b5)
 {
     Material g_material;
     int g_texture_mask;

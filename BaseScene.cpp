@@ -30,6 +30,7 @@
 #include "BoxColliderComponent.h"
 #include "HitDragonAnimationState.h"
 #include "ShotDragonAnimationState.h"
+#include "UiMeshComponent.h"
 
 void BaseScene::Initialize(ID3D12Device* device, ID3D12GraphicsCommandList* command_list, ID3D12RootSignature* root_signature, GameFramework* game_framework)
 {
@@ -70,10 +71,22 @@ void BaseScene::BuildMesh(ID3D12Device* device, ID3D12GraphicsCommandList* comma
 	constexpr float cross_hair_size = 64.f;
 	float ui_width = cross_hair_size;
 	float ui_height = cross_hair_size;
-	float ui_x = kDefaultFrameBufferWidth / 2.f - ui_width / 2.f;
-	float ui_y = kDefaultFrameBufferHeight / 2.f - ui_height / 2.f;
+	float ui_x = game_framework_->client_size().x / 2.f - ui_width / 2.f;
+	float ui_y = game_framework_->client_size().y / 2.f - ui_height / 2.f;
 	meshes_.push_back(std::make_unique<UIMesh>(ui_x, ui_y, ui_width, ui_height));
 	meshes_.back().get()->set_name("CrossHair");
+
+	//Hp Bar
+	constexpr float hp_bar_width = 100.f;
+	constexpr float hp_bar_height = 15.f;
+	ui_width = hp_bar_width;
+	ui_height = hp_bar_height;
+	meshes_.push_back(std::make_unique<UIMesh>(ui_width, ui_height, 0.01));
+	meshes_.back().get()->set_name("ProgressBarBackground");
+	ui_width = hp_bar_width - 5;
+	ui_height = hp_bar_height - 5;
+	meshes_.push_back(std::make_unique<UIMesh>(ui_width, ui_height));
+	meshes_.back().get()->set_name("ProgressBar");
 
 	//skybox
 	meshes_.push_back(std::make_unique<SkyboxMesh>(meshes_[0].get()));
@@ -154,6 +167,22 @@ void BaseScene::BuildMaterial(ID3D12Device* device, ID3D12GraphicsCommandList* c
 	materials_.emplace_back();
 	materials_.back().reset(material);
 
+	material = new Material{ "ProgressBarBackground", (int)ShaderType::kUI };
+	textures_.push_back(std::make_unique<Texture>());
+	textures_.back()->name = "Progress_Bar_Background";
+	textures_.back()->type = TextureType::kAlbedoMap;
+	material->AddTexture(textures_.back().get());
+	materials_.emplace_back();
+	materials_.back().reset(material);
+
+	material = new Material{ "HpBar", (int)ShaderType::kUI };
+	textures_.push_back(std::make_unique<Texture>());
+	textures_.back()->name = "Hp_Bar_Red";
+	textures_.back()->type = TextureType::kAlbedoMap;
+	material->AddTexture(textures_.back().get());
+	materials_.emplace_back();
+	materials_.back().reset(material);
+
 	material = new Material{ "Skybox_Cube2", (int)ShaderType::kSkybox };
 	textures_.push_back(std::make_unique<Texture>());
 	textures_.back()->name = "Skybox_Cube2";
@@ -183,6 +212,7 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 	//TODO: 각 메쉬의 컴포넌트 연결 개수를 파악하면 아래 수치를 디테일하게 설정할 수 있을것 같다..
 	cb_object_capacity_ = 15000;
 	cb_skinned_mesh_object_capacity_ = 10000;
+	cb_ui_mesh_capacity_ = 100;
 
 	ShowCursor(false);
 
@@ -221,7 +251,7 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 	player_gun_frame->AddChild(model_infos_[1]->GetInstance());
 	player_gun_frame = player_gun_frame->child();
 	GunComponent* player_gun = new GunComponent(player_gun_frame);
-	player_gun->LoadGunInfo("classic");
+	player_gun->LoadGunInfo("specter");
 	player_gun_frame->AddComponent(player_gun);
 	player_gun_frame->Rotate(0, 170, -17);
 
@@ -245,8 +275,10 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 
 	//Create CroosHair
 	Object* ui = new Object();
-	ui->AddComponent(new MeshComponent(ui, 
-		Scene::FindMesh("CrossHair", meshes_), Scene::FindMaterial("CrossHair", materials_)));
+	auto ui_mesh_component = new UiMeshComponent(ui,
+		Scene::FindMesh("CrossHair", meshes_), Scene::FindMaterial("CrossHair", materials_), this);
+	ui_mesh_component->set_is_static(true);
+	ui->AddComponent(ui_mesh_component);
 	AddObject(ui);
 
 	//Create Skybox
@@ -306,6 +338,20 @@ void BaseScene::CreateMonsterSpawner()
 	//hit dragon
 	ModelInfo* hit_dragon = FindModelInfo("Hit_Dragon");
 	hit_dragon->hierarchy_root()->set_collide_type(true, true);
+	auto ui_head_socket = hit_dragon->hierarchy_root()->FindFrame("Ui_Head");
+
+	auto ui_material = Scene::FindMaterial("ProgressBarBackground", materials_);
+	auto ui_mesh_component = new UiMeshComponent(ui_head_socket,
+		Scene::FindMesh("ProgressBarBackground", meshes_), ui_material, this);
+	ui_material->DeleteMeshComponent(ui_mesh_component);
+	ui_head_socket->AddComponent(ui_mesh_component);
+
+	ui_material = Scene::FindMaterial("HpBar", materials_);
+	ui_mesh_component = new UiMeshComponent(ui_head_socket,
+		Scene::FindMesh("ProgressBar", meshes_), ui_material, this);
+	ui_material->DeleteMeshComponent(ui_mesh_component);
+	ui_head_socket->AddComponent(ui_mesh_component);
+
 	auto animator = Object::GetComponentInChildren<AnimatorComponent>(hit_dragon->hierarchy_root());
 	animator->set_animation_state(new HitDragonAnimationState);
 	int hit_spawner_id = 0;
@@ -314,6 +360,20 @@ void BaseScene::CreateMonsterSpawner()
 	//shot dragon
 	ModelInfo* shot_dragon = FindModelInfo("Shot_Dragon");
 	shot_dragon->hierarchy_root()->set_collide_type(true, true);
+	ui_head_socket = shot_dragon->hierarchy_root()->FindFrame("Ui_Head");
+
+	ui_material = Scene::FindMaterial("ProgressBarBackground", materials_);
+	ui_mesh_component = new UiMeshComponent(ui_head_socket,
+		Scene::FindMesh("ProgressBarBackground", meshes_), ui_material, this);
+	ui_material->DeleteMeshComponent(ui_mesh_component);
+	ui_head_socket->AddComponent(ui_mesh_component);
+
+	ui_material = Scene::FindMaterial("HpBar", materials_);
+	ui_mesh_component = new UiMeshComponent(ui_head_socket,
+		Scene::FindMesh("ProgressBar", meshes_), ui_material, this);
+	ui_material->DeleteMeshComponent(ui_mesh_component);
+	ui_head_socket->AddComponent(ui_mesh_component);
+
 	animator = Object::GetComponentInChildren<AnimatorComponent>(shot_dragon->hierarchy_root());
 	animator->set_animation_state(new ShotDragonAnimationState);
 	int shot_spawner_id = 0;

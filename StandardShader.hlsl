@@ -69,6 +69,14 @@ VertexOut SkinnedMeshVS(SkinnedMeshVertexIn v_in)
 
 float4 PS(VertexOut p_in) : SV_Target
 {
+    const float fog_start = 150.f;
+    const float fog_range = 400.f;
+    const float4 fog_color = float4(1.0, 0.8, 0.6, 1.f);
+    float dist_to_eye = length(g_camera_position - p_in.position_w);
+
+    //조명연산이 안개에 의해 가려지면 조명연산을 하지 않음
+    if(dist_to_eye >= fog_range)
+        return float4(1.0, 0.8, 0.6, 1.f);
     
     float4 diffuse_albedo = g_material.albedo_color;
     if(g_texture_mask & TEXTURE_MASK_ALBEDO)
@@ -122,10 +130,6 @@ float4 PS(VertexOut p_in) : SV_Target
     float4 lit_color = ambient + direct_light + emission_color;
     float4 result = lit_color;
     
-    const float fog_start = 150.f;
-    const float fog_range = 400.f;
-    const float4 fog_color = float4(1.0, 0.8, 0.6, 1.f);
-    float dist_to_eye = length(g_camera_position - p_in.position_w);
     float fog_amount = saturate((dist_to_eye - fog_start) / fog_range);
     result = lerp(lit_color, fog_color, fog_amount);
     

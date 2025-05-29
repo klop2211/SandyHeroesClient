@@ -68,6 +68,7 @@ public:
 	//getter
 	const std::vector<std::unique_ptr<Mesh>>& meshes() const;
 	CameraComponent* main_camera() const;
+	XMFLOAT2 screen_size() const;
 
 	//setter
 	void set_main_camera(CameraComponent* value);
@@ -86,6 +87,7 @@ protected:
 	// 이 용량만큼 상수버퍼가 gpu에 만들어진다.
 	int cb_object_capacity_{ 0 };
 	int cb_skinned_mesh_object_capacity_{ 0 };
+	int cb_ui_mesh_capacity_{ 0 };
 
 	CameraComponent* main_camera_{ nullptr };
 	InputControllerComponent* main_input_controller_{ nullptr };

@@ -9,6 +9,7 @@
 #include "MeshComponent.h"
 #include "SkinnedMesh.h"
 #include "DDSTextureLoader.h"
+#include "UIMesh.h"
 
 
 XMVECTOR Scene::GetPickingPointAtWorld(float sx, float sy, Object* picked_object)
@@ -201,6 +202,11 @@ CameraComponent* Scene::main_camera() const
 	return main_camera_;
 }
 
+XMFLOAT2 Scene::screen_size() const
+{
+	return game_framework_->client_size();
+}
+
 void Scene::set_main_camera(CameraComponent* value)
 {
 	main_camera_ = value;
@@ -243,6 +249,8 @@ void Scene::UpdateRenderPassConstantBuffer(ID3D12GraphicsCommandList* command_li
 	cb_pass.lights[0].enable = true;
 	cb_pass.lights[0].type = 0;
 
+	cb_pass.screen_size = game_framework_->client_size();
+
 	//cb_pass.lights[1].strength = XMFLOAT3{ 1, 0, 0 };
 	//cb_pass.lights[1].falloff_start = 0.1;
 	//cb_pass.lights[1].direction = xmath_util_float3::Normalize(main_camera_->owner()->world_look_vector());
@@ -270,12 +278,18 @@ void Scene::UpdateObjectConstantBuffer(FrameResource* curr_frame_resource)
 {
 	int cb_object_index = 0;
 	int cb_skinned_mesh_index = 0;
+	int cb_ui_mesh_index = 0;
 	for (const auto& mesh : meshes_)
 	{
 		auto skinned_mesh = dynamic_cast<SkinnedMesh*>(mesh.get());
+		auto ui_mesh = dynamic_cast<UIMesh*>(mesh.get());
 		if (skinned_mesh)
 		{
 			skinned_mesh->UpdateConstantBuffer(curr_frame_resource, cb_skinned_mesh_index);
+		}
+		else if (ui_mesh)
+		{
+			ui_mesh->UpdateConstantBuffer(curr_frame_resource, cb_ui_mesh_index);
 		}
 		else
 		{
@@ -351,7 +365,7 @@ void Scene::BuildFrameResources(ID3D12Device* device)
 {
 	game_framework_->frame_resource_manager()->
 		ResetFrameResources(device, 1, cb_object_capacity_,
-			cb_skinned_mesh_object_capacity_, materials_.size());
+			cb_skinned_mesh_object_capacity_, materials_.size(), cb_ui_mesh_capacity_);
 }
 
 void Scene::BuildDescriptorHeap(ID3D12Device* device)

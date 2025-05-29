@@ -44,7 +44,7 @@ D3D12_BLEND_DESC UIShader::CreateBlendState()
 D3D12_DEPTH_STENCIL_DESC UIShader::CreateDepthStencilState()
 {
 	D3D12_DEPTH_STENCIL_DESC depth_stencil_desc{};
-	depth_stencil_desc.DepthEnable = FALSE;
+	depth_stencil_desc.DepthEnable = TRUE;
 	depth_stencil_desc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
 	depth_stencil_desc.DepthFunc = D3D12_COMPARISON_FUNC_LESS;
 	depth_stencil_desc.StencilEnable = FALSE;

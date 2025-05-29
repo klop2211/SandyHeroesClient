@@ -22,11 +22,11 @@ public:
 
     virtual void UpdateConstantBuffer(FrameResource* current_frame_resource, int cb_index);
 
+    virtual void Render(Material* material, ID3D12GraphicsCommandList* command_list, FrameResource* curr_frame_resource);
+
     void AddMaterial(Material* material);
 
     bool ChangeMaterial(int index, Material* material);
-
-    virtual void Render(Material* material, ID3D12GraphicsCommandList* command_list, FrameResource* curr_frame_resource);
 
     bool IsVisible() const;
 

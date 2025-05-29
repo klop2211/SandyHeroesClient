@@ -25,8 +25,8 @@ Object* ParticleSystem::CreateParticle(XMFLOAT3 position, XMFLOAT3 direction, fl
 	movement_component->set_max_speed_xz(speed);
 	particle->AddComponent(movement_component);
 
-	constexpr float kMinLifeTime = 0.4f;
-	constexpr float kMaxLifeTime = 1.f;
+	constexpr float kMinLifeTime = 0.2f;
+	constexpr float kMaxLifeTime = 0.7f;
 	std::uniform_real_distribution<float> dist(kMinLifeTime, kMaxLifeTime);
 	float life_time{ dist(kRandomGenerator) };
 	particle_list_.emplace_back(particle, life_time);

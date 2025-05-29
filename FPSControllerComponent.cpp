@@ -231,16 +231,22 @@ void FPSControllerComponent::Update(float elapsed_time)
 		GunComponent* gun = Object::GetComponentInChildren<GunComponent>(owner_);
 		if (gun && (gun->fire_type() == GunFireType::kAuto))
 		{
+			// 1. 총구 위치
 			XMFLOAT3 gun_shoting_point{ gun->owner()->world_position_vector() };
 
+			// 2. 피킹 지점(월드 좌표계)
 			int sx = mouse_xy_.x;
 			int sy = mouse_xy_.y;
 			Object* picked_object = nullptr;
-			XMVECTOR picking_point_w = scene_->GetPickingPointAtWorld(sx, sy, picked_object);
 
+			//TODO: 피킹 처리 디버깅 후 아래 코드를 피킹된 좌표로 변경
+			XMVECTOR picking_point_w = XMLoadFloat3(&(camera_object_->world_position_vector() + (camera_object_->world_look_vector() * 100.f)));
+
+
+			// 3. 1번에서 2번을 향하는 총알 발사
 			XMFLOAT3 bullet_dir{};
 			XMStoreFloat3(&bullet_dir, XMVector3Normalize(picking_point_w - XMLoadFloat3(&gun_shoting_point)));
-			Object* bullet_mesh = scene_->FindModelInfo("SM_Bullet_01")->GetInstance();
+			auto bullet_mesh = scene_->FindModelInfo("SM_Bullet_01")->GetInstance();
 			gun->FireBullet(bullet_dir, bullet_mesh);
 		}
 	}

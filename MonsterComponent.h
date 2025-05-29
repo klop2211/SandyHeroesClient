@@ -28,8 +28,10 @@ public:
 	float attack_force()const;
 
 private:
+	float max_hp_{ 120.f };
+
 	float shield_{};
-	float hp_{10.f};
+	float hp_{ 120.f };
 	float attack_force_{};
 
 	MonsterType monster_type_{ MonsterType::kNormal };

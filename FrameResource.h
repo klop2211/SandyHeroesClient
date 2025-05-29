@@ -24,7 +24,9 @@ struct CBPass
 	XMFLOAT3 camera_position;
 	float pad;
 	XMFLOAT4 ambient_light;
-	LightInfo lights[kMaxLights];
+	LightInfo lights[kMaxLights];    
+	XMFLOAT2 screen_size;
+	XMFLOAT2 pad_2;
 };
 
 // 일반 메쉬를 사용하는 오브젝트의 상수 버퍼
@@ -48,13 +50,19 @@ struct CBMaterial
 	int texture_mask;
 };
 
+struct CBUi
+{
+	XMFLOAT2 screen_offset;	// 좌상단 스크린 좌표 (픽셀)
+	float width_ratio;		// ui 크기 배율 0.0 ~ 1.0
+	float height_ratio;
+};
 
 // 게임에서 한 프레임에 사용하는 리소스에 대한 구조체
 struct FrameResource
 {
 public:
 	FrameResource(ID3D12Device* device, UINT pass_count,
-		UINT object_count, UINT skinned_mesh_object_count, UINT material_count)
+		UINT object_count, UINT skinned_mesh_object_count, UINT material_count, UINT ui_mesh_count)
 	{
 		device->CreateCommandAllocator(
 			D3D12_COMMAND_LIST_TYPE_DIRECT,
@@ -64,6 +72,7 @@ public:
 		cb_object = std::make_unique<UploadBuffer<CBObject>>(device, object_count, true);
 		cb_bone_transform = std::make_unique<UploadBuffer<CBBoneTransform>>(device, skinned_mesh_object_count, true);
 		cb_material = std::make_unique<UploadBuffer<CBMaterial>>(device, material_count, true);
+		cb_ui = std::make_unique<UploadBuffer<CBUi>>(device, ui_mesh_count, true);
 	}
 	FrameResource(const FrameResource& rhs) = delete;
 	FrameResource& operator=(const FrameResource& rhs) = delete;
@@ -75,6 +84,7 @@ public:
 	std::unique_ptr<UploadBuffer<CBObject>> cb_object;
 	std::unique_ptr<UploadBuffer<CBBoneTransform>> cb_bone_transform;
 	std::unique_ptr<UploadBuffer<CBMaterial>> cb_material;
+	std::unique_ptr<UploadBuffer<CBUi>> cb_ui;
 
 	UINT fence = 0;
 };

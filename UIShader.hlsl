@@ -15,8 +15,20 @@ struct VertexOut
 VertexOut VS(VertexIn v_in)
 {
     VertexOut v_out;
-    v_out.position = float4(v_in.position, 1.f);
+    
+    float3 scaled_pos = v_in.position;
+    scaled_pos.x *= g_width_ratio;
+    scaled_pos.y *= g_height_ratio;
+    
+    scaled_pos.xy += g_screen_offset;
+    
+    // ½ºÅ©¸° ¡æ NDC
+    float ndcX = (scaled_pos.x / g_screen_size.x) * 2.0f - 1.0f;
+    float ndcY = 1.0f - (scaled_pos.y / g_screen_size.y) * 2.0f;
+    
+    v_out.position = float4(ndcX, ndcY, v_in.position.z, 1.f);
     v_out.uv = v_in.uv;
+    
     return v_out;
 }
 

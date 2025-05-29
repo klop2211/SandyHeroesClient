@@ -191,6 +191,7 @@
     <ClInclude Include="TestControllerComponent.h" />
     <ClInclude Include="TestScene.h" />
     <ClInclude Include="Timer.h" />
+    <ClInclude Include="UiMeshComponent.h" />
     <ClInclude Include="UIShader.h" />
     <ClInclude Include="UploadBuffer.h" />
   </ItemGroup>
@@ -247,6 +248,7 @@
     <ClCompile Include="TestControllerComponent.cpp" />
     <ClCompile Include="TestScene.cpp" />
     <ClCompile Include="Timer.cpp" />
+    <ClCompile Include="UiMeshComponent.cpp" />
     <ClCompile Include="UIShader.cpp" />
   </ItemGroup>
   <ItemGroup>
