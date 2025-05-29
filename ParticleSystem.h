@@ -1,6 +1,7 @@
 #pragma once
 
 class Mesh;
+class Material;
 class Scene;
 class Object;
 
@@ -15,7 +16,7 @@ class ParticleSystem
 {
 public:
 	ParticleSystem() {}
-	ParticleSystem(Mesh* paricle_mesh);
+	ParticleSystem(Mesh* paricle_mesh, Material* particle_material);
 	~ParticleSystem() {}
 
 	Object* CreateParticle(XMFLOAT3 position, XMFLOAT3 direction, float speed);
@@ -25,7 +26,7 @@ public:
 
 private:
 	Mesh* particle_mesh_{ nullptr };
-
+	Material* particle_material_{ nullptr };
 	std::list<Particle> particle_list_;
 
 };

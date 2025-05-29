@@ -37,38 +37,38 @@ void BaseScene::Initialize(ID3D12Device* device, ID3D12GraphicsCommandList* comm
 {
 	Scene::Initialize(device, command_list, root_signature, game_framework);
 
-	particle_system_ = std::make_unique<ParticleSystem>(Scene::FindMesh("green_cube", meshes_));
+	particle_system_ = std::make_unique<ParticleSystem>(Scene::FindMesh("green_cube", meshes_), 
+		Scene::FindMaterial("green", materials_));
 }
 
 void BaseScene::BuildShader(ID3D12Device* device, ID3D12RootSignature* root_signature)
 {
 	constexpr int shader_count = 6;
 	shaders_.reserve(shader_count);
-	shaders_.push_back(std::make_unique<StandardMeshShader>());
-	shaders_.push_back(std::make_unique<StandardSkinnedMeshShader>());
-	shaders_.push_back(std::make_unique<SkyboxShader>());
-	shaders_.push_back(std::make_unique<DebugShader>());
-	shaders_.push_back(std::make_unique<UIShader>());
-	shaders_.push_back(std::make_unique<TransparentShader>());
-	shaders_.push_back(std::make_unique<BreathingShader>());
 
-	for (int i = 0; i < shaders_.size(); ++i)
+	shaders_[(int)ShaderType::kStandardMesh] = std::make_unique<StandardMeshShader>();
+	shaders_[(int)ShaderType::kStandardSkinnedMesh] = std::make_unique<StandardSkinnedMeshShader>();
+	shaders_[(int)ShaderType::kSkybox] = std::make_unique<SkyboxShader>();
+	shaders_[(int)ShaderType::kDebug] = std::make_unique<DebugShader>();
+	shaders_[(int)ShaderType::kUI] = std::make_unique<UIShader>();
+
+
+	//TODO: ���̴��� �����Ǵ� ���׸��� ���� Reserve
+
+	for (const auto& [type, shader] : shaders_)
 	{
-		shaders_[i]->CreateShader(device, root_signature);
+		shader->CreateShader(device, root_signature);
 	}
 }
 
 using namespace file_load_util;
 void BaseScene::BuildMesh(ID3D12Device* device, ID3D12GraphicsCommandList* command_list)
-{
-	meshes_.reserve(50);
+{	
+	//������ �̸� �ε��Ǵ� �������� ������ �� �׽�Ʈ �������� �̸� �˼� ����
+	constexpr UINT kMeshCount{ 60 };
+	meshes_.reserve(kMeshCount);
 	meshes_.push_back(std::make_unique<CubeMesh>());
-	Material* material = new Material{};
-	material->set_albedo_color(0, 1, 0, 1);
-	meshes_.back().get()->AddMaterial(material);
 	meshes_.back().get()->set_name("green_cube");
-	materials_.emplace_back();
-	materials_.back().reset(material);
 
 	//CrossHair
 	constexpr float cross_hair_size = 64.f;
@@ -77,43 +77,28 @@ void BaseScene::BuildMesh(ID3D12Device* device, ID3D12GraphicsCommandList* comma
 	float ui_x = kDefaultFrameBufferWidth / 2.f - ui_width / 2.f;
 	float ui_y = kDefaultFrameBufferHeight / 2.f - ui_height / 2.f;
 	meshes_.push_back(std::make_unique<UIMesh>(ui_x, ui_y, ui_width, ui_height));
-	material = new Material{};
-	material->set_name("CrossHair");
-	Texture* ui_texture = new Texture{ "CrossHair",
-	 -1,
-	TextureType::kAlbedoMap
-	};
-	material->AddTexture(ui_texture);
-	meshes_.back().get()->AddMaterial(material);
 	meshes_.back().get()->set_name("CrossHair");
-	materials_.emplace_back();
-	materials_.back().reset(material);
 
 	//skybox
-	material = SkyboxMesh::CreateSkyboxMaterial("Skybox_Cube");
-	meshes_.push_back(std::make_unique<SkyboxMesh>(meshes_[0].get(), material));
-	materials_.emplace_back();
-	materials_.back().reset(material);
+	meshes_.push_back(std::make_unique<SkyboxMesh>(meshes_[0].get()));
 
 	//debug mesh
-	material = materials_[0].get(); // 의미 없는 아무 머터리얼
 	Mesh* debug_mesh = new CubeMesh();
 	debug_mesh->ClearNormals();
 	debug_mesh->ClearNormals();
 	debug_mesh->ClearTangents();
-	debug_mesh->AddMaterial(material);
-	debug_mesh->set_shader_type((int)ShaderType::kDebug);
 	debug_mesh->set_name("Debug_Mesh");
 	meshes_.emplace_back();
 	meshes_.back().reset(debug_mesh);
 
-
-	model_infos_.reserve(40);
-	model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/Dog00.bin", meshes_, materials_));
-	model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/Gun/classic.bin", meshes_, materials_));
-	model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/Gun/SM_Bullet_01.bin", meshes_, materials_));
-	model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/Monster/Hit_Dragon.bin", meshes_, materials_));
-	model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/Monster/Shot_Dragon.bin", meshes_, materials_));
+	constexpr UINT kModelInfoCount{ 40 };
+	model_infos_.reserve(kModelInfoCount);
+	model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/Dog00.bin", meshes_, materials_, textures_));
+	model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/Gun/classic.bin", meshes_, materials_, textures_));
+	model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/Gun/SM_Bullet_01.bin", meshes_, materials_, textures_));
+	model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/Monster/Hit_Dragon.bin", meshes_, materials_, textures_));
+	model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/Monster/Shot_Dragon.bin", meshes_, materials_, textures_));
+	model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/Monster/Bomb_Dragon.bin", meshes_, materials_, textures_));
 
 	//BuildScene("Base");
 
@@ -143,7 +128,7 @@ void BaseScene::BuildMesh(ID3D12Device* device, ID3D12GraphicsCommandList* comma
 			ReadStringFromFile(scene_file, load_token); // <Transfrom>
 			XMFLOAT4X4 transfrom = ReadFromFile<XMFLOAT4X4>(scene_file);
 
-			model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/World/" + object_name + ".bin", meshes_, materials_));
+			model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/World/" + object_name + ".bin", meshes_, materials_, textures_));
 
 			object_list_.emplace_back();
 			object_list_.back().reset(model_infos_.back()->GetInstance());
@@ -166,6 +151,44 @@ void BaseScene::BuildMesh(ID3D12Device* device, ID3D12GraphicsCommandList* comma
 			meshes_[i]->set_shader_type((int)ShaderType::kBreathing);
 		}
 	}
+}
+
+void BaseScene::BuildMaterial(ID3D12Device* device, ID3D12GraphicsCommandList* command_list)
+{
+	Material* material = new Material{ "green", (int)ShaderType::kStandardMesh, {0, 1, 0, 1} };
+	materials_.emplace_back();
+	materials_.back().reset(material);
+
+	material = new Material{ "CrossHair", (int)ShaderType::kUI };
+	textures_.push_back(std::make_unique<Texture>());
+	textures_.back()->name = "CrossHair";
+	textures_.back()->type = TextureType::kAlbedoMap;
+	material->AddTexture(textures_.back().get());
+	materials_.emplace_back();
+	materials_.back().reset(material);
+
+	material = new Material{ "Skybox_Cube2", (int)ShaderType::kSkybox };
+	textures_.push_back(std::make_unique<Texture>());
+	textures_.back()->name = "Skybox_Cube2";
+	textures_.back()->type = TextureType::kCubeMap;
+	material->AddTexture(textures_.back().get());
+	materials_.emplace_back();
+	materials_.back().reset(material);
+
+	material = new Material{ "debug", (int)ShaderType::kDebug };
+	materials_.emplace_back();
+	materials_.back().reset(material);
+
+	material = new Material{ "Face27", (int)ShaderType::kStandardSkinnedMesh };
+	textures_.push_back(std::make_unique<Texture>());
+	textures_.back()->name = "Face27";
+	textures_.back()->type = TextureType::kAlbedoMap;
+	material->AddTexture(textures_.back().get());
+	materials_.emplace_back();
+	materials_.back().reset(material);
+
+
+	Scene::BuildMaterial(device, command_list);
 }
 
 void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* command_list)
@@ -235,12 +258,14 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 
 	//Create CroosHair
 	Object* ui = new Object();
-	ui->AddComponent(new MeshComponent(ui, Scene::FindMesh("CrossHair", meshes_)));
+	ui->AddComponent(new MeshComponent(ui, 
+		Scene::FindMesh("CrossHair", meshes_), Scene::FindMaterial("CrossHair", materials_)));
 	AddObject(ui);
 
 	//Create Skybox
 	Object* skybox = new Object();
-	skybox->AddComponent(new MeshComponent(skybox, Scene::FindMesh("Skybox", meshes_)));
+	skybox->AddComponent(new MeshComponent(skybox, 
+		Scene::FindMesh("Skybox", meshes_), Scene::FindMaterial("Skybox_Cube2", materials_)));
 	AddObject(skybox);
 
 	//Create sub camera (free view)
@@ -250,6 +275,7 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 		new CameraComponent(camera_object, 0.3, 10000,
 			(float)kDefaultFrameBufferWidth / (float)kDefaultFrameBufferHeight, 58);
 	TestControllerComponent* controller = new TestControllerComponent(camera_object);
+	controller->set_client_wnd(game_framework_->main_wnd());
 	MovementComponent* movement = new MovementComponent(camera_object);
 	movement->DisableGarvity();
 	camera_object->AddComponent(movement);
@@ -262,6 +288,7 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 	//모든 메쉬 있는 객체에 메쉬 콜라이더 추가(주의사항: 새롭게 만들어지는 메쉬있는 객체는 메쉬콜라이더가 없음)
 	//+ 디버그용 메쉬 추가
 	Mesh* debug_mesh = Scene::FindMesh("Debug_Mesh", meshes_);
+	const auto& const debug_material = Scene::FindMaterial("debug", materials_);
 	for (auto& mesh : meshes_)
 	{
 		auto& mesh_component_list = mesh->mesh_component_list();
@@ -273,7 +300,9 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 			object->AddComponent(mesh_collider);
 			if (mesh->name() != "Debug_Mesh")
 			{
-				object->AddComponent(new DebugMeshComponent(object, debug_mesh, mesh->bounds()));
+				auto debug_mesh_component = new DebugMeshComponent(object, debug_mesh, mesh->bounds());
+				debug_mesh_component->AddMaterial(debug_material);
+				object->AddComponent(debug_mesh_component);
 			}
 		}
 	}
@@ -294,13 +323,13 @@ void BaseScene::CreateMonsterSpawner()
 	animator->set_animation_state(new HitDragonAnimationState);
 	int hit_spawner_id = 0;
 
+
 	//shot dragon
 	ModelInfo* shot_dragon = FindModelInfo("Shot_Dragon");
 	shot_dragon->hierarchy_root()->set_collide_type(true, true);
 	animator = Object::GetComponentInChildren<AnimatorComponent>(shot_dragon->hierarchy_root());
 	animator->set_animation_state(new ShotDragonAnimationState);
 	int shot_spawner_id = 0;
-
 
 	//Stage 1
 	{
@@ -370,6 +399,49 @@ void BaseScene::CreateMonsterSpawner()
 		stage_monster_spawner_list_[0].push_back(spawner_component);
 
 	}
+
+	//Stage 2
+	{
+		spawner = new Object();
+		spawner->set_name("Hit_Dragon_Spawner_" + std::to_string(++hit_spawner_id));
+		spawner->set_position_vector(235.8f, 10.6f, 20.5f);
+		monster_component = new MonsterComponent(nullptr);
+		monster_component->set_target(player_);
+		spawner_component = new SpawnerComponent(spawner, this, hit_dragon);
+		spawner_component->SetSpawnerInfo(3, 0.f, 5.f);
+		spawner_component->AddComponent(monster_component);
+		spawner_component->AddComponent(std::make_unique<MovementComponent>(nullptr));
+		spawner->AddComponent(spawner_component);
+		AddObject(spawner);
+		stage_monster_spawner_list_[1].push_back(spawner_component);
+
+		spawner = new Object();
+		spawner->set_name("Hit_Dragon_Spawner_" + std::to_string(++hit_spawner_id));
+		spawner->set_position_vector(235.8f, 1.62f, 95.3f);
+		monster_component = new MonsterComponent(nullptr);
+		monster_component->set_target(player_);
+		spawner_component = new SpawnerComponent(spawner, this, hit_dragon);
+		spawner_component->SetSpawnerInfo(3, 4.f, 5.f);
+		spawner_component->AddComponent(monster_component);
+		spawner_component->AddComponent(std::make_unique<MovementComponent>(nullptr));
+		spawner->AddComponent(spawner_component);
+		AddObject(spawner);
+		stage_monster_spawner_list_[1].push_back(spawner_component);
+
+		//spawner = new Object();
+		//spawner->set_name("Shot_Dragon_Spawner_" + std::to_string(++shot_spawner_id));
+		//spawner->set_position_vector(97.1f, 20.8f, 40.f);
+		//monster_component = new MonsterComponent(nullptr);
+		//monster_component->set_target(player_);
+		//spawner_component = new SpawnerComponent(spawner, this, shot_dragon);
+		//spawner_component->SetSpawnerInfo(3, 9.f, 5.f);
+		//spawner_component->AddComponent(monster_component);
+		//spawner_component->AddComponent(std::make_unique<MovementComponent>(nullptr));
+		//spawner->AddComponent(spawner_component);
+		//AddObject(spawner);
+		//stage_monster_spawner_list_[1].push_back(spawner_component);
+
+	}
 }
 
 void BaseScene::ActivateStageMonsterSpawner(int stage_num)
@@ -384,71 +456,8 @@ void BaseScene::ActivateStageMonsterSpawner(int stage_num)
 	}
 }
 
-void BaseScene::Render(ID3D12GraphicsCommandList* command_list)
-{
-	main_camera_->UpdateCameraInfo();
-
-	CBPass cb_pass{};
-	cb_pass.view_matrix = xmath_util_float4x4::TransPose(main_camera_->view_matrix());
-	cb_pass.proj_matrix = xmath_util_float4x4::TransPose(main_camera_->projection_matrix());
-	cb_pass.camera_position = main_camera_->world_position();
-	cb_pass.total_time = total_time;
-
-	//TODO: 조명 관련 클래스를 생성후 그것을 사용하여 아래 정보 업데이트(현재는 테스트용 하드코딩)
-	cb_pass.ambient_light = XMFLOAT4{ 0.01,0.01,0.01, 1 };
-	cb_pass.lights[0].strength = XMFLOAT3{ 0.7, 0.7, 0.7 };
-	cb_pass.lights[0].direction = XMFLOAT3{ 0, -1, 0 };
-	cb_pass.lights[0].enable = true;
-	cb_pass.lights[0].type = 0;
-
-	//cb_pass.lights[1].strength = XMFLOAT3{ 1, 0, 0 };
-	//cb_pass.lights[1].falloff_start = 0.1;
-	//cb_pass.lights[1].direction = xmath_util_float3::Normalize(main_camera_->owner()->world_look_vector());
-	//cb_pass.lights[1].falloff_end = 100.f;
-	//cb_pass.lights[1].position = main_camera_->owner()->world_position_vector();
-	//cb_pass.lights[1].spot_power = 14;
-	//cb_pass.lights[1].enable = true;
-	//cb_pass.lights[1].type = 2;
-
-	for (int i = 1; i < 16; ++i)
-		cb_pass.lights[i].enable = false;
-
-	FrameResourceManager* frame_resource_manager = game_framework_->frame_resource_manager();
-	frame_resource_manager->curr_frame_resource()->cb_pass.get()->CopyData(0, cb_pass);
-
-	//25.02.23 수정
-	//기존 루트 디스크립터 테이블에서 루트 CBV로 변경
-	D3D12_GPU_VIRTUAL_ADDRESS cb_pass_address =
-		frame_resource_manager->curr_frame_resource()->cb_pass.get()->Resource()->GetGPUVirtualAddress();
-
-	command_list->SetGraphicsRootConstantBufferView((int)RootParameterIndex::kRenderPass, cb_pass_address);
-
-	Mesh::ResetCBObjectCurrentIndex();
-	SkinnedMesh::ResetCBSkinnedMeshObjectCurrentIndex();
-
-	// 단순한 배치 처리 
-	// 씬에서 사용하는 쉐이더가 n개이면 SetPipelineState가 n번 호출된다
-	for (const std::unique_ptr<Shader>& shader : shaders_)
-	{
-		command_list->SetPipelineState(shader->GetPipelineState());
-		if (shader->shader_type() == ShaderType::kDebug && !is_render_debug_mesh_)
-		{
-			continue;
-		}
-		for (const std::unique_ptr<Mesh>& mesh : meshes_)
-		{
-			if (mesh->shader_type() == (int)shader->shader_type())
-			{
-				mesh->Render(command_list, frame_resource_manager, game_framework_->descriptor_manager());
-			}
-		}
-	}
-
-}
-
 bool BaseScene::ProcessInput(UINT id, WPARAM w_param, LPARAM l_param, float time)
 {
-
 	if (main_input_controller_)
 	{
 		if (main_input_controller_->ProcessInput(id, w_param, l_param, time))
@@ -470,7 +479,7 @@ bool BaseScene::ProcessInput(UINT id, WPARAM w_param, LPARAM l_param, float time
 			{
 				main_camera_ = new_camera;
 			}
-			main_input_controller_ = Object::GetComponent<InputControllerComponent>(camera);
+			main_input_controller_ = Object::GetComponent<TestControllerComponent>(camera);
 			return true;
 		}
 		if (w_param == 'L')
@@ -504,6 +513,18 @@ bool BaseScene::ProcessInput(UINT id, WPARAM w_param, LPARAM l_param, float time
 			for (auto& mesh : mesh_list)
 			{
 				mesh->set_is_visible(!mesh->IsVisible());
+			}
+			return true;
+		}
+		if (w_param == '0')
+		{
+			auto& mesh_list = Object::GetComponentsInChildren<SkinnedMeshComponent>(player_);
+			for (auto& mesh : mesh_list)
+			{
+				if (mesh->owner()->name() == "Face01")
+				{
+					mesh->ChangeMaterial(0, Scene::FindMaterial("Face27", materials_));
+				}
 			}
 			return true;
 		}

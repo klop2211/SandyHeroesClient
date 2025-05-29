@@ -147,6 +147,7 @@
     <ClInclude Include="Component.h" />
     <ClInclude Include="CubeMesh.h" />
     <ClInclude Include="CutSceneRecorder.h" />
+    <ClInclude Include="CutSceneTrack.h" />
     <ClInclude Include="d3dx12.h" />
     <ClInclude Include="DDSTextureLoader.h" />
     <ClInclude Include="DebugMeshComponent.h" />
@@ -170,6 +171,7 @@
     <ClInclude Include="MovementComponent.h" />
     <ClInclude Include="ParticleSystem.h" />
     <ClInclude Include="PlayerAnimationState.h" />
+    <ClInclude Include="RecorderScene.h" />
     <ClInclude Include="RecordingScene.h" />
     <ClInclude Include="ShotDragonAnimationState.h" />
     <ClInclude Include="SpawnerComponent.h" />
@@ -207,6 +209,7 @@
     <ClCompile Include="Component.cpp" />
     <ClCompile Include="CubeMesh.cpp" />
     <ClCompile Include="CutSceneRecorder.cpp" />
+    <ClCompile Include="CutSceneTrack.cpp" />
     <ClCompile Include="DDSTextureLoader.cpp" />
     <ClCompile Include="DebugMeshComponent.cpp" />
     <ClCompile Include="DebugShader.cpp" />
@@ -228,6 +231,7 @@
     <ClCompile Include="MovementComponent.cpp" />
     <ClCompile Include="ParticleSystem.cpp" />
     <ClCompile Include="PlayerAnimationState.cpp" />
+    <ClCompile Include="RecorderScene.cpp" />
     <ClCompile Include="RecordingScene.cpp" />
     <ClCompile Include="ShotDragonAnimationState.cpp" />
     <ClCompile Include="SpawnerComponent.cpp" />

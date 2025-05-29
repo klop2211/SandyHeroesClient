@@ -4,15 +4,28 @@
 #include "Object.h"
 #include "FrameResource.h"
 #include "DescriptorManager.h"
+#include "Material.h"
+#include "Scene.h"
 
 MeshComponent::MeshComponent(Object* owner, Mesh* mesh) : Component(owner), mesh_(mesh)
 {
 	mesh->AddMeshComponent(this);
 }
 
+MeshComponent::MeshComponent(Object* owner, Mesh* mesh, Material* material) : Component(owner), mesh_(mesh)
+{
+	mesh->AddMeshComponent(this);
+	AddMaterial(material);
+}
+
 MeshComponent::MeshComponent(const MeshComponent& other) : Component(other), mesh_(other.mesh_)
 {
 	other.mesh_->AddMeshComponent(this);
+	materials_.reserve(other.materials_.size());
+	for (const auto& const material : other.materials_)
+	{
+		AddMaterial(material);
+	}
 }
 
 MeshComponent& MeshComponent::operator=(const MeshComponent& rhs)
@@ -30,6 +43,11 @@ MeshComponent::~MeshComponent()
 	{
 		mesh_->DeleteMeshComponent(this);
 	}
+
+	for (const auto& const material : materials_)
+	{
+		material->DeleteMeshComponent(this);
+	}
 }
 
 Component* MeshComponent::GetCopy()
@@ -39,12 +57,60 @@ Component* MeshComponent::GetCopy()
 
 void MeshComponent::UpdateConstantBuffer(FrameResource* current_frame_resource, int cb_index)
 {
+	if (!is_visible_)
+		return;
+	constant_buffer_index_ = cb_index;
+
 	CBObject object_buffer{};
 	XMStoreFloat4x4(&object_buffer.world_matrix,
 		XMMatrixTranspose(XMLoadFloat4x4(&owner_->world_matrix())));
 
 	UploadBuffer<CBObject>* object_cb = current_frame_resource->cb_object.get();
 	object_cb->CopyData(cb_index, object_buffer);
+}
+
+void MeshComponent::AddMaterial(Material* material)
+{
+	materials_.push_back(material);
+	material->AddMeshComponent(this);
+}
+
+bool MeshComponent::ChangeMaterial(int index, Material* material)
+{
+	if (materials_.size() < index)
+	{
+		return false;
+	}
+
+	materials_[index]->DeleteMeshComponent(this);
+	materials_[index] = material;
+	material->AddMeshComponent(this);
+
+	return true;
+}
+
+void MeshComponent::Render(Material* material, ID3D12GraphicsCommandList* command_list, 
+	FrameResource* curr_frame_resource)
+{
+	if (!is_visible_)
+		return;
+	auto gpu_address = curr_frame_resource->cb_object->Resource()->GetGPUVirtualAddress();
+	const auto cb_size = d3d_util::CalculateConstantBufferSize((sizeof(CBObject)));
+	gpu_address += cb_size * constant_buffer_index_;
+
+	command_list->SetGraphicsRootConstantBufferView((int)RootParameterIndex::kWorldMatrix, gpu_address);
+
+	int material_index{};
+	for (int i = 0; i < materials_.size(); ++i)
+	{
+		if (material == materials_[i])
+		{
+			material_index = i;
+			break;
+		}
+	}
+
+	mesh_->Render(command_list, material_index);
 }
 
 bool MeshComponent::IsVisible() const
@@ -66,3 +132,4 @@ void MeshComponent::set_mesh(Mesh* mesh)
 {
 	mesh_ = mesh;
 }
+

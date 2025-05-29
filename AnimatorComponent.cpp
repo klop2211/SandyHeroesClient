@@ -52,10 +52,8 @@ void AnimatorComponent::Update(float elapsed_time)
 
 	if (is_root_motion_animation_)
 	{
-		//TODO: animation track 구현 후 loop 상태의 애니메이션의 root motion 구현
-		XMFLOAT3 delta_translation = root_bone_frame_->position_vector() - before_translation_;
+		XMFLOAT3 delta_translation = root_bone_frame_->position_vector() - before_root_bone_position;
 		owner_->set_position_vector(owner_->position_vector() + delta_translation);
-		before_translation_ = root_bone_frame_->position_vector();
 	}
 	//root_bone_frame_->set_position_vector(before_root_bone_position);
 

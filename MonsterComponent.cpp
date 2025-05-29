@@ -63,10 +63,14 @@ void MonsterComponent::Update(float elapsed_time)
 			float angle = xmath_util_float3::AngleBetween(look, direction);
             if (angle > XM_PI / 180.f * 5.f)
             {
-                XMMATRIX rotation_matrix = XMMatrixRotationY(angle);
-                XMFLOAT4X4 transform_matrix = owner_->transform_matrix();
-                XMStoreFloat4x4(&transform_matrix, rotation_matrix * XMLoadFloat4x4(&transform_matrix));
-                owner_->set_transform_matrix(transform_matrix);
+                //회전 방향 연산
+				XMFLOAT3 cross = xmath_util_float3::CrossProduct(look, direction);
+				if (cross.y < 0)
+				{
+					angle = -angle;
+				}
+				angle = XMConvertToDegrees(angle);
+				owner_->Rotate(0.f, angle, 0.f);
             }
 
 			movement->MoveXZ(direction.x, direction.z, 5.f);

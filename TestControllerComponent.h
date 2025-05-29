@@ -15,5 +15,20 @@ public:
 
     virtual void Update(float elapsed_time);
 
+	virtual void set_client_wnd(HWND value) 
+	{
+		client_wnd_ = value;
+	}
+
+private:
+	HWND client_wnd_{ nullptr };
+
+	//이동속도
+	float move_speed_{ 25.f };
+	float move_max_speed_{ 70.f };
+	float move_min_speed_{ 5.f };
+
+	//회전속도
+	float rotate_speed_{ 0.1f };
 };
 

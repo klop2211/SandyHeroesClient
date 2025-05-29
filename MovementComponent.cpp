@@ -37,14 +37,16 @@ void MovementComponent::Update(float elapsed_time)
     }
 
     //최대 속력 제한
-	if (xmath_util_float3::Length(velocity_) > max_speed_)
+	float speed = xmath_util_float3::Length(velocity_);
+	XMFLOAT3 direction = xmath_util_float3::Normalize(velocity_);
+	if (speed > max_speed_)
 	{
-		velocity_ = xmath_util_float3::ScalarProduct(xmath_util_float3::Normalize(velocity_), max_speed_);
+		velocity_ = xmath_util_float3::ScalarProduct(direction, max_speed_);
 	}
 
     //xz 평면 이동에 필요한 변수들
     XMFLOAT3 velocity_xz{ velocity_.x, 0.f, velocity_.z };
-    XMFLOAT3 direction = xmath_util_float3::Normalize(velocity_xz);
+    XMFLOAT3 direction_xz = xmath_util_float3::Normalize(velocity_xz);
     float speed_xz = xmath_util_float3::Length(velocity_xz);
     constexpr float kFrictionAcceleration{ 70.f };
 
@@ -58,13 +60,27 @@ void MovementComponent::Update(float elapsed_time)
     //마찰 구현
     if (is_friction_)
     {
-        if (speed_xz < elapsed_time * kFrictionAcceleration)
+        if (is_gravity_)
         {
-            velocity_ = { 0, velocity_.y, 0 };
+            if (speed_xz < elapsed_time * kFrictionAcceleration)
+            {
+                velocity_ = { 0, velocity_.y, 0 };
+            }
+            else
+            {
+                velocity_ -= direction_xz * elapsed_time * kFrictionAcceleration;
+            }
         }
         else
         {
-            velocity_ -= direction * elapsed_time * kFrictionAcceleration;
+            if (speed < elapsed_time * kFrictionAcceleration)
+            {
+                velocity_ = { 0, 0, 0 };
+            }
+            else
+            {
+                velocity_ -= direction * elapsed_time * kFrictionAcceleration;
+            }
         }
     }
     owner_->set_position_vector(owner_->position_vector() + (velocity_ * elapsed_time));

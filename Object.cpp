@@ -138,6 +138,7 @@ CollideType Object::collide_type() const
 void Object::set_transform_matrix(const XMFLOAT4X4& value)
 {
 	transform_matrix_ = value;
+	ResetSRTFromTransformMatrix();
 }
 
 void Object::set_position_vector(const XMFLOAT3& value)
@@ -145,6 +146,8 @@ void Object::set_position_vector(const XMFLOAT3& value)
 	transform_matrix_._41 = value.x;
 	transform_matrix_._42 = value.y;
 	transform_matrix_._43 = value.z;
+
+	local_position_ = value;
 }
 
 void Object::set_position_vector(float x, float y, float z)
@@ -157,6 +160,7 @@ void Object::set_look_vector(const XMFLOAT3& value)
 	transform_matrix_._31 = value.x;
 	transform_matrix_._32 = value.y;
 	transform_matrix_._33 = value.z;
+	ResetSRTFromTransformMatrix();
 }
 
 void Object::set_right_vector(const XMFLOAT3& value)
@@ -164,6 +168,7 @@ void Object::set_right_vector(const XMFLOAT3& value)
 	transform_matrix_._11 = value.x;
 	transform_matrix_._12 = value.y;
 	transform_matrix_._13 = value.z;
+	ResetSRTFromTransformMatrix();
 }
 
 void Object::set_up_vector(const XMFLOAT3& value)
@@ -171,6 +176,7 @@ void Object::set_up_vector(const XMFLOAT3& value)
 	transform_matrix_._21 = value.x;
 	transform_matrix_._22 = value.y;
 	transform_matrix_._23 = value.z;
+	ResetSRTFromTransformMatrix();
 }
 
 void Object::set_name(const std::string& value)
@@ -197,6 +203,73 @@ void Object::set_collide_type(bool ground_check, bool wall_check)
 void Object::set_collide_type(const CollideType& collide_type)
 {
 	collide_type_ = collide_type;
+}
+
+void Object::set_local_scale(const XMFLOAT3& value)
+{
+	local_scale_ = value;
+
+	XMVECTOR s, r, t;
+	XMMatrixDecompose(&s, &r, &t, XMLoadFloat4x4(&transform_matrix_));
+	s = XMLoadFloat3(&local_scale_);
+	XMStoreFloat4x4(&transform_matrix_, XMMatrixAffineTransformation(s, XMVectorZero(), r, t));
+}
+
+void Object::set_local_rotation(const XMFLOAT3& value)
+{
+	local_rotation_ = value;
+	XMVECTOR rotation_quet = XMQuaternionRotationRollPitchYaw(
+		XMConvertToRadians(value.x), 
+		XMConvertToRadians(value.y),
+		XMConvertToRadians(value.z));
+	XMVECTOR s, r, t;
+	if (XMMatrixDecompose(&s, &r, &t, XMLoadFloat4x4(&transform_matrix_)))
+	{
+		XMStoreFloat4x4(&transform_matrix_, XMMatrixAffineTransformation(s, XMVectorZero(), rotation_quet, t));
+	}
+}
+
+void Object::set_local_position(const XMFLOAT3& value)
+{
+	local_position_ = value;
+
+	set_position_vector(value);
+}
+
+void Object::ResetSRTFromTransformMatrix()
+{
+	XMVECTOR s, r, t;
+	XMFLOAT4 rot_quaternion;
+	if (XMMatrixDecompose(&s, &r, &t, XMLoadFloat4x4(&transform_matrix_)))
+	{
+		XMStoreFloat3(&local_scale_, s);
+
+		XMStoreFloat4(&rot_quaternion, r);
+		float w = rot_quaternion.w;
+		float x = rot_quaternion.x;
+		float y = rot_quaternion.y;
+		float z = rot_quaternion.z;
+		float sinr_cosp = 2 * (w * x + y * z);
+		float cosr_cosp = 1 - 2 * (x * x + y * y);
+		float roll = atan2(sinr_cosp, cosr_cosp);  // Z축 회전
+
+		float sinp = 2 * (w * y - z * x);
+		float pitch;
+		if (abs(sinp) >= 1)
+			pitch = copysign(XM_PI / 2, sinp);      // Gimbal lock
+		else
+			pitch = asin(sinp);                    // X축 회전
+
+		float siny_cosp = 2 * (w * z + x * y);
+		float cosy_cosp = 1 - 2 * (y * y + z * z);
+		float yaw = atan2(siny_cosp, cosy_cosp);   // Y축 회전
+
+		local_rotation_.x = XMConvertToDegrees(pitch);
+		local_rotation_.y = XMConvertToDegrees(yaw);
+		local_rotation_.z = XMConvertToDegrees(roll);
+
+		XMStoreFloat3(&local_position_, t);
+	}
 }
 
 void Object::AddChild(Object* object)
@@ -280,19 +353,30 @@ void Object::Update(float elapsed_time)
 
 void Object::Rotate(float pitch, float yaw, float roll)
 {
-	XMMATRIX rotation = XMMatrixRotationRollPitchYaw(
-		XMConvertToRadians(pitch), XMConvertToRadians(yaw), XMConvertToRadians(roll));
+	local_rotation_.x += pitch;
+	local_rotation_.y += yaw;
+	local_rotation_.z += roll;
 
-	XMStoreFloat4x4(&transform_matrix_, rotation * XMLoadFloat4x4(&transform_matrix_));
+	XMVECTOR rotation_quet = XMQuaternionRotationRollPitchYaw(
+		XMConvertToRadians(local_rotation_.x), 
+		XMConvertToRadians(local_rotation_.y), 
+		XMConvertToRadians(local_rotation_.z));
+	XMVECTOR s, r, t;
+	if (XMMatrixDecompose(&s, &r, &t, XMLoadFloat4x4(&transform_matrix_)))
+	{
+		XMStoreFloat4x4(&transform_matrix_, XMMatrixAffineTransformation(s, XMVectorZero(), rotation_quet, t));
+	}
 }
 
 void Object::Scale(float value)
 {
+	local_scale_.x *= value;
+	local_scale_.y *= value;
+	local_scale_.z *= value;
 	XMVECTOR s, r, t;
 	if (XMMatrixDecompose(&s, &r, &t, XMLoadFloat4x4(&transform_matrix_)))
 	{
-		s = XMLoadFloat3(&XMFLOAT3{ value,value,value });
-		XMStoreFloat4x4(&transform_matrix_, XMMatrixAffineTransformation(s, XMVectorZero(), r, t));
+		XMStoreFloat4x4(&transform_matrix_, XMMatrixAffineTransformation(XMLoadFloat3(&local_scale_), XMVectorZero(), r, t));
 	}
 }
 

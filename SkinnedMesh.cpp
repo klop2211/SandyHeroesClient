@@ -6,8 +6,6 @@
 #include "SkinnedMeshComponent.h"
 #include "Material.h"
 
-int SkinnedMesh::kCBSkinnedMeshObjectCurrentIndex = 0;
-
 void SkinnedMesh::CreateShaderVariables(ID3D12Device* device, ID3D12GraphicsCommandList* command_list)
 {
 	Mesh::CreateShaderVariables(device, command_list);
@@ -62,7 +60,7 @@ void SkinnedMesh::ReleaseUploadBuffer()
 		d3d_bone_weight_upload_buffer_.Reset();
 }
 
-void SkinnedMesh::UpdateConstantBuffer(FrameResource* curr_frame_resource)
+void SkinnedMesh::UpdateConstantBuffer(FrameResource* curr_frame_resource, int& cb_index)
 {
 	//메쉬 컴포넌트를 활용하여 오브젝트 CB를 업데이트한다.
 	for (MeshComponent* mesh_component : mesh_component_list_)
@@ -76,79 +74,18 @@ void SkinnedMesh::UpdateConstantBuffer(FrameResource* curr_frame_resource)
 			static_cast<SkinnedMeshComponent*>(mesh_component);
 		skinned_mesh_component->AttachBoneFrames(bone_names_);
 
-		mesh_component->UpdateConstantBuffer(curr_frame_resource, kCBSkinnedMeshObjectCurrentIndex);
+		mesh_component->UpdateConstantBuffer(curr_frame_resource, cb_index);
 
-		kCBSkinnedMeshObjectCurrentIndex++;
+		++cb_index;
 	}
 }
 
-void SkinnedMesh::Render(ID3D12GraphicsCommandList* command_list,
-	FrameResourceManager* frame_resource_manager, DescriptorManager* descriptor_manager)
+void SkinnedMesh::Render(ID3D12GraphicsCommandList* command_list, int material_index)
 {
 	command_list->SetGraphicsRootConstantBufferView(
 		(int)RootParameterIndex::kBoneOffset, d3d_bone_offset_buffer_->GetGPUVirtualAddress());
 
-	FrameResource* curr_frame_resource = frame_resource_manager->curr_frame_resource();
-	UINT cb_bone_transform_size = d3d_util::CalculateConstantBufferSize(sizeof(CBBoneTransform));
-
-	//이 메쉬를 사용하는 오브젝트의 CB 시작 인덱스를 저장한다. 
-	int cb_object_start_index = kCBSkinnedMeshObjectCurrentIndex;
-
-	UpdateConstantBuffer(curr_frame_resource);
-
-	command_list->IASetPrimitiveTopology(primitive_topology_);
-
-	//정점 버퍼 set
-	command_list->IASetVertexBuffers(0,
-		vertex_buffer_views_.size(), vertex_buffer_views_.data());
-
-	if (indices_array_.size())
-	{
-		for (int i = 0; i < indices_array_.size(); ++i)
-		{
-			materials_[i]->UpdateShaderVariables(command_list, curr_frame_resource, descriptor_manager);
-			if (indices_array_[i].size())
-			{
-				command_list->IASetIndexBuffer(&index_buffer_views_[i]);
-				for (int object_index = cb_object_start_index; object_index < kCBSkinnedMeshObjectCurrentIndex; ++object_index)
-				{
-					//25.02.23 수정
-					//기존 루트 디스크립터 테이블에서 루트 CBV로 변경
-					D3D12_GPU_VIRTUAL_ADDRESS cb_bone_transform_address =
-						curr_frame_resource->cb_bone_transform.get()->Resource()->GetGPUVirtualAddress() + cb_bone_transform_size * object_index;
-
-					command_list->SetGraphicsRootConstantBufferView((int)RootParameterIndex::kBoneTransform, cb_bone_transform_address);
-					command_list->DrawIndexedInstanced(indices_array_[i].size(), 1, 0, 0, 0);
-				}
-			}
-			else
-			{
-				for (int object_index = cb_object_start_index; object_index < kCBSkinnedMeshObjectCurrentIndex; ++object_index)
-				{
-					//25.02.23 수정
-					//기존 루트 디스크립터 테이블에서 루트 CBV로 변경
-					D3D12_GPU_VIRTUAL_ADDRESS cb_bone_transform_address =
-						curr_frame_resource->cb_bone_transform.get()->Resource()->GetGPUVirtualAddress() + cb_bone_transform_size * object_index;
-
-					command_list->SetGraphicsRootConstantBufferView((int)RootParameterIndex::kBoneTransform, cb_bone_transform_address);
-					command_list->DrawInstanced(positions_.size(), 1, 0, 0);
-				}
-			}
-		}
-	}
-	else
-	{
-		for (int object_index = cb_object_start_index; object_index < kCBSkinnedMeshObjectCurrentIndex; ++object_index)
-		{				
-			//25.02.23 수정
-			//기존 루트 디스크립터 테이블에서 루트 CBV로 변경
-			D3D12_GPU_VIRTUAL_ADDRESS cb_bone_transform_address =
-				curr_frame_resource->cb_bone_transform.get()->Resource()->GetGPUVirtualAddress() + cb_bone_transform_size * object_index;
-
-			command_list->SetGraphicsRootConstantBufferView((int)RootParameterIndex::kBoneTransform, cb_bone_transform_address);
-			command_list->DrawInstanced(positions_.size(), 1, 0, 0);
-		}
-	}
+	Mesh::Render(command_list, material_index);
 }
 
 using namespace file_load_util;
@@ -223,9 +160,3 @@ void SkinnedMesh::LoadSkinnedMeshFromFile(std::ifstream& file)
 
 	LoadMeshFromFile(file);
 }
-
-void SkinnedMesh::ResetCBSkinnedMeshObjectCurrentIndex()
-{
-	kCBSkinnedMeshObjectCurrentIndex = 0;
-}
-

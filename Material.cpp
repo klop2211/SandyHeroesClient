@@ -1,17 +1,30 @@
 #include "stdafx.h"
 #include "Material.h"
-#include "DDSTextureLoader.h"
 #include "DescriptorManager.h"
 #include "FrameResource.h"
+#include "Shader.h"
+#include "MeshComponent.h"
+#include "Scene.h"
 
 using namespace file_load_util;
 
-const std::string Material::kTextureFilePath = "./Resource/Model/Texture/DDS/";
-int Material::kTextureCount = 0;
+
+Material::Material(const std::string& name, int shader_type, 
+	XMFLOAT4 albedo_color, XMFLOAT3 fresnel_r0, 
+	float glossiness, XMFLOAT4 emission_color) 
+	: name_(name), shader_type_(shader_type), albedo_color_(albedo_color), 
+	fresnel_r0_(fresnel_r0), glossiness_(glossiness), emission_color_(emission_color)
+{
+}
 
 std::string Material::name() const
 {
 	return name_;
+}
+
+int Material::shader_type() const
+{
+	return shader_type_;
 }
 
 void Material::set_frame_resource_index(int value)
@@ -34,18 +47,9 @@ void Material::set_name(const std::string& value)
 	name_ = value;
 }
 
-void Material::CreateShaderVariables(ID3D12Device* device, ID3D12GraphicsCommandList* command_list)
+void Material::set_shader_type(int value)
 {
-	for (std::unique_ptr<Texture>& texture : texture_list_)
-	{
-		std::string file_name = kTextureFilePath + texture->name + ".dds";
-		std::wstring file_name_w;
-		file_name_w.assign(file_name.begin(), file_name.end());
-		CreateDDSTextureFromFile12(device, command_list,
-			file_name_w.c_str(),
-			texture->resource, texture->upload_heap);
-		++kTextureCount;
-	}
+	shader_type_ = value;
 }
 
 void Material::UpdateShaderVariables(ID3D12GraphicsCommandList* command_list, 
@@ -57,7 +61,7 @@ void Material::UpdateShaderVariables(ID3D12GraphicsCommandList* command_list,
 	//쉐이더에서 입력된 텍스처를 구별하기 위한 비트마스트
 	int texture_mask = 0;
 	int texture_root_index = 0;
-	for (std::unique_ptr<Texture>& texture : texture_list_)
+	for (const auto& const texture : texture_list_)
 	{
 		texture_handle = descriptor_manager->GetGpuHandle(srv_offset + texture->heap_index);
 		//TODO: RootParameterIndex를 텍스처에 직접부여하고 
@@ -106,6 +110,18 @@ void Material::UpdateShaderVariables(ID3D12GraphicsCommandList* command_list,
 
 }
 
+void Material::Render(ID3D12GraphicsCommandList* command_list, 
+	FrameResource* curr_frame_resource, DescriptorManager* descriptor_manager)
+{
+	//set current material at graphics pipeline
+	UpdateShaderVariables(command_list, curr_frame_resource, descriptor_manager);
+
+	for (const auto& mesh_component : mesh_component_list_)
+	{
+		mesh_component->Render(this, command_list, curr_frame_resource);
+	}
+}
+
 int Material::CreateShaderResourceViews(ID3D12Device* device, DescriptorManager* descriptor_manager, int start_index)
 {
 	int i = start_index;
@@ -117,7 +133,7 @@ int Material::CreateShaderResourceViews(ID3D12Device* device, DescriptorManager*
 
 	D3D12_CPU_DESCRIPTOR_HANDLE descriptor;
 
-	for (std::unique_ptr<Texture>& texture : texture_list_)
+	for (const auto& const texture : texture_list_)
 	{
 		descriptor = descriptor_manager->GetCpuHandle(i);
 		srv_desc.Format = texture->resource->GetDesc().Format;
@@ -138,7 +154,7 @@ int Material::CreateShaderResourceViews(ID3D12Device* device, DescriptorManager*
 	return i;
 }
 
-void Material::LoadMaterialFromFile(std::ifstream& file)
+void Material::LoadMaterialFromFile(std::ifstream& file, std::vector<std::unique_ptr<Texture>>& textures)
 {
 	std::string load_token;
 
@@ -193,9 +209,15 @@ void Material::LoadMaterialFromFile(std::ifstream& file)
 			ReadStringFromFile(file, load_token); // texture name (ex: Ellen_Body_Albedo)
 			if (load_token != "null") 
 			{
-				texture_list_.push_back(std::make_unique<Texture>());
-				texture_list_.back()->name = load_token;
-				texture_list_.back()->type = TextureType::kAlbedoMap;
+				auto find_texture = Scene::FindTexture(load_token, textures);
+				if (!find_texture)
+				{
+					textures.push_back(std::make_unique<Texture>());
+					textures.back()->name = load_token;
+					textures.back()->type = TextureType::kAlbedoMap;
+					find_texture = textures.back().get();
+				}
+				AddTexture(find_texture);
 			}
 			ReadStringFromFile(file, load_token);
 		}
@@ -204,9 +226,15 @@ void Material::LoadMaterialFromFile(std::ifstream& file)
 			ReadStringFromFile(file, load_token); 
 			if (load_token != "null")
 			{
-				texture_list_.push_back(std::make_unique<Texture>());
-				texture_list_.back()->name = load_token;
-				texture_list_.back()->type = TextureType::kSpecGlossMap;
+				auto find_texture = Scene::FindTexture(load_token, textures);
+				if (!find_texture)
+				{
+					textures.push_back(std::make_unique<Texture>());
+					textures.back()->name = load_token;
+					textures.back()->type = TextureType::kSpecGlossMap;
+					find_texture = textures.back().get();
+				}
+				AddTexture(find_texture);
 			}
 			ReadStringFromFile(file, load_token);
 		}
@@ -215,9 +243,15 @@ void Material::LoadMaterialFromFile(std::ifstream& file)
 			ReadStringFromFile(file, load_token);
 			if (load_token != "null")
 			{
-				texture_list_.push_back(std::make_unique<Texture>());
-				texture_list_.back()->name = load_token;
-				texture_list_.back()->type = TextureType::kMetallicGlossMap;
+				auto find_texture = Scene::FindTexture(load_token, textures);
+				if (!find_texture)
+				{
+					textures.push_back(std::make_unique<Texture>());
+					textures.back()->name = load_token;
+					textures.back()->type = TextureType::kMetallicGlossMap;
+					find_texture = textures.back().get();
+				}
+				AddTexture(find_texture);
 			}
 			ReadStringFromFile(file, load_token);
 		}
@@ -226,9 +260,15 @@ void Material::LoadMaterialFromFile(std::ifstream& file)
 			ReadStringFromFile(file, load_token);
 			if (load_token != "null")
 			{
-				texture_list_.push_back(std::make_unique<Texture>());
-				texture_list_.back()->name = load_token;
-				texture_list_.back()->type = TextureType::kNormalMap;
+				auto find_texture = Scene::FindTexture(load_token, textures);
+				if (!find_texture)
+				{
+					textures.push_back(std::make_unique<Texture>());
+					textures.back()->name = load_token;
+					textures.back()->type = TextureType::kNormalMap;
+					find_texture = textures.back().get();
+				}
+				AddTexture(find_texture);
 			}
 			ReadStringFromFile(file, load_token);
 		}
@@ -238,9 +278,15 @@ void Material::LoadMaterialFromFile(std::ifstream& file)
 			ReadStringFromFile(file, load_token);
 			if (load_token != "null")
 			{
-				texture_list_.push_back(std::make_unique<Texture>());
-				texture_list_.back()->name = load_token;
-				texture_list_.back()->type = TextureType::kEmissionMap;
+				auto find_texture = Scene::FindTexture(load_token, textures);
+				if (!find_texture)
+				{
+					textures.push_back(std::make_unique<Texture>());
+					textures.back()->name = load_token;
+					textures.back()->type = TextureType::kEmissionMap;
+					find_texture = textures.back().get();
+				}
+				AddTexture(find_texture);
 			}
 			ReadStringFromFile(file, load_token);
 		}
@@ -253,12 +299,36 @@ void Material::AddTexture(Texture* texture)
 {
 	if (texture)
 	{
-		texture_list_.emplace_back();
-		texture_list_.back().reset(texture);
+		texture_list_.push_back(texture);
 	}
 }
 
-int Material::GetTextureCount()
+std::string Material::GetTextureName(UINT index) const
 {
-	return kTextureCount;
+	if (texture_list_.size() <= index)
+	{
+		return "ErrorIndex";
+	}
+	int i{ 0 };
+	for (const auto& const texture : texture_list_)
+	{
+		if (i == index)
+		{
+			return texture->name;
+		}
+		++i;
+	}
 }
+
+void Material::AddMeshComponent(MeshComponent* component)
+{
+	mesh_component_list_.push_back(component);
+}
+
+bool Material::DeleteMeshComponent(MeshComponent* component)
+{
+	auto remove_count = mesh_component_list_.remove(component);
+
+	return remove_count;
+}
+

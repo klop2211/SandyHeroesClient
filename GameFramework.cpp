@@ -13,6 +13,7 @@
 #include "Material.h"
 #include "AnimationSet.h"
 #include "BaseScene.h"
+#include "RecorderScene.h"
 
 GameFramework* GameFramework::kGameFramework = nullptr;
 
@@ -28,7 +29,7 @@ GameFramework::~GameFramework()
     if (d3d_device_)
     {
         FlushCommandQueue();
-        //TODO: ÀüÃ¼È­¸é ¸ðµå¿¡¼­ Á¾·á½Ã ¿À·ù ¹ß»ý ÇØ°á
+        //TODO: ï¿½ï¿½Ã¼È­ï¿½ï¿½ ï¿½ï¿½å¿¡ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ß»ï¿½ ï¿½Ø°ï¿½
 		if (client_full_screen_state_)
 		{
             ChangeWindowMode();
@@ -45,8 +46,6 @@ void GameFramework::Initialize(HINSTANCE hinstance, HWND hwnd)
 
     OnResize();
 
-    //ChangeWindowMode();
-
     d3d_command_list_->Reset(d3d_command_allocator_.Get(), nullptr);
 
     BuildRootSignature();
@@ -55,7 +54,7 @@ void GameFramework::Initialize(HINSTANCE hinstance, HWND hwnd)
     descriptor_manager_ = std::make_unique<DescriptorManager>();
     input_manager_ = std::make_unique<InputManager>();
 
-    //¾À »ý¼º ¹× ÃÊ±âÈ­
+    //ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Ê±ï¿½È­
     scene_ = std::make_unique<BaseScene>();
     scene_->Initialize(d3d_device_.Get(), d3d_command_list_.Get(), d3d_root_signature_.Get(), 
         this);
@@ -77,7 +76,7 @@ void GameFramework::InitDirect3D()
     UINT dxgi_farctory_flags = 0;
 
 #if defined(DEBUG) | defined(_DEBUG)
-    // D3D12 µð¹ö±× ·¹ÀÌ¾î¸¦ È°¼ºÈ­ ÇÕ´Ï´Ù.
+    // D3D12 ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ì¾î¸¦ È°ï¿½ï¿½È­ ï¿½Õ´Ï´ï¿½.
     {
         ComPtr<ID3D12Debug> debeg_controller;
         if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debeg_controller))))
@@ -91,13 +90,13 @@ void GameFramework::InitDirect3D()
 
     CreateDXGIFactory2(dxgi_farctory_flags, IID_PPV_ARGS(&dxgi_factory_));
 
-    // ÇÏµå¿þ¾î µð¹ÙÀÌ½ºÀÇ »ý¼ºÀ» ½ÃµµÇÕ´Ï´Ù.
+    // ï¿½Ïµï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ì½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ãµï¿½ï¿½Õ´Ï´ï¿½.
     HRESULT hardwareResult = D3D12CreateDevice(
-        nullptr, // ±âº» ¾îµªÅÍ »ç¿ëÇÕ´Ï´Ù.
+        nullptr, // ï¿½âº» ï¿½îµªï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
         D3D_FEATURE_LEVEL_12_0,
         IID_PPV_ARGS(&d3d_device_));
 
-    // ½ÇÆÐÇÒ °æ¿ì WRAP µð¹ÙÀÌ½º¸¦ »ç¿ëÇÕ´Ï´Ù.
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ WRAP ï¿½ï¿½ï¿½ï¿½Ì½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
     if (FAILED(hardwareResult))
     {
         ComPtr<IDXGIAdapter> pWrapAdapter;
@@ -116,7 +115,7 @@ void GameFramework::InitDirect3D()
         return;
     }
 
-    //Ææ½º »ý¼º
+    //ï¿½æ½º ï¿½ï¿½ï¿½ï¿½
     d3d_device_->CreateFence(current_fence_value_, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&d3d_fence_));
 
     rtv_descriptor_size_ = d3d_device_->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
@@ -124,7 +123,7 @@ void GameFramework::InitDirect3D()
     cbv_srv_uav_descriptor_size_ = d3d_device_->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
     DescriptorManager::kCbvSrvUavDescriptorSize = cbv_srv_uav_descriptor_size_;
 
-    //4x msaa °Ë»ç
+    //4x msaa ï¿½Ë»ï¿½
     D3D12_FEATURE_DATA_MULTISAMPLE_QUALITY_LEVELS quality_levels = {};
     quality_levels.Format = back_buffer_format_;
     quality_levels.SampleCount = 4;
@@ -162,8 +161,8 @@ void GameFramework::CreateCommandObject()
         nullptr, 
         IID_PPV_ARGS(&d3d_command_list_));
 
-    // ·»´õ¸µ ÇÏ±â¿¡ ¾Õ¼­¼­ Ä¿¸Çµå ¸®½ºÆ®¸¦ ¸®¼ÂÇÏ°í Ä¿¸Çµå¸¦ ±â·ÏÇÏ´Âµ¥,
-    // ¸®¼ÂÀ» ÇÏ±â À§ÇØ¼± Ä¿¸Çµå ¸®½ºÆ®°¡ ´ÝÇôÀÖ´Â »óÅÂ¿©¾ß ÇÕ´Ï´Ù.
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ï±â¿¡ ï¿½Õ¼ï¿½ï¿½ï¿½ Ä¿ï¿½Çµï¿½ ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï°ï¿½ Ä¿ï¿½Çµå¸¦ ï¿½ï¿½ï¿½ï¿½Ï´Âµï¿½,
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ï±ï¿½ ï¿½ï¿½ï¿½Ø¼ï¿½ Ä¿ï¿½Çµï¿½ ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ö´ï¿½ ï¿½ï¿½ï¿½Â¿ï¿½ï¿½ï¿½ ï¿½Õ´Ï´ï¿½.
     d3d_command_list_->Close();
 }
 
@@ -230,8 +229,8 @@ void GameFramework::BuildRootSignature()
     constexpr int root_parameter_size{ 11 };
     CD3DX12_ROOT_PARAMETER root_parameter[root_parameter_size];
 
-    //25.02.23 ¼öÁ¤
-    //±âÁ¸ ·çÆ® µð½ºÅ©¸³ÅÍ Å×ÀÌºí¿¡¼­ ·çÆ® CBV»ç¿ëÀ¸·Î º¯°æ
+    //25.02.23 ï¿½ï¿½ï¿½ï¿½
+    //ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Æ® ï¿½ï¿½Å©ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ìºï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Æ® CBVï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     root_parameter[0].InitAsConstantBufferView(0); // world matrix
     root_parameter[1].InitAsConstantBufferView(1); // bone transform
     root_parameter[2].InitAsConstantBufferView(2); // bone offset (default buffer)
@@ -245,7 +244,7 @@ void GameFramework::BuildRootSignature()
     root_parameter[10].InitAsDescriptorTable(1, &descriptor_range[5], D3D12_SHADER_VISIBILITY_PIXEL);
 
     
-    CD3DX12_STATIC_SAMPLER_DESC aniso_warp{ 0 };    //ºñµî¹æ ÇÊÅÍ¸µ warp ¸ðµå »ùÇÃ·¯
+    CD3DX12_STATIC_SAMPLER_DESC aniso_warp{ 0 };    //ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Í¸ï¿½ warp ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ã·ï¿½
     CD3DX12_STATIC_SAMPLER_DESC linear_warp{ 1, D3D12_FILTER_COMPARISON_MIN_LINEAR_MAG_MIP_POINT };
 
     constexpr int static_sampler_size = 2;
@@ -279,13 +278,13 @@ void GameFramework::OnResize()
 
     d3d_command_list_->Reset(d3d_command_allocator_.Get(), nullptr);
 
-    //ÈÄ¸é¹öÆÛ¸¦ ´Ù½Ã ¸¸µé±â À§ÇØ ±âÁ¸ ¹öÆÛ »èÁ¦
+    //ï¿½Ä¸ï¿½ï¿½ï¿½Û¸ï¿½ ï¿½Ù½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     for (ComPtr<ID3D12Resource>& swap_chain_buffer : d3d_swap_chain_buffers_)
         swap_chain_buffer.Reset();
 
     d3d_depth_stencil_buffer_.Reset();
 
-    //ÈÄ¸é¹öÆÛ Å©±â º¯°æ
+    //ï¿½Ä¸ï¿½ï¿½ï¿½ï¿½ Å©ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     dxgi_swap_chain_->ResizeBuffers(
         kSwapChainBufferCount, 
         client_width_, client_height_, 
@@ -294,24 +293,24 @@ void GameFramework::OnResize()
 
     current_back_buffer_ = 0;
 
-    //Rtv »ý¼º
+    //Rtv ï¿½ï¿½ï¿½ï¿½
     CD3DX12_CPU_DESCRIPTOR_HANDLE rtv_heap_handle (
         d3d_rtv_heap_->GetCPUDescriptorHandleForHeapStart());
     for (int i = 0; i < kSwapChainBufferCount; ++i)
     {
-        //¹öÆÛ °¡Á®¿À±â
+        //ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
         dxgi_swap_chain_->GetBuffer(i, 
             IID_PPV_ARGS(d3d_swap_chain_buffers_[i].GetAddressOf()));
-        //ºä »ý¼º
+        //ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
         d3d_device_->CreateRenderTargetView(
             d3d_swap_chain_buffers_[i].Get(), nullptr, rtv_heap_handle);
 
-        //Èü ¿ÀÇÁ¼Â ÀÌµ¿
+        //ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ìµï¿½
         rtv_heap_handle.Offset(1, rtv_descriptor_size_);
     }
 
 
-    //Depth-Stencil ¹öÆÛ »ý¼º
+    //Depth-Stencil ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     D3D12_RESOURCE_DESC ds_buffer_desc = {};
     ds_buffer_desc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
     ds_buffer_desc.Alignment = 0;
@@ -320,7 +319,7 @@ void GameFramework::OnResize()
     ds_buffer_desc.DepthOrArraySize = 1;
     ds_buffer_desc.MipLevels = 1;
     ds_buffer_desc.Format = depth_stencil_buffer_format_;
-    ds_buffer_desc.SampleDesc.Count = msaa_state_ ? 4 : 1; //msaa¸¦ »ç¿ëÇÏ¸é 4 ¾Æ´Ï¸é 1
+    ds_buffer_desc.SampleDesc.Count = msaa_state_ ? 4 : 1; //msaaï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ï¸ï¿½ 4 ï¿½Æ´Ï¸ï¿½ 1
     ds_buffer_desc.SampleDesc.Quality = msaa_state_ ? (msaa_quality_ - 1) : 0; 
     ds_buffer_desc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
     ds_buffer_desc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
@@ -338,9 +337,9 @@ void GameFramework::OnResize()
         &ds_clear_value,
         IID_PPV_ARGS(d3d_depth_stencil_buffer_.GetAddressOf()));
 
-    //Dsv »ý¼º
-    // ÇâÈÄ ds ¹öÆÛ¸¦ ±¸¼ºÇÒ ¶§ Æ÷¸äÀÌ ¹Ù²î°Å³ª ¹öÆÛ¿¡ ´ëÇÑ 
-    // ¼³¸íÀÌ desc¿¡ ÃæºÐÇÏÁö ¾Ê´Ù¸é ¾Æ·¡ ÁÖ¼®À» »ç¿ëÇØ¼­ dsv¸¦ »ý¼ºÇØ¾ßÇÔ
+    //Dsv ï¿½ï¿½ï¿½ï¿½
+    // ï¿½ï¿½ï¿½ï¿½ ds ï¿½ï¿½ï¿½Û¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ù²ï¿½Å³ï¿½ ï¿½ï¿½ï¿½Û¿ï¿½ ï¿½ï¿½ï¿½ï¿½ 
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ descï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê´Ù¸ï¿½ ï¿½Æ·ï¿½ ï¿½Ö¼ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ø¼ï¿½ dsvï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ø¾ï¿½ï¿½ï¿½
     /*D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc;
     dsvDesc.Flags = D3D12_DSV_FLAG_NONE;
     dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
@@ -351,21 +350,21 @@ void GameFramework::OnResize()
         nullptr,                
         DepthStencilView());
 
-    //µª½º¹öÆÛ¸¦ »ç¿ë °¡´É »óÅÂ·Î º¯°æ
+    //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Û¸ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Â·ï¿½ ï¿½ï¿½ï¿½ï¿½
     d3d_command_list_->ResourceBarrier(1,
         &CD3DX12_RESOURCE_BARRIER::Transition(
             d3d_depth_stencil_buffer_.Get(),
             D3D12_RESOURCE_STATE_COMMON,
             D3D12_RESOURCE_STATE_DEPTH_WRITE));
 
-    //¸í·É ½ÇÇà
+    //ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     d3d_command_list_->Close();
     ID3D12CommandList* command_list[] = { d3d_command_list_.Get() };
     d3d_command_queue_->ExecuteCommandLists(_countof(command_list), command_list);
 
     FlushCommandQueue();
 
-    //ºäÆ÷Æ® ¾÷µ¥ÀÌÆ®
+    //ï¿½ï¿½ï¿½ï¿½Æ® ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®
     client_viewport_.TopLeftX = 0;
     client_viewport_.TopLeftY = 0;
     client_viewport_.Width = client_width_;
@@ -405,7 +404,7 @@ void GameFramework::ProcessInput()
 
 void GameFramework::ProcessInput(UINT id, WPARAM w_param, LPARAM l_param, float time)
 {
-    //¸ÕÀú Scene¿¡¼­ ÀÎÇ²À» Ã³¸®ÇÏ´ÂÁö È®ÀÎÇÑ´Ù
+    //ï¿½ï¿½ï¿½ï¿½ Sceneï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ç²ï¿½ï¿½ Ã³ï¿½ï¿½ï¿½Ï´ï¿½ï¿½ï¿½ È®ï¿½ï¿½ï¿½Ñ´ï¿½
     if (scene_)
     {
         if (scene_->ProcessInput(id, w_param, l_param, time))
@@ -451,18 +450,18 @@ void GameFramework::FrameAdvance()
 {
     client_timer_->Tick();
 
-    //ÀÎÇ² Ã³¸®
+    //ï¿½ï¿½Ç² Ã³ï¿½ï¿½
     ProcessInput();
 
-    //Ãæµ¹Ã³¸®
+    //ï¿½æµ¹Ã³ï¿½ï¿½
     //scene_->CheckObjectByObjectCollisions();
 
-    //¾÷µ¥ÀÌÆ®
+    //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®
     scene_->Update(client_timer_->ElapsedTime());
     scene_->UpdateObjectWorldMatrix();
 
 
-    //·»´õ
+    //ï¿½ï¿½ï¿½ï¿½
     auto& command_allocator = frame_resource_manager_->curr_frame_resource()->d3d_allocator;
 
     command_allocator->Reset();
@@ -483,7 +482,7 @@ void GameFramework::FrameAdvance()
     d3d_command_list_->ClearDepthStencilView(
         DepthStencilView(), D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.f, 0, 0, nullptr);
 
-    const UINT kNumRenderTargetDescriptors = 1; // ·»´õ´ë»óÀÇ °³¼ö
+    const UINT kNumRenderTargetDescriptors = 1; // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     d3d_command_list_->OMSetRenderTargets(
         kNumRenderTargetDescriptors,
         &CurrentBackBufferView(),
@@ -553,6 +552,7 @@ LRESULT GameFramework::ProcessWindowMessage(HWND h_wnd, UINT message_id, WPARAM 
 {
     switch (message_id)
     {
+    case WM_MOUSEWHEEL:
     case WM_LBUTTONDOWN:
     case WM_RBUTTONDOWN:
     case WM_LBUTTONUP:

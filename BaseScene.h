@@ -15,14 +15,13 @@ public:
 		ID3D12RootSignature* root_signature, GameFramework* game_framework) override;
 	virtual void BuildShader(ID3D12Device* device, ID3D12RootSignature* root_signature) override;
 	virtual void BuildMesh(ID3D12Device* device, ID3D12GraphicsCommandList* command_list) override;
+	virtual void BuildMaterial(ID3D12Device* device, ID3D12GraphicsCommandList* command_list) override;
 	virtual void BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* command_list) override;
 
 	//Create spawner each stage
 	void CreateMonsterSpawner();
 
 	void ActivateStageMonsterSpawner(int stage_num);
-
-	virtual void Render(ID3D12GraphicsCommandList* command_list) override;
 
 	virtual bool ProcessInput(UINT id, WPARAM w_param, LPARAM l_param, float time) override;
 
@@ -74,8 +73,6 @@ private:
 	//TODO: 앞으로 충돌관련 리스트가 추가된다면(그럴 필요성이 있어서) 오브젝트 매니저 클래스를 구현하는 것을 고려할 것.
 	std::list<Object*> ground_check_object_list_;	//지면 체크가 필요한 객체들의 리스트(플레이어, monster, NPC)
 	std::list<Object*> wall_check_object_list_;	//벽 체크가 필요한 객체들의 리스트(플레이어, monster, NPC)
-
-	bool is_render_debug_mesh_ = false;	//디버그용 와이어프레임 obb를 렌더하는지 여부
 
 	std::unique_ptr<ParticleSystem> particle_system_{ nullptr };	//파티클 시스템
 

@@ -1,5 +1,9 @@
 #pragma once
 
+class Material;
+class DescriptorManager;
+struct FrameResource;
+
 enum class ShaderType
 {
 	kNone = 0, kColor, kSkinnedMesh, kStandardMesh, kStandardSkinnedMesh, kSkybox, kDebug, kUI, kTransparent, kBreathing
@@ -27,9 +31,17 @@ public:
 
 	ShaderType shader_type() const;
 
+	void ReserveMaterials(UINT capacity);
+	void AddMaterial(Material* material);
+
+	void Render(ID3D12GraphicsCommandList* command_list, 
+		FrameResource* curr_frame_resource, DescriptorManager* descriptor_manager);
+
 protected:
 	ComPtr<ID3D12PipelineState> d3d_pipeline_state_;
 
 	ShaderType shader_type_ = ShaderType::kNone;
+
+	std::vector<Material*> materials_{};
 };
 

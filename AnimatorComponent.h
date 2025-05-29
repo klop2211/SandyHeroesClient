@@ -42,8 +42,6 @@ private:
     bool is_attached_bone_frames_ = false;
 
     //활성화 시 스킨메쉬의 루트본에 가해지는 translation 값이 root_node에 적용됨
-    //비 활성화시 무시됨
     bool is_root_motion_animation_ = false; 
-    XMFLOAT3 before_translation_{ 0,0,0 }; // 이전 프레임의 root_bone translation 값
 };
 

@@ -1,5 +1,8 @@
 #include "stdafx.h"
 #include "Shader.h"
+#include "Material.h"
+#include "FrameResource.h"
+#include "DescriptorManager.h"
 
 
 D3D12_RASTERIZER_DESC Shader::CreateRasterizerState()
@@ -122,4 +125,26 @@ ID3D12PipelineState* Shader::GetPipelineState() const
 ShaderType Shader::shader_type() const
 {
 	return shader_type_;
+}
+
+void Shader::ReserveMaterials(UINT capacity)
+{
+	materials_.reserve(capacity);
+}
+
+void Shader::AddMaterial(Material* material)
+{
+	materials_.push_back(material);
+	material->set_shader_type((int)shader_type_);
+}
+
+void Shader::Render(ID3D12GraphicsCommandList* command_list, 
+	FrameResource* curr_frame_resource, DescriptorManager* descriptor_manager)
+{
+	command_list->SetPipelineState(d3d_pipeline_state_.Get());
+
+	for (const auto& const material : materials_)
+	{
+		material->Render(command_list, curr_frame_resource, descriptor_manager);
+	}
 }

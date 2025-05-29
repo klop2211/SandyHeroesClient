@@ -48,14 +48,13 @@
 #pragma comment(lib, "dxguid.lib")
 
 #include "d3dx12.h"
-#include <DirectXMath.h>
 
 using Microsoft::WRL::ComPtr;
 using namespace DirectX;
 
 // 상수값
-constexpr int kDefaultFrameBufferWidth = 1920;
-constexpr int kDefaultFrameBufferHeight = 1080;
+constexpr int kDefaultFrameBufferWidth = 1280;
+constexpr int kDefaultFrameBufferHeight = 720;
 constexpr UINT kDefaultRefreshRate = 60;
 constexpr int kMaxBoneCount = 128; //skinned mesh의 본 최대 개수
 constexpr int kMaxLights = 16;		// 조명처리의 최대 개수
@@ -239,6 +238,27 @@ inline XMFLOAT3 operator-(const XMFLOAT3& lhs, const XMFLOAT3& rhs) { return xma
 inline void operator-=(XMFLOAT3& lhs, const XMFLOAT3& rhs) { lhs = xmath_util_float3::Subtract(lhs, rhs); }
 inline XMFLOAT3 operator*(const XMFLOAT3& lhs, const float& rhs) { return xmath_util_float3::ScalarProduct(lhs, rhs); }
 inline XMFLOAT4X4 operator*(const XMFLOAT4X4& lhs, const XMFLOAT4X4& rhs) { return xmath_util_float4x4::Multiply(lhs, rhs); }
+inline bool operator==(const XMFLOAT4X4& lhs, const XMFLOAT4X4& rhs) 
+{  
+	if (lhs._11 != rhs._11) return false;
+	if (lhs._12 != rhs._12) return false;
+	if (lhs._13 != rhs._13) return false;
+	if (lhs._14 != rhs._14) return false;
+	if (lhs._21 != rhs._21) return false;
+	if (lhs._22 != rhs._22) return false;
+	if (lhs._23 != rhs._23) return false;
+	if (lhs._24 != rhs._24) return false;
+	if (lhs._31 != rhs._31) return false;
+	if (lhs._32 != rhs._32) return false;
+	if (lhs._33 != rhs._33) return false;
+	if (lhs._34 != rhs._34) return false;
+	if (lhs._41 != rhs._41) return false;
+	if (lhs._42 != rhs._42) return false;
+	if (lhs._43 != rhs._43) return false;
+	if (lhs._44 != rhs._44) return false;
+	return true;
+}
+inline bool operator!=(const XMFLOAT4X4& lhs, const XMFLOAT4X4& rhs) { return !(lhs == rhs); }
 
 namespace file_load_util
 {

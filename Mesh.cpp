@@ -6,8 +6,6 @@
 #include "FrameResource.h"
 #include "Material.h"
 
-int Mesh::kCBObjectCurrentIndex = 0;
-
 Mesh::~Mesh()
 {
 	for (auto& mesh_component : mesh_component_list_)
@@ -23,14 +21,7 @@ void Mesh::AddMeshComponent(MeshComponent* mesh_component)
 
 void Mesh::DeleteMeshComponent(MeshComponent* mesh_component)
 {
-	mesh_component_list_.remove_if([&mesh_component](const MeshComponent* component) {
-		return component == mesh_component;
-		});
-}
-
-void Mesh::AddMaterial(Material* material)
-{
-	materials_.push_back(material);
+	mesh_component_list_.remove(mesh_component);
 }
 
 void Mesh::SetMaterial(Material* material, int index)
@@ -173,7 +164,7 @@ void Mesh::ReleaseUploadBuffer()
 
 }
 
-void Mesh::UpdateConstantBuffer(FrameResource* curr_frame_resource)
+void Mesh::UpdateConstantBuffer(FrameResource* curr_frame_resource, int& cb_index)
 {
 	//메쉬 컴포넌트를 활용하여 오브젝트 CB를 업데이트한다.
 	for (MeshComponent* mesh_component : mesh_component_list_)
@@ -182,78 +173,44 @@ void Mesh::UpdateConstantBuffer(FrameResource* curr_frame_resource)
 		if (!mesh_component->IsVisible())
 			continue;
 
-		mesh_component->UpdateConstantBuffer(curr_frame_resource, kCBObjectCurrentIndex);
+		mesh_component->UpdateConstantBuffer(curr_frame_resource, cb_index);
 
-		kCBObjectCurrentIndex++;
+		++cb_index;
 	}
 }
 
-void Mesh::Render(ID3D12GraphicsCommandList* command_list, 
-	FrameResourceManager* frame_resource_manager, DescriptorManager* descriptor_manager)
+void Mesh::Render(ID3D12GraphicsCommandList* command_list, int material_index)
 {
-	FrameResource* curr_frame_resource = frame_resource_manager->curr_frame_resource();
-	UINT cb_object_size = d3d_util::CalculateConstantBufferSize(sizeof(CBObject));
-
-	//이 메쉬를 사용하는 오브젝트의 CB 시작 인덱스를 저장한다. 
-	int cb_object_start_index = kCBObjectCurrentIndex;
-
-	UpdateConstantBuffer(curr_frame_resource);
-
 	command_list->IASetPrimitiveTopology(primitive_topology_);
 
 	//정점 버퍼 set
 	command_list->IASetVertexBuffers(0,
 		vertex_buffer_views_.size(), vertex_buffer_views_.data());
 
-	if (indices_array_.size())
+	if (material_index < indices_array_.size()) 
 	{
-		for (int i = 0; i < indices_array_.size(); ++i)
+		if (indices_array_[material_index].size())
 		{
-			//머터리얼은 각 서브메쉬에 적용되는 순서대로 저장되어있다.
-			materials_[i]->UpdateShaderVariables(command_list, curr_frame_resource, descriptor_manager);
-			if (indices_array_[i].size())
-			{
-				command_list->IASetIndexBuffer(&index_buffer_views_[i]);
-				for (int object_index = cb_object_start_index; object_index < kCBObjectCurrentIndex; ++object_index)
-				{
-					//25.02.23 수정
-					//기존 루트 디스크립터 테이블에서 루트 CBV로 변경
-					D3D12_GPU_VIRTUAL_ADDRESS cb_object_address =
-						curr_frame_resource->cb_object.get()->Resource()->GetGPUVirtualAddress() + object_index * cb_object_size;
-
-					command_list->SetGraphicsRootConstantBufferView((int)RootParameterIndex::kWorldMatrix, cb_object_address);
-					command_list->DrawIndexedInstanced(indices_array_[i].size(), 1, 0, 0, 0);
-				}
-			}
-			else
-			{
-				for (int object_index = cb_object_start_index; object_index < kCBObjectCurrentIndex; ++object_index)
-				{
-					//25.02.23 수정
-					//기존 루트 디스크립터 테이블에서 루트 CBV로 변경
-					D3D12_GPU_VIRTUAL_ADDRESS cb_object_address =
-						curr_frame_resource->cb_object.get()->Resource()->GetGPUVirtualAddress() + object_index * cb_object_size;
-
-					command_list->SetGraphicsRootConstantBufferView((int)RootParameterIndex::kWorldMatrix, cb_object_address);
-					command_list->DrawInstanced(positions_.size(), 1, 0, 0);
-				}
-			}
+			command_list->IASetIndexBuffer(&index_buffer_views_[material_index]);
+			command_list->DrawIndexedInstanced(indices_array_[material_index].size(), 1, 0, 0, 0);
+		}
+		else
+		{
+			command_list->DrawInstanced(positions_.size(), 1, 0, 0);
 		}
 	}
 	else
 	{
-		for (int object_index = cb_object_start_index; object_index < kCBObjectCurrentIndex; ++object_index)
+		if (indices_array_.back().size())
 		{
-			//25.02.23 수정
-			//기존 루트 디스크립터 테이블에서 루트 CBV로 변경
-			D3D12_GPU_VIRTUAL_ADDRESS cb_object_address =
-				curr_frame_resource->cb_object.get()->Resource()->GetGPUVirtualAddress() + object_index * cb_object_size;
-
-			command_list->SetGraphicsRootConstantBufferView((int)RootParameterIndex::kWorldMatrix, cb_object_address);
+			command_list->IASetIndexBuffer(&index_buffer_views_.back());
+			command_list->DrawIndexedInstanced(indices_array_.back().size(), 1, 0, 0, 0);
+		}
+		else
+		{
 			command_list->DrawInstanced(positions_.size(), 1, 0, 0);
 		}
 	}
-
 }
 
 using namespace file_load_util;
@@ -333,16 +290,6 @@ void Mesh::ClearTangents()
 	tangents_.clear();
 }
 
-void Mesh::ResetCBObjectCurrentIndex()
-{
-	kCBObjectCurrentIndex = 0;
-}
-
-int Mesh::shader_type() const
-{
-	return shader_type_;
-}
-
 std::string Mesh::name() const
 {
 	return name_;
@@ -371,11 +318,6 @@ const std::vector<std::vector<UINT>>& Mesh::indices_array() const
 D3D12_PRIMITIVE_TOPOLOGY Mesh::primitive_topology() const
 {
 	return primitive_topology_;
-}
-
-void Mesh::set_shader_type(int value)
-{
-	shader_type_ = value;
 }
 
 void Mesh::set_name(const std::string& name)

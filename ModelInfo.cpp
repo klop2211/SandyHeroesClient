@@ -14,9 +14,9 @@
 #include "DebugMeshComponent.h"
 
 ModelInfo::ModelInfo(const std::string& file_name, std::vector<std::unique_ptr<Mesh>>& meshes,
-	std::vector<std::unique_ptr<Material>>& materials)
+	std::vector<std::unique_ptr<Material>>& materials, std::vector<std::unique_ptr<Texture>>& textures)
 {
-	LoadModelInfoFromFile(file_name, meshes, materials);
+	LoadModelInfoFromFile(file_name, meshes, materials, textures);
 }
 
 ModelInfo::~ModelInfo()
@@ -32,7 +32,7 @@ std::string ModelInfo::model_name() const
 
 using namespace file_load_util;
 void ModelInfo::LoadModelInfoFromFile(const std::string& file_name, std::vector<std::unique_ptr<Mesh>>& meshes,
-	std::vector<std::unique_ptr<Material>>& materials)
+	std::vector<std::unique_ptr<Material>>& materials, std::vector<std::unique_ptr<Texture>>& textures)
 {
 	size_t last_slash = file_name.find_last_of("/\\");
 	size_t last_dot = file_name.find_last_of('.');
@@ -47,7 +47,7 @@ void ModelInfo::LoadModelInfoFromFile(const std::string& file_name, std::vector<
 	PrintDebugStringLoadTokenError(model_name_, load_token, "<Hierarchy>:");
 #endif //_DEBUG
 
-	hierarchy_root_ = LoadFrameInfoFromFile(model_file, meshes, materials);
+	hierarchy_root_ = LoadFrameInfoFromFile(model_file, meshes, materials, textures);
 
 	hierarchy_root_->set_position_vector(0, 0, 0); //모델 정보는 0 0 0에 위치
 
@@ -87,7 +87,7 @@ void ModelInfo::LoadModelInfoFromFile(const std::string& file_name, std::vector<
 }
 
 Object* ModelInfo::LoadFrameInfoFromFile(std::ifstream& file, std::vector<std::unique_ptr<Mesh>>& meshes,
-	std::vector<std::unique_ptr<Material>>& materials)
+	std::vector<std::unique_ptr<Material>>& materials, std::vector<std::unique_ptr<Texture>>& textures)
 {
 	std::string load_token;
 
@@ -118,6 +118,7 @@ Object* ModelInfo::LoadFrameInfoFromFile(std::ifstream& file, std::vector<std::u
 		box.Extents = ReadFromFile<XMFLOAT3>(file);
 		frame->AddComponent(new BoxColliderComponent(frame, box));
 #ifdef _DEBUG
+		//TODO: 디버그 material 추가 및 컴포넌트에 연결
 		frame->AddComponent(new DebugMeshComponent(frame, Scene::FindMesh("Debug_Mesh", meshes), box));
 #endif // _DEBUG
 
@@ -128,7 +129,6 @@ Object* ModelInfo::LoadFrameInfoFromFile(std::ifstream& file, std::vector<std::u
 	{
 		Mesh* mesh = new Mesh;
 		mesh->LoadMeshFromFile(file);
-		mesh->set_shader_type((int)ShaderType::kStandardMesh);
 
 		Mesh* find_mesh = Scene::FindMesh(mesh->name(), meshes);
 		if (find_mesh)
@@ -155,10 +155,11 @@ Object* ModelInfo::LoadFrameInfoFromFile(std::ifstream& file, std::vector<std::u
 		for (int i = 0; i < material_count; ++i)
 		{
 			Material* material = new Material();
-			material->LoadMaterialFromFile(file);
+			material->LoadMaterialFromFile(file, textures);
+			material->set_shader_type((int)ShaderType::kStandardMesh);
 
-			Material* find_material = Scene::FindMaterial(mesh->name(), materials);
-			if (find_mesh)
+			Material* find_material = Scene::FindMaterial(material->name(), materials);
+			if (find_material)
 			{
 				delete material;
 				material = find_material;
@@ -169,7 +170,8 @@ Object* ModelInfo::LoadFrameInfoFromFile(std::ifstream& file, std::vector<std::u
 				materials.back().reset(material);
 			}
 
-			mesh->AddMaterial(material);
+			mesh_component->AddMaterial(material);
+			material->DeleteMeshComponent(mesh_component);
 		}
 		ReadStringFromFile(file, load_token);
 
@@ -184,9 +186,18 @@ Object* ModelInfo::LoadFrameInfoFromFile(std::ifstream& file, std::vector<std::u
 	{
 		SkinnedMesh* skinned_mesh = new SkinnedMesh;
 		skinned_mesh->LoadSkinnedMeshFromFile(file);
-		skinned_mesh->set_shader_type((int)ShaderType::kStandardSkinnedMesh);
-		meshes.emplace_back();
-		meshes.back().reset(skinned_mesh);
+
+		Mesh* find_mesh = Scene::FindMesh(skinned_mesh->name(), meshes);
+		if (find_mesh)
+		{
+			delete skinned_mesh;
+			skinned_mesh = static_cast<SkinnedMesh*>(find_mesh);
+		}
+		else
+		{
+			meshes.emplace_back();
+			meshes.back().reset(skinned_mesh);
+		}
 
 		SkinnedMeshComponent* skinned_mesh_component = new SkinnedMeshComponent(frame, skinned_mesh);
 		skinned_mesh->DeleteMeshComponent(skinned_mesh_component);
@@ -201,11 +212,23 @@ Object* ModelInfo::LoadFrameInfoFromFile(std::ifstream& file, std::vector<std::u
 		for (int i = 0; i < material_count; ++i)
 		{
 			Material* material = new Material();
-			material->LoadMaterialFromFile(file);
-			materials.emplace_back();
-			materials.back().reset(material);
+			material->LoadMaterialFromFile(file, textures);
+			material->set_shader_type((int)ShaderType::kStandardSkinnedMesh);
 
-			skinned_mesh->AddMaterial(material);
+			Material* find_material = Scene::FindMaterial(material->name(), materials);
+			if (find_material)
+			{
+				delete material;
+				material = find_material;
+			}
+			else
+			{
+				materials.emplace_back();
+				materials.back().reset(material);
+			}
+
+			skinned_mesh_component->AddMaterial(material);
+			material->DeleteMeshComponent(skinned_mesh_component);
 		}
 		ReadStringFromFile(file, load_token);
 
@@ -222,7 +245,7 @@ Object* ModelInfo::LoadFrameInfoFromFile(std::ifstream& file, std::vector<std::u
 		int child_count = ReadFromFile<int>(file);
 		for (int i = 0; i < child_count; ++i)
 		{
-			frame->AddChild(LoadFrameInfoFromFile(file, meshes, materials));
+			frame->AddChild(LoadFrameInfoFromFile(file, meshes, materials, textures));
 		}
 
 		ReadStringFromFile(file, load_token);

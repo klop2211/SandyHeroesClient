@@ -5,8 +5,6 @@
 
 CubeMesh::CubeMesh()
 {
-	shader_type_ = (int)ShaderType::kStandardMesh;
-
     positions_.reserve(24);
     normals_.reserve(24);
     uvs_.resize(24);

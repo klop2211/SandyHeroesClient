@@ -38,13 +38,13 @@ void CutSceneRecorder::CaptureCameraTransform(float elapsed_time)
 		return;
 	}
 	key_time_ += elapsed_time;
-	XMFLOAT4X4 world = scene_->main_camera()->owner()->world_matrix();
+	XMFLOAT4X4 world = camera_object_->world_matrix();
 	cut_scene_data_list_.emplace_back(world, key_time_);
 }
 
 void CutSceneRecorder::WriteCutScene(const std::string& cut_scene_name)
 {
-	std::ofstream cut_scene_file{ "./Resource/CutScene/" + cut_scene_name , std::ios::binary };
+	std::ofstream cut_scene_file{ "./Resource/CutScene/" + cut_scene_name + ".bin", std::ios::binary};
 	auto size{ cut_scene_data_list_.size() };
 	cut_scene_file.write((const char*)&size, sizeof(size_t));
 

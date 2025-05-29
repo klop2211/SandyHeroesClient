@@ -7,6 +7,8 @@
 #include "InputControllerComponent.h"
 #include "GameFramework.h"
 #include "MeshComponent.h"
+#include "SkinnedMesh.h"
+#include "DDSTextureLoader.h"
 
 
 XMVECTOR Scene::GetPickingPointAtWorld(float sx, float sy, Object* picked_object)
@@ -176,6 +178,19 @@ Material* Scene::FindMaterial(const std::string& material_name, const std::vecto
 	return nullptr;
 }
 
+Texture* Scene::FindTexture(const std::string& texture_name, const std::vector<std::unique_ptr<Texture>>& textures)
+{
+	auto it = std::find_if(textures.begin(), textures.end(), [&texture_name](const std::unique_ptr<Texture>& tex) {
+		return tex.get()->name == texture_name;
+		});
+
+	if (it != textures.end())
+	{
+		return (*it).get();
+	}
+	return nullptr;
+}
+
 const std::vector<std::unique_ptr<Mesh>>& Scene::meshes() const
 {
 	return meshes_;
@@ -184,6 +199,11 @@ const std::vector<std::unique_ptr<Mesh>>& Scene::meshes() const
 CameraComponent* Scene::main_camera() const
 {
 	return main_camera_;
+}
+
+void Scene::set_main_camera(CameraComponent* value)
+{
+	main_camera_ = value;
 }
 
 void Scene::AddObject(Object* object)
@@ -207,7 +227,91 @@ void Scene::ReleaseMeshUploadBuffer()
 	}
 }
 
-void Scene::Initialize(ID3D12Device* device, ID3D12GraphicsCommandList* command_list, 
+void Scene::UpdateRenderPassConstantBuffer(ID3D12GraphicsCommandList* command_list)
+{
+	main_camera_->UpdateCameraInfo();
+
+	CBPass cb_pass{};
+	cb_pass.view_matrix = xmath_util_float4x4::TransPose(main_camera_->view_matrix());
+	cb_pass.proj_matrix = xmath_util_float4x4::TransPose(main_camera_->projection_matrix());
+	cb_pass.camera_position = main_camera_->world_position();
+
+	//TODO: 조명 관련 클래스를 생성후 그것을 사용하여 아래 정보 업데이트(현재는 테스트용 하드코딩)
+	cb_pass.ambient_light = XMFLOAT4{ 0.01,0.01,0.01, 1 };
+	cb_pass.lights[0].strength = XMFLOAT3{ 0.7, 0.7, 0.7 };
+	cb_pass.lights[0].direction = XMFLOAT3{ 0, -1, 0.f };
+	cb_pass.lights[0].enable = true;
+	cb_pass.lights[0].type = 0;
+
+	//cb_pass.lights[1].strength = XMFLOAT3{ 1, 0, 0 };
+	//cb_pass.lights[1].falloff_start = 0.1;
+	//cb_pass.lights[1].direction = xmath_util_float3::Normalize(main_camera_->owner()->world_look_vector());
+	//cb_pass.lights[1].falloff_end = 100.f;
+	//cb_pass.lights[1].position = main_camera_->owner()->world_position_vector();
+	//cb_pass.lights[1].spot_power = 14;
+	//cb_pass.lights[1].enable = true;
+	//cb_pass.lights[1].type = 2;
+
+	for (int i = 1; i < 16; ++i)
+		cb_pass.lights[i].enable = false;
+
+	FrameResourceManager* frame_resource_manager = game_framework_->frame_resource_manager();
+	frame_resource_manager->curr_frame_resource()->cb_pass.get()->CopyData(0, cb_pass);
+
+	//25.02.23 수정
+	//기존 루트 디스크립터 테이블에서 루트 CBV로 변경
+	D3D12_GPU_VIRTUAL_ADDRESS cb_pass_address =
+		frame_resource_manager->curr_frame_resource()->cb_pass.get()->Resource()->GetGPUVirtualAddress();
+
+	command_list->SetGraphicsRootConstantBufferView((int)RootParameterIndex::kRenderPass, cb_pass_address);
+}
+
+void Scene::UpdateObjectConstantBuffer(FrameResource* curr_frame_resource)
+{
+	int cb_object_index = 0;
+	int cb_skinned_mesh_index = 0;
+	for (const auto& mesh : meshes_)
+	{
+		auto skinned_mesh = dynamic_cast<SkinnedMesh*>(mesh.get());
+		if (skinned_mesh)
+		{
+			skinned_mesh->UpdateConstantBuffer(curr_frame_resource, cb_skinned_mesh_index);
+		}
+		else
+		{
+			mesh->UpdateConstantBuffer(curr_frame_resource, cb_object_index);
+		}
+	}
+}
+
+void Scene::Render(ID3D12GraphicsCommandList* command_list)
+{
+	FrameResourceManager* frame_resource_manager = game_framework_->frame_resource_manager();
+	auto curr_frame_resource = frame_resource_manager->curr_frame_resource();
+
+	UpdateRenderPassConstantBuffer(command_list);
+	UpdateObjectConstantBuffer(curr_frame_resource);
+
+	for (const auto& [type, shader] : shaders_)
+	{
+		if (shader->shader_type() == ShaderType::kDebug && !is_render_debug_mesh_)
+		{
+			continue;
+		}
+		shader->Render(command_list, curr_frame_resource, game_framework_->descriptor_manager());
+	}
+}
+
+Scene::~Scene()
+{
+	object_list_.clear();
+	model_infos_.clear();
+	materials_.clear();
+	meshes_.clear();
+
+}
+
+void Scene::Initialize(ID3D12Device* device, ID3D12GraphicsCommandList* command_list,
 	ID3D12RootSignature* root_signature, GameFramework* game_framework)
 {
 	game_framework_ = game_framework;
@@ -227,9 +331,19 @@ void Scene::BuildMaterial(ID3D12Device* device, ID3D12GraphicsCommandList* comma
 	int frame_resource_index = 0;
 	for (std::unique_ptr<Material>& material : materials_)
 	{
-		material->CreateShaderVariables(device, command_list);
+		shaders_[material->shader_type()]->AddMaterial(material.get());
 		material->set_frame_resource_index(frame_resource_index);
 		++frame_resource_index;
+	}
+
+	for (const auto& const texture : textures_)
+	{
+		std::string file_name = "./Resource/Model/Texture/DDS/" + texture->name + ".dds";
+		std::wstring file_name_w;
+		file_name_w.assign(file_name.begin(), file_name.end());
+		DirectX::CreateDDSTextureFromFile12(device, command_list,
+			file_name_w.c_str(),
+			texture->resource, texture->upload_heap);
 	}
 }
 
@@ -244,7 +358,7 @@ void Scene::BuildDescriptorHeap(ID3D12Device* device)
 {
 	game_framework_->descriptor_manager()->
 		ResetDescriptorHeap(device,
-			Material::GetTextureCount());
+			textures_.size());
 }
 
 void Scene::BuildShaderResourceViews(ID3D12Device* device)
@@ -257,9 +371,9 @@ void Scene::BuildShaderResourceViews(ID3D12Device* device)
 }
 
 using namespace file_load_util;
-void Scene::BuildScene(const std::string& scene_name)
+void Scene::BuildScene()
 {
-	std::ifstream scene_file{ "./Resource/Model/" + scene_name + ".bin", std::ios::binary };
+	std::ifstream scene_file{ "./Resource/Model/World/Scene.bin", std::ios::binary };
 
 	int root_object_count = ReadFromFile<int>(scene_file);
 
@@ -285,7 +399,7 @@ void Scene::BuildScene(const std::string& scene_name)
 			ReadStringFromFile(scene_file, load_token); // <Transfrom>
 			XMFLOAT4X4 transfrom = ReadFromFile<XMFLOAT4X4>(scene_file);
 
-			model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/" + object_name + ".bin", meshes_, materials_));
+			model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/World/" + object_name + ".bin", meshes_, materials_, textures_));
 
 			object_list_.emplace_back();
 			object_list_.back().reset(model_infos_.back()->GetInstance());
