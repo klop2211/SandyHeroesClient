@@ -92,5 +92,6 @@ protected:
 
 	bool is_render_debug_mesh_ = false;	//디버그용 와이어프레임 obb를 렌더하는지 여부
 
+	float total_time_{ 0 };
 };
 

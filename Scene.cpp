@@ -105,6 +105,8 @@ void Scene::Update(float elapsed_time)
 	{
 		object->Update(elapsed_time);
 	}
+
+	total_time_ += elapsed_time;
 }
 
 void Scene::DeleteDeadObjects()
@@ -242,6 +244,8 @@ void Scene::UpdateRenderPassConstantBuffer(ID3D12GraphicsCommandList* command_li
 	cb_pass.lights[0].direction = XMFLOAT3{ 0, -1, 0.f };
 	cb_pass.lights[0].enable = true;
 	cb_pass.lights[0].type = 0;
+
+	cb_pass.total_time = total_time_;
 
 	//cb_pass.lights[1].strength = XMFLOAT3{ 1, 0, 0 };
 	//cb_pass.lights[1].falloff_start = 0.1;

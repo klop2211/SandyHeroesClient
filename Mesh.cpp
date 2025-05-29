@@ -24,11 +24,6 @@ void Mesh::DeleteMeshComponent(MeshComponent* mesh_component)
 	mesh_component_list_.remove(mesh_component);
 }
 
-void Mesh::SetMaterial(Material* material, int index)
-{
-	materials_[index] = material;
-}
-
 void Mesh::CreateShaderVariables(ID3D12Device* device, ID3D12GraphicsCommandList* command_list)
 {
 	if (positions_.size())

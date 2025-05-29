@@ -43,7 +43,7 @@ void BaseScene::Initialize(ID3D12Device* device, ID3D12GraphicsCommandList* comm
 
 void BaseScene::BuildShader(ID3D12Device* device, ID3D12RootSignature* root_signature)
 {
-	constexpr int shader_count = 6;
+	constexpr int shader_count = 7;
 	shaders_.reserve(shader_count);
 
 	shaders_[(int)ShaderType::kStandardMesh] = std::make_unique<StandardMeshShader>();
@@ -51,7 +51,7 @@ void BaseScene::BuildShader(ID3D12Device* device, ID3D12RootSignature* root_sign
 	shaders_[(int)ShaderType::kSkybox] = std::make_unique<SkyboxShader>();
 	shaders_[(int)ShaderType::kDebug] = std::make_unique<DebugShader>();
 	shaders_[(int)ShaderType::kUI] = std::make_unique<UIShader>();
-
+	shaders_[(int)ShaderType::kBreathing] = std::make_unique<BreathingShader>();
 
 	//TODO: ���̴��� �����Ǵ� ���׸��� ���� Reserve
 
@@ -142,15 +142,6 @@ void BaseScene::BuildMesh(ID3D12Device* device, ID3D12GraphicsCommandList* comma
 	{
 		mesh->CreateShaderVariables(device, command_list);
 	}
-
-	for (int i = 0; i < meshes_.size(); ++i)
-	{
-		if (meshes_[i]->name() == "Cube")
-		{
-			//meshes_[i]->set_shader_type((int)ShaderType::kTransparent);
-			meshes_[i]->set_shader_type((int)ShaderType::kBreathing);
-		}
-	}
 }
 
 void BaseScene::BuildMaterial(ID3D12Device* device, ID3D12GraphicsCommandList* command_list)
@@ -186,6 +177,19 @@ void BaseScene::BuildMaterial(ID3D12Device* device, ID3D12GraphicsCommandList* c
 	material->AddTexture(textures_.back().get());
 	materials_.emplace_back();
 	materials_.back().reset(material);
+
+	//Create Breathing Material
+	{
+		material = new Material{ "Breathing", (int)ShaderType::kBreathing };
+		Material* mat = Scene::FindMaterial("Desert_(Instance)", materials_);
+		textures_.push_back(std::make_unique<Texture>());
+		textures_.back()->name = "Desert";
+		textures_.back()->type = TextureType::kAlbedoMap;
+		material->CopyMaterialData(mat);
+		material->AddTexture(textures_.back().get());
+		materials_.emplace_back();
+		materials_.back().reset(material);
+	}
 
 
 	Scene::BuildMaterial(device, command_list);
@@ -303,6 +307,24 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 				auto debug_mesh_component = new DebugMeshComponent(object, debug_mesh, mesh->bounds());
 				debug_mesh_component->AddMaterial(debug_material);
 				object->AddComponent(debug_mesh_component);
+			}
+		}
+	}
+	PrepareGroundChecking();
+	for (const auto& collider : checking_maps_mesh_collider_list_[3])
+	{
+		auto object = collider->owner();
+
+		auto mesh_components = Object::GetComponentsInChildren<MeshComponent>(object);
+		for (auto& mesh_comp : mesh_components)
+		{
+			Mesh* mesh = mesh_comp->GetMesh();
+			if (!mesh) continue;
+
+			const std::string& name = mesh->name();
+			if (name == "Hex_01A" || name == "Hex_01B")
+			{
+				mesh_comp->ChangeMaterial(0, Scene::FindMaterial("Breathing", materials_));
 			}
 		}
 	}
@@ -560,7 +582,6 @@ void BaseScene::Update(float elapsed_time)
 
 	UpdateStageClear();
 
-	total_time += elapsed_time;
 }
 
 void BaseScene::AddObject(Object* object)
