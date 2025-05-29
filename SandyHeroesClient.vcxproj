@@ -173,6 +173,7 @@
     <ClInclude Include="PlayerAnimationState.h" />
     <ClInclude Include="RecorderScene.h" />
     <ClInclude Include="RecordingScene.h" />
+    <ClInclude Include="ShadowShader.h" />
     <ClInclude Include="ShotDragonAnimationState.h" />
     <ClInclude Include="SpawnerComponent.h" />
     <ClInclude Include="TransparentShader.h" />
@@ -233,6 +234,7 @@
     <ClCompile Include="PlayerAnimationState.cpp" />
     <ClCompile Include="RecorderScene.cpp" />
     <ClCompile Include="RecordingScene.cpp" />
+    <ClCompile Include="ShadowShader.cpp" />
     <ClCompile Include="ShotDragonAnimationState.cpp" />
     <ClCompile Include="SpawnerComponent.cpp" />
     <ClCompile Include="TransparentShader.cpp" />
@@ -286,6 +288,14 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
     <FxCompile Include="LightingUtil.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="Shadow.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>

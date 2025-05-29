@@ -59,6 +59,8 @@ void MeshComponent::UpdateConstantBuffer(FrameResource* current_frame_resource, 
 {
 	if (!is_visible_)
 		return;
+
+	if (cb_index == -1) cb_index = constant_buffer_index_;
 	constant_buffer_index_ = cb_index;
 
 	CBObject object_buffer{};
@@ -131,5 +133,10 @@ Mesh* MeshComponent::GetMesh() const
 void MeshComponent::set_mesh(Mesh* mesh)
 {
 	mesh_ = mesh;
+}
+
+UINT MeshComponent::constant_buffer_index() const
+{
+	return constant_buffer_index_;
 }
 

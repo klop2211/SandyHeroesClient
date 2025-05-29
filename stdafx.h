@@ -65,7 +65,7 @@ static std::mt19937 kRandomGenerator(kRandomDevice());
 
 
 enum class RootParameterIndex{ kWorldMatrix = 0, kBoneTransform, kBoneOffset, kRenderPass, 
-	kMaterial, kAlbedoMap, kSpecGlosMap, kMetalGlosMap, kEmissionMap, kNormalMap, kCubeMap
+	kMaterial, kAlbedoMap, kSpecGlosMap, kMetalGlosMap, kEmissionMap, kNormalMap, kCubeMap, kShadowMap, kShadowPass
 };
 
 // 유틸 함수

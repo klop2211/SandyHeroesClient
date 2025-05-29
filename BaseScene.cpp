@@ -26,6 +26,7 @@
 #include "UIMesh.h"
 #include "TransparentShader.h"
 #include "BreathingShader.h"
+#include "ShadowShader.h"
 #include "MonsterComponent.h"
 #include "MovementComponent.h"
 #include "SpawnerComponent.h"
@@ -43,7 +44,7 @@ void BaseScene::Initialize(ID3D12Device* device, ID3D12GraphicsCommandList* comm
 
 void BaseScene::BuildShader(ID3D12Device* device, ID3D12RootSignature* root_signature)
 {
-	constexpr int shader_count = 7;
+	constexpr int shader_count = 8;
 	shaders_.reserve(shader_count);
 
 	shaders_[(int)ShaderType::kStandardMesh] = std::make_unique<StandardMeshShader>();
@@ -52,6 +53,7 @@ void BaseScene::BuildShader(ID3D12Device* device, ID3D12RootSignature* root_sign
 	shaders_[(int)ShaderType::kDebug] = std::make_unique<DebugShader>();
 	shaders_[(int)ShaderType::kUI] = std::make_unique<UIShader>();
 	shaders_[(int)ShaderType::kBreathing] = std::make_unique<BreathingShader>();
+	shaders_[(int)ShaderType::kShadow] = std::make_unique<ShadowShader>();
 
 	//TODO: ���̴��� �����Ǵ� ���׸��� ���� Reserve
 

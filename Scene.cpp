@@ -7,6 +7,7 @@
 #include "InputControllerComponent.h"
 #include "GameFramework.h"
 #include "MeshComponent.h"
+#include "MeshColliderComponent.h"
 #include "SkinnedMesh.h"
 #include "DDSTextureLoader.h"
 
@@ -270,6 +271,71 @@ void Scene::UpdateRenderPassConstantBuffer(ID3D12GraphicsCommandList* command_li
 	command_list->SetGraphicsRootConstantBufferView((int)RootParameterIndex::kRenderPass, cb_pass_address);
 }
 
+void Scene::UpdateRenderPassShadowBuffer(ID3D12GraphicsCommandList* command_list)
+{
+	constexpr float radius = 50.0f;
+
+	CBShadow shadow_pass = {};
+	shadow_pass.light_dir = { 0.577350020,  -0.577350020, 0.577350020 };
+
+	//// Only the first "main" light casts a shadow.
+	//XMVECTOR lightDir = XMLoadFloat3(&shadow_pass.light_dir);
+	//XMVECTOR targetPos = XMVectorSet(0, 0, 0, 1);
+	//XMVECTOR lightPos = (-2.0f * radius * lightDir);
+	//XMVECTOR lightUp = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+	//XMMATRIX lightView = XMMatrixLookAtLH(lightPos, targetPos, lightUp);
+
+	//XMStoreFloat3(&shadow_pass.light_pos_w, lightPos);
+
+
+
+	XMFLOAT3 player_pos = player_->world_position_vector();
+	XMVECTOR targetPos = XMLoadFloat3(&player_pos); // 플레이어를 타겟으로
+	XMVECTOR lightDir = XMLoadFloat3(&shadow_pass.light_dir);
+	XMVECTOR lightPos = targetPos - 2.0f * radius * lightDir;
+	XMVECTOR lightUp = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+
+	XMMATRIX lightView = XMMatrixLookAtLH(lightPos, targetPos, lightUp);
+	XMStoreFloat3(&shadow_pass.light_pos_w, lightPos);
+
+
+	// Transform bounding sphere to light space.
+	XMFLOAT3 sphereCenterLS;
+	XMStoreFloat3(&sphereCenterLS, XMVector3TransformCoord(targetPos, lightView));
+
+	// Ortho frustum in light space encloses scene.
+	float l = sphereCenterLS.x - radius;
+	float b = sphereCenterLS.y - radius;
+	float n = sphereCenterLS.z - radius;
+	float r = sphereCenterLS.x + radius;
+	float t = sphereCenterLS.y + radius;
+	float f = sphereCenterLS.z + radius;
+
+	shadow_pass.near_z = n;
+	shadow_pass.far_z = f;
+	XMMATRIX lightProj = XMMatrixOrthographicOffCenterLH(l, r, b, t, n, f);
+
+	// Transform NDC space [-1,+1]^2 to texture space [0,1]^2
+	XMMATRIX T(
+		0.5f, 0.0f, 0.0f, 0.0f,
+		0.0f, -0.5f, 0.0f, 0.0f,
+		0.0f, 0.0f, 1.0f, 0.0f,
+		0.5f, 0.5f, 0.0f, 1.0f);
+
+	XMMATRIX S = lightView * lightProj * T;
+	XMStoreFloat4x4(&shadow_pass.light_view, XMMatrixTranspose(lightView));
+	XMStoreFloat4x4(&shadow_pass.light_proj, XMMatrixTranspose(lightProj));
+	XMStoreFloat4x4(&shadow_pass.shadow_transform, XMMatrixTranspose(S));
+
+	FrameResourceManager* frame_resource_manager = game_framework_->frame_resource_manager();
+	frame_resource_manager->curr_frame_resource()->cb_shadow.get()->CopyData(0, shadow_pass);
+
+	D3D12_GPU_VIRTUAL_ADDRESS cb_shadow_address =
+		frame_resource_manager->curr_frame_resource()->cb_shadow.get()->Resource()->GetGPUVirtualAddress();
+
+	command_list->SetGraphicsRootConstantBufferView((int)RootParameterIndex::kShadowPass, cb_shadow_address);
+}
+
 void Scene::UpdateObjectConstantBuffer(FrameResource* curr_frame_resource)
 {
 	int cb_object_index = 0;
@@ -293,6 +359,7 @@ void Scene::Render(ID3D12GraphicsCommandList* command_list)
 	FrameResourceManager* frame_resource_manager = game_framework_->frame_resource_manager();
 	auto curr_frame_resource = frame_resource_manager->curr_frame_resource();
 
+	//Default-Render-Pass
 	UpdateRenderPassConstantBuffer(command_list);
 	UpdateObjectConstantBuffer(curr_frame_resource);
 
@@ -303,6 +370,47 @@ void Scene::Render(ID3D12GraphicsCommandList* command_list)
 			continue;
 		}
 		shader->Render(command_list, curr_frame_resource, game_framework_->descriptor_manager());
+	}
+}
+
+void Scene::ShadowRender(ID3D12GraphicsCommandList* command_list)
+{
+	FrameResourceManager* frame_resource_manager = game_framework_->frame_resource_manager();
+	auto curr_frame_resource = frame_resource_manager->curr_frame_resource();
+
+	//Shadow-Render-Pass
+	UpdateRenderPassConstantBuffer(command_list);
+	UpdateRenderPassShadowBuffer(command_list);
+	UpdateObjectConstantBuffer(curr_frame_resource);
+
+	for (const auto& [type, shader] : shaders_)
+	{
+		if (type == (int)ShaderType::kShadow)
+		{
+			auto& shadow_shader = shader;
+			shadow_shader->Render(command_list, curr_frame_resource, game_framework_->descriptor_manager());
+
+			for (int i = -1; i <= 1; ++i)
+			{
+				int idx = std::clamp(stage_clear_num_ + i, 0, 7);
+				for (auto& object : checking_maps_mesh_collider_list_[idx])
+				{
+					if (object->mesh()->name() == "Cube") continue;
+
+					const auto& mesh_component = Object::GetComponent<MeshComponent>(object->owner());
+					mesh_component->UpdateConstantBuffer(curr_frame_resource, -1);
+
+					auto gpu_address = curr_frame_resource->cb_object->Resource()->GetGPUVirtualAddress();
+					const auto cb_size = d3d_util::CalculateConstantBufferSize((sizeof(CBObject)));
+					gpu_address += cb_size * mesh_component->constant_buffer_index();
+
+					command_list->SetGraphicsRootConstantBufferView((int)RootParameterIndex::kWorldMatrix, gpu_address);
+
+					mesh_component->GetMesh()->Render(command_list, 0);
+				}
+			}
+
+		}
 	}
 }
 
@@ -362,7 +470,7 @@ void Scene::BuildDescriptorHeap(ID3D12Device* device)
 {
 	game_framework_->descriptor_manager()->
 		ResetDescriptorHeap(device,
-			textures_.size());
+			textures_.size() + 1);	// + 1 is ShadowMap
 }
 
 void Scene::BuildShaderResourceViews(ID3D12Device* device)

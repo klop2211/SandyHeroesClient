@@ -36,6 +36,7 @@ public:
 
     void set_mesh(Mesh* mesh);
 
+    UINT constant_buffer_index() const;
 protected:
     UINT constant_buffer_index_{};
 

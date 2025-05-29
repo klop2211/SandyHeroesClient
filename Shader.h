@@ -6,7 +6,7 @@ struct FrameResource;
 
 enum class ShaderType
 {
-	kNone = 0, kColor, kSkinnedMesh, kStandardMesh, kStandardSkinnedMesh, kSkybox, kDebug, kUI, kTransparent, kBreathing
+	kNone = 0, kColor, kSkinnedMesh, kStandardMesh, kStandardSkinnedMesh, kSkybox, kDebug, kUI, kTransparent, kBreathing, kShadow
 };
 
 class Shader
