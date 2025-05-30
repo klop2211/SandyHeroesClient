@@ -228,7 +228,7 @@ void GameFramework::BuildRootSignature()
     descriptor_range[5].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 5); //cube
     descriptor_range[6].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 6); //shadow
 
-    constexpr int root_parameter_size{ 13 };
+    constexpr int root_parameter_size{ 14 };
     CD3DX12_ROOT_PARAMETER root_parameter[root_parameter_size];
 
     //25.02.23 ����
@@ -236,16 +236,6 @@ void GameFramework::BuildRootSignature()
     root_parameter[0].InitAsConstantBufferView(0); // world matrix
     root_parameter[1].InitAsConstantBufferView(1); // bone transform
     root_parameter[2].InitAsConstantBufferView(2); // bone offset (default buffer)
-    root_parameter[3].InitAsConstantBufferView(3); // render pass
-    root_parameter[4].InitAsConstantBufferView(4); // material
-    root_parameter[5].InitAsDescriptorTable(1, &descriptor_range[0], D3D12_SHADER_VISIBILITY_PIXEL);
-    root_parameter[6].InitAsDescriptorTable(1, &descriptor_range[1], D3D12_SHADER_VISIBILITY_PIXEL);
-    root_parameter[7].InitAsDescriptorTable(1, &descriptor_range[2], D3D12_SHADER_VISIBILITY_PIXEL);
-    root_parameter[8].InitAsDescriptorTable(1, &descriptor_range[3], D3D12_SHADER_VISIBILITY_PIXEL);
-    root_parameter[9].InitAsDescriptorTable(1, &descriptor_range[4], D3D12_SHADER_VISIBILITY_PIXEL);
-    root_parameter[10].InitAsDescriptorTable(1, &descriptor_range[5], D3D12_SHADER_VISIBILITY_PIXEL);
-    root_parameter[11].InitAsDescriptorTable(1, &descriptor_range[6], D3D12_SHADER_VISIBILITY_PIXEL);
-    root_parameter[12].InitAsConstantBufferView(5); // shadow pass
     root_parameter[3].InitAsConstantBufferView(3); // ui
     root_parameter[4].InitAsConstantBufferView(4); // render pass
     root_parameter[5].InitAsConstantBufferView(5); // material
@@ -255,7 +245,8 @@ void GameFramework::BuildRootSignature()
     root_parameter[9].InitAsDescriptorTable(1, &descriptor_range[3], D3D12_SHADER_VISIBILITY_PIXEL);
     root_parameter[10].InitAsDescriptorTable(1, &descriptor_range[4], D3D12_SHADER_VISIBILITY_PIXEL);
     root_parameter[11].InitAsDescriptorTable(1, &descriptor_range[5], D3D12_SHADER_VISIBILITY_PIXEL);
-
+    root_parameter[12].InitAsDescriptorTable(1, &descriptor_range[6], D3D12_SHADER_VISIBILITY_PIXEL);
+    root_parameter[13].InitAsConstantBufferView(6); // shadow pass
 
     
     CD3DX12_STATIC_SAMPLER_DESC aniso_warp{ 0 };    //���� ���͸� warp ��� ���÷�

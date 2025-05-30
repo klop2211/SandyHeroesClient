@@ -51,7 +51,7 @@ cbuffer Material : register(b5)
     int g_texture_mask;
 }
 
-cbuffer ShadowPass : register(b5)
+cbuffer ShadowPass : register(b6)
 {
     float4x4 light_view;
     float4x4 light_proj;
