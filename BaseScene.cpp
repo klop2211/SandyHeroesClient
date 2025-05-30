@@ -749,7 +749,7 @@ void BaseScene::UpdateStageClear()
 	{
 		PrepareGroundChecking();
 	}
-	if (catch_monster_num_ > 7)
+	if (catch_monster_num_ > 0)
 	{
 		// 현재 스테이지에서 "Cube" 메쉬 제거
 		auto& mesh_list = checking_maps_mesh_collider_list_[stage_clear_num_];
@@ -1027,7 +1027,6 @@ void BaseScene::CheckObjectHitBullet(Object* object)
 	GunComponent* gun = Object::GetComponentInChildren<GunComponent>(player_);
 	auto& bullet_list = gun->fired_bullet_list();
 
-
 	auto& box_collider_list = Object::GetComponentsInChildren<BoxColliderComponent>(object);
 	if (!box_collider_list.size())
 		return;
@@ -1042,7 +1041,6 @@ void BaseScene::CheckObjectHitBullet(Object* object)
 			if (!bullet_collider)
 				continue;
 
-
 			if (bullet_collider->animated_box().Intersects(box_collider->animated_box()))
 			{
 				if (bullet->is_dead())
@@ -1050,10 +1048,12 @@ void BaseScene::CheckObjectHitBullet(Object* object)
 				particle_system_->SpawnParticle(this, box_collider->animated_box().Center, 10, 0.5f);
 				bullet->set_is_dead(true);
 				MonsterComponent* monster = Object::GetComponent<MonsterComponent>(object);
-				if (monster)
+				if (monster && !monster->IsDead())
 				{
 					monster->set_hp(monster->hp() - gun->damage());
-					catch_monster_num_++;
+
+					if(monster->IsDead())
+						catch_monster_num_++;
 				}
 				return;
 			}

@@ -127,3 +127,8 @@ float MonsterComponent::attack_force() const
 {
     return attack_force_;
 }
+
+bool MonsterComponent::IsDead() const
+{
+    return hp_ <= 0;
+}

@@ -29,6 +29,8 @@ public:
 	float attack_force()const;
 
 	void set_scene(Scene* value);
+	
+	bool IsDead() const;
 
 private:
 	float max_hp_{ 120.f };
