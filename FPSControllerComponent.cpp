@@ -210,7 +210,7 @@ void FPSControllerComponent::Update(float elapsed_time)
 	}
 
 	// ´ë½¬
-	constexpr float kDashSpeed = 70.f;
+	constexpr float kDashSpeed = 35.f;
 	if (is_dash_pressed_)
 	{
 		is_dash_pressed_ = false;
