@@ -190,7 +190,7 @@ void FPSControllerComponent::Update(float elapsed_time)
 	const auto& movement = Object::GetComponent<MovementComponent>(owner_);
 
 	XMFLOAT3 velocity{ 0,0,0 };
-	float speed = 7.0f;
+	float speed = 5.5f;
 	XMFLOAT3 look = owner_->look_vector();
 	XMFLOAT3 right = owner_->right_vector();
 	look.y = 0.f; // xz 평면을 따라 이동
@@ -217,7 +217,7 @@ void FPSControllerComponent::Update(float elapsed_time)
 
 		XMFLOAT3 position = owner_->world_position_vector();
 
-		constexpr float kGroundYOffset = 1.5f;
+		constexpr float kGroundYOffset = 0.75f;
 		position.y += kGroundYOffset;
 		XMVECTOR ray_origin = XMLoadFloat3(&position);
 		position.y -= kGroundYOffset;

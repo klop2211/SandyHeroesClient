@@ -780,7 +780,7 @@ void BaseScene::UpdateStageClear()
 void BaseScene::CheckObjectIsGround(Object* object)
 {
 	XMFLOAT3 position = object->world_position_vector();
-	constexpr float kGroundYOffset = 1.5f;
+	constexpr float kGroundYOffset = 0.75f;
 	position.y += kGroundYOffset;
 	XMVECTOR ray_origin = XMLoadFloat3(&position);
 	position.y -= kGroundYOffset;
@@ -847,7 +847,7 @@ void BaseScene::PrepareGroundChecking()
 void BaseScene::CheckPlayerHitWall(Object* object, const XMFLOAT3& velocity)
 {
 	XMFLOAT3 position = object->world_position_vector();
-	constexpr float kGroundYOffset = 1.5f;
+	constexpr float kGroundYOffset = 0.75f;
 	position.y += kGroundYOffset;
 	XMVECTOR ray_origin = XMLoadFloat3(&position);
 	position.y -= kGroundYOffset;
@@ -928,7 +928,7 @@ void BaseScene::CheckObjectHitObject(Object* object)
 			if (obb1.Intersects(other_box->animated_box()))
 			{
 				XMFLOAT3 position = object->world_position_vector();
-				constexpr float kGroundYOffset = 1.5f;
+				constexpr float kGroundYOffset = 0.75f;
 				position.y += kGroundYOffset;
 				XMVECTOR ray_origin = XMLoadFloat3(&position);
 				position.y -= kGroundYOffset;
@@ -983,7 +983,7 @@ void BaseScene::CheckObjectHitObject(Object* object)
 			if (obb1.Intersects(box2->animated_box()))
 			{
 				XMFLOAT3 position = object->world_position_vector();
-				constexpr float kGroundYOffset = 1.5f;
+				constexpr float kGroundYOffset = 0.75f;
 				position.y += kGroundYOffset;
 				XMVECTOR ray_origin = XMLoadFloat3(&position);
 				position.y -= kGroundYOffset;
