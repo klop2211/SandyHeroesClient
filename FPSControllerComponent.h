@@ -27,7 +27,7 @@ private:
 
     // 점프키가 눌렸고 owner가 지면위에 있다면 점프를 실행
     bool is_jumpkey_pressed_ = false;
-    float jump_speed_ = 10.f;
+    float jump_speed_ = 7.f;
 
     float y_axis_velocity_ = 0.f;       // y축에 대한 속도
     float gravity_ = 20.f;

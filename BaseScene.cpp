@@ -278,7 +278,7 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 	Object* camera_object = new Object();
 	player->AddChild(camera_object);
 	fps_controller->set_camera_object(camera_object);
-	camera_object->set_position_vector(0, 0.4f, 0); // 플레이어 캐릭터의 키가 150인것을 고려하여 머리위치에 배치
+	camera_object->set_position_vector(0, 0.3f, 0); // 플레이어 캐릭터의 키가 150인것을 고려하여 머리위치에 배치
 	camera_object->set_name("CAMERA_1");
 	CameraComponent* camera_component =
 		new CameraComponent(camera_object, 0.01, 10000,
@@ -749,7 +749,7 @@ void BaseScene::UpdateStageClear()
 	{
 		PrepareGroundChecking();
 	}
-	if (catch_monster_num_ > 0)
+	if (catch_monster_num_ > 3)
 	{
 		// 현재 스테이지에서 "Cube" 메쉬 제거
 		auto& mesh_list = checking_maps_mesh_collider_list_[stage_clear_num_];

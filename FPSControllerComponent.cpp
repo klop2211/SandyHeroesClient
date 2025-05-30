@@ -124,7 +124,7 @@ bool FPSControllerComponent::ProcessInput(UINT message_id, WPARAM w_param, LPARA
 				is_dash_pressed_ = true;
 				dash_cool_delta_time_ = dash_cool_time_;
 				dash_velocity_ = { 0,0,0 };
-				dash_length_ = 10.f;
+				dash_length_ = 5.0f;
 				dash_before_position_ = owner_->position_vector();
 				XMFLOAT3 look = owner_->look_vector();
 				XMFLOAT3 right = owner_->right_vector();
@@ -190,7 +190,7 @@ void FPSControllerComponent::Update(float elapsed_time)
 	const auto& movement = Object::GetComponent<MovementComponent>(owner_);
 
 	XMFLOAT3 velocity{ 0,0,0 };
-	float speed = 10;
+	float speed = 7.0f;
 	XMFLOAT3 look = owner_->look_vector();
 	XMFLOAT3 right = owner_->right_vector();
 	look.y = 0.f; // xz 평면을 따라 이동
