@@ -1,4 +1,4 @@
-#include "stdafx.h"
+ï»¿#include "stdafx.h"
 #include "BaseScene.h"
 #include "FrameResourceManager.h"
 #include "DescriptorManager.h"
@@ -24,6 +24,9 @@
 #include "SkinnedMeshComponent.h"
 #include "UIShader.h"
 #include "UIMesh.h"
+#include "TransparentShader.h"
+#include "BreathingShader.h"
+#include "ShadowShader.h"
 #include "MonsterComponent.h"
 #include "MovementComponent.h"
 #include "SpawnerComponent.h"
@@ -42,15 +45,18 @@ void BaseScene::Initialize(ID3D12Device* device, ID3D12GraphicsCommandList* comm
 
 void BaseScene::BuildShader(ID3D12Device* device, ID3D12RootSignature* root_signature)
 {
-	constexpr int shader_count = 5;
+	constexpr int shader_count = 8;
 	shaders_.reserve(shader_count);
+
 	shaders_[(int)ShaderType::kStandardMesh] = std::make_unique<StandardMeshShader>();
 	shaders_[(int)ShaderType::kStandardSkinnedMesh] = std::make_unique<StandardSkinnedMeshShader>();
 	shaders_[(int)ShaderType::kSkybox] = std::make_unique<SkyboxShader>();
 	shaders_[(int)ShaderType::kDebug] = std::make_unique<DebugShader>();
 	shaders_[(int)ShaderType::kUI] = std::make_unique<UIShader>();
+	shaders_[(int)ShaderType::kBreathing] = std::make_unique<BreathingShader>();
+	shaders_[(int)ShaderType::kShadow] = std::make_unique<ShadowShader>();
 
-	//TODO: ½¦ÀÌ´õ¿¡ »ç¿ëµÇ´Â ¸ÓÅ×¸®¾ó °³¼ö Reserve
+	//TODO: ï¿½ï¿½ï¿½Ì´ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ç´ï¿½ ï¿½ï¿½ï¿½×¸ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Reserve
 
 	for (const auto& [type, shader] : shaders_)
 	{
@@ -61,7 +67,7 @@ void BaseScene::BuildShader(ID3D12Device* device, ID3D12RootSignature* root_sign
 using namespace file_load_util;
 void BaseScene::BuildMesh(ID3D12Device* device, ID3D12GraphicsCommandList* command_list)
 {	
-	//¾À¿¡¼­ ¹Ì¸® ·ÎµåµÇ´Â µ¥ÀÌÅÍÀÇ °³¼ö´Â ¾À Å×½ºÆ® °úÁ¤¿¡¼­ ¹Ì¸® ¾Ë¼ö ÀÖÀ½
+	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ì¸ï¿½ ï¿½Îµï¿½ï¿½Ç´ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½×½ï¿½Æ® ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ì¸ï¿½ ï¿½Ë¼ï¿½ ï¿½ï¿½ï¿½ï¿½
 	constexpr UINT kMeshCount{ 60 };
 	meshes_.reserve(kMeshCount);
 	meshes_.push_back(std::make_unique<CubeMesh>());
@@ -203,23 +209,36 @@ void BaseScene::BuildMaterial(ID3D12Device* device, ID3D12GraphicsCommandList* c
 	materials_.emplace_back();
 	materials_.back().reset(material);
 
+	//Create Breathing Material
+	{
+		material = new Material{ "Breathing", (int)ShaderType::kBreathing };
+		Material* mat = Scene::FindMaterial("Desert_(Instance)", materials_);
+		textures_.push_back(std::make_unique<Texture>());
+		textures_.back()->name = "Desert";
+		textures_.back()->type = TextureType::kAlbedoMap;
+		material->CopyMaterialData(mat);
+		material->AddTexture(textures_.back().get());
+		materials_.emplace_back();
+		materials_.back().reset(material);
+	}
+
 
 	Scene::BuildMaterial(device, command_list);
 }
 
 void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* command_list)
 {
-	//TODO: °¢ ¸Ş½¬ÀÇ ÄÄÆ÷³ÍÆ® ¿¬°á °³¼ö¸¦ ÆÄ¾ÇÇÏ¸é ¾Æ·¡ ¼öÄ¡¸¦ µğÅ×ÀÏÇÏ°Ô ¼³Á¤ÇÒ ¼ö ÀÖÀ»°Í °°´Ù..
+	//TODO: ê° ë©”ì‰¬ì˜ ì»´í¬ë„ŒíŠ¸ ì—°ê²° ê°œìˆ˜ë¥¼ íŒŒì•…í•˜ë©´ ì•„ë˜ ìˆ˜ì¹˜ë¥¼ ë””í…Œì¼í•˜ê²Œ ì„¤ì •í•  ìˆ˜ ìˆì„ê²ƒ ê°™ë‹¤..
 	cb_object_capacity_ = 15000;
 	cb_skinned_mesh_object_capacity_ = 10000;
 	cb_ui_mesh_capacity_ = 100;
 
 	ShowCursor(false);
 
-	//ÇÃ·¹ÀÌ¾î »ı¼º
+	//í”Œë ˆì´ì–´ ìƒì„±
 	Object* player = model_infos_[0]->GetInstance();
 	player->set_name("Player");
-	player->set_position_vector(XMFLOAT3{ 0, 30, 0 });
+	player->set_position_vector(XMFLOAT3{ -15, 30, 0 });
 	player->set_collide_type(true, true);
 	player->AddComponent(new MovementComponent(player));
 	AnimatorComponent* animator = Object::GetComponent<AnimatorComponent>(player);
@@ -246,7 +265,7 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 	GunComponent::LoadGunInfosFromFile("./Resource/GunInfos.txt");
 
 	//Set player's gun
-	//TODO: ÃÑ±â ¸Ş½¬ ÀåÂø ±¸Çö
+	//TODO: ì´ê¸° ë©”ì‰¬ ì¥ì°© êµ¬í˜„
 	Object* player_gun_frame = player->FindFrame("WeaponR_locator");
 	player_gun_frame->AddChild(model_infos_[1]->GetInstance());
 	player_gun_frame = player_gun_frame->child();
@@ -259,7 +278,7 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 	Object* camera_object = new Object();
 	player->AddChild(camera_object);
 	fps_controller->set_camera_object(camera_object);
-	camera_object->set_position_vector(0, 0.4f, 0); // ÇÃ·¹ÀÌ¾î Ä³¸¯ÅÍÀÇ Å°°¡ 150ÀÎ°ÍÀ» °í·ÁÇÏ¿© ¸Ó¸®À§Ä¡¿¡ ¹èÄ¡
+	camera_object->set_position_vector(0, 0.4f, 0); // í”Œë ˆì´ì–´ ìºë¦­í„°ì˜ í‚¤ê°€ 150ì¸ê²ƒì„ ê³ ë ¤í•˜ì—¬ ë¨¸ë¦¬ìœ„ì¹˜ì— ë°°ì¹˜
 	camera_object->set_name("CAMERA_1");
 	CameraComponent* camera_component =
 		new CameraComponent(camera_object, 0.01, 10000,
@@ -304,8 +323,8 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 	object_list_.emplace_back();
 	object_list_.back().reset(camera_object);
 
-	//¸ğµç ¸Ş½¬ ÀÖ´Â °´Ã¼¿¡ ¸Ş½¬ Äİ¶óÀÌ´õ Ãß°¡(ÁÖÀÇ»çÇ×: »õ·Ó°Ô ¸¸µé¾îÁö´Â ¸Ş½¬ÀÖ´Â °´Ã¼´Â ¸Ş½¬Äİ¶óÀÌ´õ°¡ ¾øÀ½)
-	//+ µğ¹ö±×¿ë ¸Ş½¬ Ãß°¡
+	//ëª¨ë“  ë©”ì‰¬ ìˆëŠ” ê°ì²´ì— ë©”ì‰¬ ì½œë¼ì´ë” ì¶”ê°€(ì£¼ì˜ì‚¬í•­: ìƒˆë¡­ê²Œ ë§Œë“¤ì–´ì§€ëŠ” ë©”ì‰¬ìˆëŠ” ê°ì²´ëŠ” ë©”ì‰¬ì½œë¼ì´ë”ê°€ ì—†ìŒ)
+	//+ ë””ë²„ê·¸ìš© ë©”ì‰¬ ì¶”ê°€
 	Mesh* debug_mesh = Scene::FindMesh("Debug_Mesh", meshes_);
 	const auto& const debug_material = Scene::FindMaterial("debug", materials_);
 	for (auto& mesh : meshes_)
@@ -322,6 +341,24 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 				auto debug_mesh_component = new DebugMeshComponent(object, debug_mesh, mesh->bounds());
 				debug_mesh_component->AddMaterial(debug_material);
 				object->AddComponent(debug_mesh_component);
+			}
+		}
+	}
+	PrepareGroundChecking();
+	for (const auto& collider : checking_maps_mesh_collider_list_[3])
+	{
+		auto object = collider->owner();
+
+		auto mesh_components = Object::GetComponentsInChildren<MeshComponent>(object);
+		for (auto& mesh_comp : mesh_components)
+		{
+			Mesh* mesh = mesh_comp->GetMesh();
+			if (!mesh) continue;
+
+			const std::string& name = mesh->name();
+			if (name == "Hex_01A" || name == "Hex_01B")
+			{
+				mesh_comp->ChangeMaterial(0, Scene::FindMaterial("Breathing", materials_));
 			}
 		}
 	}
@@ -513,16 +550,16 @@ bool BaseScene::ProcessInput(UINT id, WPARAM w_param, LPARAM l_param, float time
 	switch (id)
 	{
 	case WM_KEYDOWN:
-		// Ä«¸Ş¶ó ÀüÈ¯ Å×½ºÆ®
+		// ì¹´ë©”ë¼ ì „í™˜ í…ŒìŠ¤íŠ¸
 		if (w_param == 'K')
 		{
 			ShowCursor(true);
-			//¹Ù²Ü Ä«¸Ş¶ó ¿ÀºêÁ§Æ®¸¦ Ã£°í
+			//ë°”ê¿€ ì¹´ë©”ë¼ ì˜¤ë¸Œì íŠ¸ë¥¼ ì°¾ê³ 
 			Object* camera = FindObject("CAMERA_2");
 
-			//±× ¿ÀºêÁ§Æ®ÀÇ Ä«¸Ş¶ó¿Í ÄÁÆ®·Ñ·¯¸¦ ¾ÀÀ¸·Î °¡Á®¿Â´Ù
+			//ê·¸ ì˜¤ë¸Œì íŠ¸ì˜ ì¹´ë©”ë¼ì™€ ì»¨íŠ¸ë¡¤ëŸ¬ë¥¼ ì”¬ìœ¼ë¡œ ê°€ì ¸ì˜¨ë‹¤
 			CameraComponent* new_camera = Object::GetComponent<CameraComponent>(camera);
-			if (new_camera) // nullptr ¹æÁö
+			if (new_camera) // nullptr ë°©ì§€
 			{
 				main_camera_ = new_camera;
 			}
@@ -532,10 +569,10 @@ bool BaseScene::ProcessInput(UINT id, WPARAM w_param, LPARAM l_param, float time
 		if (w_param == 'L')
 		{
 			ShowCursor(false);
-			//¹Ù²Ü Ä«¸Ş¶ó ¿ÀºêÁ§Æ®¸¦ Ã£°í
-			//±× ¿ÀºêÁ§Æ®ÀÇ Ä«¸Ş¶ó¿Í ÄÁÆ®·Ñ·¯¸¦ ¾ÀÀ¸·Î °¡Á®¿Â´Ù
+			//ë°”ê¿€ ì¹´ë©”ë¼ ì˜¤ë¸Œì íŠ¸ë¥¼ ì°¾ê³ 
+			//ê·¸ ì˜¤ë¸Œì íŠ¸ì˜ ì¹´ë©”ë¼ì™€ ì»¨íŠ¸ë¡¤ëŸ¬ë¥¼ ì”¬ìœ¼ë¡œ ê°€ì ¸ì˜¨ë‹¤
 			CameraComponent* new_camera = Object::GetComponentInChildren<CameraComponent>(player_);
-			if (new_camera) // nullptr ¹æÁö
+			if (new_camera) // nullptr ë°©ì§€
 			{
 				main_camera_ = new_camera;
 			}
@@ -550,7 +587,8 @@ bool BaseScene::ProcessInput(UINT id, WPARAM w_param, LPARAM l_param, float time
 		if (w_param == 'P')
 		{
 			ActivateStageMonsterSpawner(stage_clear_num_);
-			++stage_clear_num_;
+			catch_monster_num_ = 8;
+			//++stage_clear_num_;
 			return true;
 		}
 		if (w_param == 'N')
@@ -603,6 +641,9 @@ void BaseScene::Update(float elapsed_time)
 	UpdateObjectHitObject();
 
 	DeleteDeadObjects();
+
+	UpdateStageClear();
+
 }
 
 void BaseScene::AddObject(Object* object)
@@ -697,7 +738,42 @@ void BaseScene::UpdateObjectHitObject()
 	}
 	for (auto& object : ground_check_object_list_)
 	{
+		auto movement = Object::GetComponentInChildren<MovementComponent>(object);
 		CheckObjectHitObject(object);
+	}
+}
+
+void BaseScene::UpdateStageClear()
+{
+	if (!is_prepare_ground_checking_)
+	{
+		PrepareGroundChecking();
+	}
+	if (catch_monster_num_ > 7)
+	{
+		// í˜„ì¬ ìŠ¤í…Œì´ì§€ì—ì„œ "Cube" ë©”ì‰¬ ì œê±°
+		auto& mesh_list = checking_maps_mesh_collider_list_[stage_clear_num_];
+		mesh_list.remove_if([](MeshColliderComponent* collider) {
+			return collider->mesh() && collider->mesh()->name() == "Cube";
+			});
+
+		// ìŠ¤í…Œì´ì§€ ë„˜ë²„ ì¦ê°€
+		++stage_clear_num_;
+		catch_monster_num_ = 0;
+	}
+	for (auto& object : ground_check_object_list_)
+	{
+		auto movement = Object::GetComponentInChildren<MovementComponent>(object);
+		CheckPlayerHitPyramid(object);
+	}
+	if (get_key_num_ == 3)
+	{
+		auto& mesh_list = checking_maps_mesh_collider_list_[stage_clear_num_];
+		mesh_list.remove_if([](MeshColliderComponent* collider) {
+			return collider->mesh() && collider->mesh()->name() == "Cube";
+			});
+		++stage_clear_num_;
+		get_key_num_ = 0;
 	}
 }
 
@@ -741,7 +817,7 @@ void BaseScene::CheckObjectIsGround(Object* object)
 	}
 	if (is_collide)
 	{
-		float distance_on_ground = distance - kGroundYOffset; //Áö¸é±îÁöÀÇ °Å¸®
+		float distance_on_ground = distance - kGroundYOffset; //ì§€ë©´ê¹Œì§€ì˜ ê±°ë¦¬
 		if (distance_on_ground > 0.005f)
 		{
 			object->set_is_ground(false);
@@ -851,9 +927,41 @@ void BaseScene::CheckObjectHitObject(Object* object)
 
 			if (obb1.Intersects(other_box->animated_box()))
 			{
+				XMFLOAT3 position = object->world_position_vector();
+				constexpr float kGroundYOffset = 1.5f;
+				position.y += kGroundYOffset;
+				XMVECTOR ray_origin = XMLoadFloat3(&position);
+				position.y -= kGroundYOffset;
+
 				XMFLOAT3 other_pos = other->world_position_vector();
 				XMFLOAT3 dir = xmath_util_float3::Normalize(object_pos - other_pos);
-				object->set_position_vector(object_pos + dir * 0.1f); // »ìÂ¦ ¹Ğ¾î³¿
+
+				XMVECTOR ray_direction = XMLoadFloat3(&dir);
+				ray_direction = XMVectorSetY(ray_direction, 0);
+				ray_direction = XMVector3Normalize(ray_direction);
+
+				if (0 == XMVectorGetX(XMVector3Length(ray_direction)))
+					return;
+
+				bool is_collide = false;
+				float distance{ std::numeric_limits<float>::max() };
+				for (auto& mesh_collider : checking_maps_mesh_collider_list_[stage_clear_num_])
+				{
+					float t{};
+					if (mesh_collider->CollisionCheckByRay(ray_origin, ray_direction, t))
+					{
+						if (t < distance)
+						{
+							distance = t;
+						}
+					}
+				}
+
+				constexpr float kMinSafeDistance = 1.5f; // ì‚´ì§ ë°€ë ¤ë„ ì¶©ëŒ ì•ˆë‚˜ë„ë¡ ì—¬ìœ 
+				if (distance > kMinSafeDistance) // ë²½ì— ì•ˆ ë¶€ë”ªíŒë‹¤ë©´ ë°€ê¸°
+				{
+					object->set_position_vector(object_pos + dir * 0.1f);
+				}
 				return;
 			}
 		}
@@ -874,9 +982,40 @@ void BaseScene::CheckObjectHitObject(Object* object)
 
 			if (obb1.Intersects(box2->animated_box()))
 			{
+				XMFLOAT3 position = object->world_position_vector();
+				constexpr float kGroundYOffset = 1.5f;
+				position.y += kGroundYOffset;
+				XMVECTOR ray_origin = XMLoadFloat3(&position);
+				position.y -= kGroundYOffset;
+
 				XMFLOAT3 other_pos = other->world_position_vector();
 				XMFLOAT3 dir = xmath_util_float3::Normalize(object_pos - other_pos);
-				object->set_position_vector(object_pos + dir * 0.1f);
+				XMVECTOR ray_direction = XMLoadFloat3(&dir);
+				ray_direction = XMVectorSetY(ray_direction, 0);
+				ray_direction = XMVector3Normalize(ray_direction);
+
+				if (0 == XMVectorGetX(XMVector3Length(ray_direction)))
+					return;
+
+				bool is_collide = false;
+				float distance{ std::numeric_limits<float>::max() };
+				for (auto& mesh_collider : checking_maps_mesh_collider_list_[stage_clear_num_])
+				{
+					float t{};
+					if (mesh_collider->CollisionCheckByRay(ray_origin, ray_direction, t))
+					{
+						if (t < distance)
+						{
+							distance = t;
+						}
+					}
+				}
+
+				constexpr float kMinSafeDistance = 1.5f; // ì‚´ì§ ë°€ë ¤ë„ ì¶©ëŒ ì•ˆë‚˜ë„ë¡ ì—¬ìœ 
+				if (distance > kMinSafeDistance) // ë²½ì— ì•ˆ ë¶€ë”ªíŒë‹¤ë©´ ë°€ê¸°
+				{
+					object->set_position_vector(object_pos + dir * 0.1f);
+				}
 				return;
 			}
 		}
@@ -914,10 +1053,66 @@ void BaseScene::CheckObjectHitBullet(Object* object)
 				if (monster)
 				{
 					monster->set_hp(monster->hp() - gun->damage());
+					catch_monster_num_++;
 				}
 				return;
 			}
 		}
 	}
 
+}
+
+void BaseScene::CheckPlayerHitPyramid(Object* object)
+{
+	if (stage_clear_num_ != 6) return; // ìŠ¤í…Œì´ì§€ 6ì—ì„œë§Œ ì²´í¬
+
+	auto mesh_collider = Object::GetComponentInChildren<MeshColliderComponent>(object);
+	if (!mesh_collider) return;
+
+	BoundingOrientedBox player_obb = mesh_collider->GetWorldOBB();
+
+	for (auto& pyramid_collider : checking_maps_mesh_collider_list_[6])
+	{
+		if (!pyramid_collider || !pyramid_collider->mesh()) continue;
+
+		auto name = pyramid_collider->mesh()->name();
+
+		if (name != "Pyramid_01") continue;
+		BoundingOrientedBox pyramid_obb = pyramid_collider->GetWorldOBB();
+
+		if (player_obb.Intersects(pyramid_obb))
+		{
+			// í”¼ë¼ë¯¸ë“œ íšë“ ì²˜ë¦¬
+			get_key_num_++;
+
+			// í”¼ë¼ë¯¸ë“œ ì œê±° (Sceneê³¼ ì¶©ëŒ ë¦¬ìŠ¤íŠ¸ì—ì„œ ì œê±°)
+			Object* pyramid_object = pyramid_collider->owner();
+			MeshComponent* mesh_component = Object::GetComponent<MeshComponent>(pyramid_object);
+			MeshColliderComponent* mesh_collider_component = Object::GetComponent<MeshColliderComponent>(pyramid_object);
+			mesh_component->set_is_visible(false);
+			//DeleteObject(pyramid_object); // Scene::DeleteObject í˜¸ì¶œ í¬í•¨ë¨
+			auto& mesh_list = checking_maps_mesh_collider_list_[6];
+			mesh_list.remove_if([&](MeshColliderComponent* collider) {
+				return collider == mesh_collider_component;
+				});
+
+			break;
+		}
+	}
+}
+
+std::list<MeshColliderComponent*> BaseScene::checking_maps_mesh_collider_list(int index)
+{
+	return checking_maps_mesh_collider_list_[index];
+}
+
+int BaseScene::stage_clear_num()
+{
+	return stage_clear_num_;
+}
+
+void BaseScene::add_catch_monster_num()
+{
+	catch_monster_num_++;
+	return ;
 }

@@ -6,13 +6,13 @@ struct FrameResource;
 class DescriptorManager;
 class Material;
 
-// ¸Þ½¬ Á¤º¸¸¦ °¡Áö´Â Å¬·¡½º
+// ï¿½Þ½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Å¬ï¿½ï¿½ï¿½ï¿½
 class Mesh
 {
 public:
 	Mesh() {}
 	virtual ~Mesh();
-	// ¸Þ½¬ Á¤º¸´Â º¹»çµÉ ÀÌÀ¯°¡ ¾øÀ½
+	// ï¿½Þ½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 	Mesh(const Mesh&) = delete;
 	Mesh& operator=(const Mesh&) = delete;
 
@@ -23,14 +23,14 @@ public:
 
 	virtual void ReleaseUploadBuffer();
 
-	//ÀÌ ¸Þ½¬¸¦ »ç¿ëÇÏ´Â objectÀÇ °³¼ö¸¸Å­ cb¸¦ ¾÷µ¥ÀÌÆ®
+	//ï¿½ï¿½ ï¿½Þ½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ objectï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Å­ cbï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®
 	virtual void UpdateConstantBuffer(FrameResource* curr_frame_resource, int& start_index);
 
 	virtual void Render(ID3D12GraphicsCommandList* command_list, int material_index);
 
 	void LoadMeshFromFile(std::ifstream& file);
 
-	//Á¤Á¡ ½¦ÀÌÅÍ ÀÔ·Â ·¹ÀÌ¾Æ¿ôÀ» ¸ÂÃß±â À§ÇØ Á¤Á¡ÀÇ ÀÏºÎ Á¤º¸À» Á¦°ÅÇÏ´Â ÇÔ¼öµé
+	//ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ô·ï¿½ ï¿½ï¿½ï¿½Ì¾Æ¿ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ß±ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ïºï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½Ô¼ï¿½ï¿½ï¿½
 	void ClearColors();
 	void ClearUvs();
 	void ClearNormals();
@@ -78,8 +78,8 @@ protected:
 
 	std::vector<D3D12_VERTEX_BUFFER_VIEW> vertex_buffer_views_;
 
-	//´ëºÎºÐÀÇ ¸Þ½¬´Â 1°³ÀÇ ÀÎµ¦½º ¹öÆÛ¸¦ »ç¿ëÇÏÁö¸¸ 
-	//ÀÏºÎ ¸Þ½¬ÀÇ °æ¿ì Á¤Á¡À» °øÀ¯ÇÑÃ¤·Î ÀÎµ¦½º ¹öÆÛ°¡ ¿©·¯°³ÀÎ °æ¿ì°¡ ÀÖÀ½
+	//ï¿½ï¿½Îºï¿½ï¿½ï¿½ ï¿½Þ½ï¿½ï¿½ï¿½ 1ï¿½ï¿½ï¿½ï¿½ ï¿½Îµï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Û¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ 
+	//ï¿½Ïºï¿½ ï¿½Þ½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ã¤ï¿½ï¿½ ï¿½Îµï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Û°ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ì°¡ ï¿½ï¿½ï¿½ï¿½
 	std::vector<std::vector<UINT>> indices_array_;					
 	std::vector<ComPtr<ID3D12Resource>> d3d_index_buffers_;
 	std::vector<ComPtr<ID3D12Resource>> d3d_index_upload_buffers_;
@@ -89,7 +89,7 @@ protected:
 
 	BoundingBox bounds_{};
 
-	// ÀÌ ¸Þ½¬¸¦ ÂüÁ¶ÁßÀÎ ÄÄÆ÷³ÍÆ® ¸®½ºÆ®
+	// ï¿½ï¿½ ï¿½Þ½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ® ï¿½ï¿½ï¿½ï¿½Æ®
 	std::list<MeshComponent*> mesh_component_list_;
 };
 

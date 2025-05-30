@@ -12,6 +12,7 @@ class InputManager;
 class InputControllerComponent;
 class GameFramework;
 class ColliderComponent;
+class MeshColliderComponent;
 
 class Scene
 {
@@ -42,10 +43,12 @@ public:
 	void ReleaseMeshUploadBuffer();
 
 	virtual void UpdateRenderPassConstantBuffer(ID3D12GraphicsCommandList* command_list);
+	virtual void UpdateRenderPassShadowBuffer(ID3D12GraphicsCommandList* command_list);
 
 	void UpdateObjectConstantBuffer(FrameResource* curr_frame_resource);
 
 	virtual void Render(ID3D12GraphicsCommandList* command_list);
+	virtual void ShadowRender(ID3D12GraphicsCommandList* command_list);
 
 	virtual bool ProcessInput(UINT id, WPARAM w_param, LPARAM l_param, float time) = 0;
 
@@ -94,5 +97,18 @@ protected:
 
 	bool is_render_debug_mesh_ = false;	//디버그용 와이어프레임 obb를 렌더하는지 여부
 
+	float total_time_{ 0 };
+
+protected:
+	//그림자를 위해 일부 base scene 멤버 변수들 scene으로 옮김
+	bool is_prepare_ground_checking_ = false;
+	//맵 바닥체크를 위한 메쉬 콜라이더 리스트 배열
+	std::array<std::list<MeshColliderComponent*>, 8> checking_maps_mesh_collider_list_;
+
+	// 플레이어의 스테이지 진행도
+	int stage_clear_num_{ 0 };
+
+	//TODO: Player 객체 구현
+	Object* player_ = nullptr;
 };
 

@@ -21,17 +21,19 @@ struct SkinnedMeshVertexIn
 struct VertexOut
 {
     float4 position : SV_POSITION;
-    float3 position_w : POSITION;
+    float3 position_w : POSITION0;
     float3 normal_w : NORMAL;
     float3 tangent_w : TANGENT;
     float2 uv : TEXCOORD;
+    float4 position_s : POSITION1;
 };
 
 VertexOut MeshVS(MeshVertexIn v_in)
 {
     VertexOut v_out;
     
-    v_out.position_w = mul(float4(v_in.position, 1.f), g_world_matrix).xyz;
+    float4 position_w = mul(float4(v_in.position, 1.f), g_world_matrix);
+    v_out.position_w = position_w.xyz;
     v_out.position = mul(mul(float4(v_out.position_w, 1.f), g_view_matrix), g_projection_matrix);
         
     //비균등 비례가 월드행렬에 있다면 월드행렬의 역전치 행렬로 변환해야함!
@@ -39,9 +41,10 @@ VertexOut MeshVS(MeshVertexIn v_in)
     v_out.tangent_w = mul(v_in.tangent, (float3x3) g_world_matrix);
 
     v_out.uv = v_in.uv;
+    
+    v_out.position_s = mul(position_w, shadow_transform);
 
     return v_out;
-
 }
 
 VertexOut SkinnedMeshVS(SkinnedMeshVertexIn v_in)
@@ -55,7 +58,9 @@ VertexOut SkinnedMeshVS(SkinnedMeshVertexIn v_in)
         vertex_to_world_matrix += v_in.weights[i] * mul(g_bone_offset_matrix[v_in.indices[i]], g_bone_transform_matrix[v_in.indices[i]]);
     }
     
-    v_out.position_w = mul(float4(v_in.position, 1.f), vertex_to_world_matrix).xyz;
+    float4 position_w = mul(float4(v_in.position, 1.f), vertex_to_world_matrix);
+
+    v_out.position_w = position_w.xyz;
 
     v_out.position = mul(mul(float4(v_out.position_w, 1.f), g_view_matrix), g_projection_matrix);
     
@@ -63,6 +68,7 @@ VertexOut SkinnedMeshVS(SkinnedMeshVertexIn v_in)
     v_out.tangent_w = mul(v_in.tangent, (float3x3) vertex_to_world_matrix);
 
     v_out.uv = v_in.uv;
+    v_out.position_s = mul(position_w, shadow_transform);
     
     return v_out;
 }
@@ -120,17 +126,20 @@ float4 PS(VertexOut p_in) : SV_Target
         p_in.normal_w = mul(normal_sample.rgb, tbn);
 
     }
+    float shadow_factor = min(CalcShadowFactor(p_in.position_s) + 0.5f , 1.0f);
     
     float3 to_eye_vector = normalize(g_camera_position - p_in.position_w);
     
     float4 ambient = g_ambient_light * diffuse_albedo;
     Material mat = { diffuse_albedo, fresnel_r0, glossiness, emission_color };
-    float4 direct_light = ComputeLighting(g_lights, mat, p_in.position_w, p_in.normal_w, to_eye_vector);
+    float4 direct_light = ComputeLighting(g_lights, mat, p_in.position_w, p_in.normal_w, to_eye_vector) * shadow_factor;
     
     float4 lit_color = ambient + direct_light + emission_color;
     float4 result = lit_color;
     
     float fog_amount = saturate((dist_to_eye - fog_start) / fog_range);
+    
+    
     result = lerp(lit_color, fog_color, fog_amount);
     
     result.a = diffuse_albedo.a;

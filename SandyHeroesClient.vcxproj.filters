@@ -130,6 +130,9 @@
     <Filter Include="2.Scene\Recorder">
       <UniqueIdentifier>{0f5d1cc9-d56c-4578-ab12-5832039f449c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="3.Shader\ShadowShader">
+      <UniqueIdentifier>{8f917bd3-7cf7-40ca-94ac-41af533b59b9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="targetver.h">
@@ -306,6 +309,15 @@
     <ClInclude Include="CutSceneTrack.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="BreathingShader.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="TransparentShader.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="ShadowShader.h">
+      <Filter>3.Shader\ShadowShader</Filter>
+    </ClInclude>
     <ClInclude Include="UiMeshComponent.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
@@ -470,6 +482,15 @@
     <ClCompile Include="CutSceneTrack.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="BreathingShader.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="TransparentShader.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="ShadowShader.cpp">
+      <Filter>3.Shader\ShadowShader</Filter>
+    </ClCompile>
     <ClCompile Include="UiMeshComponent.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
@@ -495,5 +516,8 @@
     <FxCompile Include="SkyboxShader.hlsl" />
     <FxCompile Include="DebugShader.hlsl" />
     <FxCompile Include="UIShader.hlsl" />
+    <FxCompile Include="Transparent.hlsl" />
+    <FxCompile Include="Breathing.hlsl" />
+    <FxCompile Include="Shadow.hlsl" />
   </ItemGroup>
 </Project>

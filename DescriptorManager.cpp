@@ -25,6 +25,11 @@ UINT DescriptorManager::srv_offset() const
 	return srv_offset_;
 }
 
+UINT DescriptorManager::texture_count() const
+{
+	return texture_count_;
+}
+
 void DescriptorManager::ResetDescriptorHeap(ID3D12Device* device, int texture_count)
 {
 	d3d_cbv_srv_uav_heap_.Reset();
@@ -49,6 +54,7 @@ void DescriptorManager::ResetDescriptorHeap(ID3D12Device* device, int texture_co
 	heap_desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
 	heap_desc.NodeMask = 0;
 
+	texture_count_ = texture_count;
 	device->CreateDescriptorHeap(&heap_desc, IID_PPV_ARGS(d3d_cbv_srv_uav_heap_.GetAddressOf()));
 
 }

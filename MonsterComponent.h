@@ -1,5 +1,6 @@
 #pragma once
 #include "Component.h"
+#include "BaseScene.h"
 
 enum class MonsterType { kNormal, kBoss, kMiniBoss };
 
@@ -26,6 +27,8 @@ public:
 	float shield() const;
 	float hp()const;
 	float attack_force()const;
+
+	void set_scene(Scene* value);
 
 private:
 	float max_hp_{ 120.f };

@@ -66,7 +66,7 @@ public:
     void AddMeshComponent(MeshComponent* component);
     bool DeleteMeshComponent(MeshComponent* component);
 
-
+    void CopyMaterialData(Material* material);
 private:
     // 재질 정보가 저장된 frame resource의 버퍼 인덱스
     int frame_resource_index_ = -1;

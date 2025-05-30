@@ -52,7 +52,9 @@ private:
 
 	static const UINT kInitFenceValue = 0;			// 펜스 초기값
 	static const UINT kSwapChainBufferCount = 2;	// 스왑체인 버퍼 수
-	static const UINT kDepthStencilBufferCount = 1;
+	static const UINT kDepthStencilBufferCount = 2;	// DepthStencil, Shadow
+
+	static constexpr UINT SHADOW_MAP_SIZE = 4096;
 
 	HINSTANCE app_instance_ = nullptr;	// 어플리케이션 인스턴스 핸들
 	HWND main_wnd_ = nullptr;			// 메인 윈도우 핸들
@@ -74,6 +76,7 @@ private:
 	ComPtr<ID3D12DescriptorHeap> d3d_dsv_heap_;
 
 	ComPtr<ID3D12Resource> d3d_depth_stencil_buffer_;
+	ComPtr<ID3D12Resource> d3d_shadow_depth_buffer_;
 
 	ComPtr<ID3D12RootSignature> d3d_root_signature_;
 
@@ -95,8 +98,10 @@ private:
 	BOOL client_full_screen_state_ = FALSE; // 전체화면 여부
 
 	D3D12_VIEWPORT client_viewport_;
-
 	D3D12_RECT scissor_rect_;
+
+	D3D12_VIEWPORT shadow_viewport_;
+	D3D12_RECT shadow_scissor_rect_;
 
 	std::unique_ptr<Timer> client_timer_;
 

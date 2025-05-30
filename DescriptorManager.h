@@ -17,6 +17,7 @@ public:
 	UINT cbv_bone_transform_offset() const;
 	UINT cbv_pass_offset() const;
 	UINT srv_offset() const;
+	UINT texture_count() const;
 
 	void ResetDescriptorHeap(ID3D12Device* device, int texture_count);
 
@@ -38,6 +39,6 @@ private:
 
 	UINT srv_offset_ = 0;
 	
-
+	UINT texture_count_ = 0;
 };
 

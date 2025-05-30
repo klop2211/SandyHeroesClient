@@ -22,11 +22,22 @@ struct CBPass
 	XMFLOAT4X4 view_matrix;
 	XMFLOAT4X4 proj_matrix;
 	XMFLOAT3 camera_position;
-	float pad;
+	float total_time;
 	XMFLOAT4 ambient_light;
 	LightInfo lights[kMaxLights];    
 	XMFLOAT2 screen_size;
 	XMFLOAT2 pad_2;
+};
+
+struct CBShadow
+{
+	XMFLOAT4X4 light_view;
+	XMFLOAT4X4 light_proj;
+	XMFLOAT4X4 shadow_transform;
+	XMFLOAT3 light_dir;
+	float near_z;
+	XMFLOAT3 light_pos_w;
+	float far_z;
 };
 
 // 일반 메쉬를 사용하는 오브젝트의 상수 버퍼
@@ -69,6 +80,7 @@ public:
 			IID_PPV_ARGS(&d3d_allocator));
 
 		cb_pass = std::make_unique<UploadBuffer<CBPass>>(device, pass_count, true);
+		cb_shadow = std::make_unique<UploadBuffer<CBShadow>>(device, pass_count, true);
 		cb_object = std::make_unique<UploadBuffer<CBObject>>(device, object_count, true);
 		cb_bone_transform = std::make_unique<UploadBuffer<CBBoneTransform>>(device, skinned_mesh_object_count, true);
 		cb_material = std::make_unique<UploadBuffer<CBMaterial>>(device, material_count, true);
@@ -81,6 +93,7 @@ public:
 	ComPtr<ID3D12CommandAllocator> d3d_allocator;
 
 	std::unique_ptr<UploadBuffer<CBPass>> cb_pass;
+	std::unique_ptr<UploadBuffer<CBShadow>> cb_shadow;
 	std::unique_ptr<UploadBuffer<CBObject>> cb_object;
 	std::unique_ptr<UploadBuffer<CBBoneTransform>> cb_bone_transform;
 	std::unique_ptr<UploadBuffer<CBMaterial>> cb_material;

@@ -332,3 +332,11 @@ bool Material::DeleteMeshComponent(MeshComponent* component)
 	return remove_count;
 }
 
+void Material::CopyMaterialData(Material* material)
+{
+	albedo_color_ = material->albedo_color_;
+	fresnel_r0_ = material->fresnel_r0_;
+	glossiness_ = material->glossiness_;
+	emission_color_ = material->emission_color_;
+}
+
