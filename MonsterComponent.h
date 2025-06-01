@@ -33,10 +33,10 @@ public:
 	bool IsDead() const;
 
 private:
-	float max_hp_{ 120.f };
+	float max_hp_{ 90.f };
 
 	float shield_{};
-	float hp_{ 120.f };
+	float hp_{ 90.f };
 	float attack_force_{};
 
 	MonsterType monster_type_{ MonsterType::kNormal };

@@ -28,7 +28,8 @@ Object::Object(const Object& other) :
 	world_matrix_(other.world_matrix_), 
 	name_(other.name_),
 	is_ground_(other.is_ground_),
-	collide_type_(other.collide_type_)
+	collide_type_(other.collide_type_),
+	tag_(other.tag_)
 {
 	id_ = kObjectNextId;
 	++kObjectNextId;
@@ -36,7 +37,6 @@ Object::Object(const Object& other) :
 	child_ = nullptr;
 	sibling_ = nullptr;
 
-	//���� ��� ������Ʈ�� ������Ʈ���� �������� �� ������Ʈ�� owner�� �缳���Ѵ�.
 	for (const std::unique_ptr<Component>& component : other.component_list_)
 	{
 		component_list_.emplace_back();
@@ -103,6 +103,11 @@ UINT Object::id() const
 std::string Object::name() const
 {
 	return name_;
+}
+
+std::string Object::tag() const
+{
+	return tag_;
 }
 
 Object* Object::child() const
@@ -182,6 +187,11 @@ void Object::set_up_vector(const XMFLOAT3& value)
 void Object::set_name(const std::string& value)
 {
 	name_ = value;
+}
+
+void Object::set_tag(const std::string& value)
+{
+	tag_ = value;
 }
 
 void Object::set_is_dead(bool is_dead)

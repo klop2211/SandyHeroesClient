@@ -109,6 +109,7 @@ bool FPSControllerComponent::ProcessInput(UINT message_id, WPARAM w_param, LPARA
 		case 'D':
 			is_key_down_['D'] = true;
 			break;
+
 		case VK_SPACE:
 		{
 			constexpr float kFallCheckVelocity = -0.5;
@@ -291,6 +292,15 @@ void FPSControllerComponent::Update(float elapsed_time)
 			gun->FireBullet(bullet_dir, bullet_mesh);
 		}
 	}
+}
+
+void FPSControllerComponent::Stop()
+{
+	is_key_down_['W'] = false;
+	is_key_down_['A'] = false;
+	is_key_down_['S'] = false;
+	is_key_down_['D'] = false;
+
 }
 
 void FPSControllerComponent::set_camera_object(Object* value)

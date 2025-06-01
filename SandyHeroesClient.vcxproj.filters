@@ -321,6 +321,12 @@
     <ClInclude Include="UiMeshComponent.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="BombDragonAnimationState.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="StrongDragonAnimationState.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="SandyHeroesClient.cpp">
@@ -492,6 +498,12 @@
       <Filter>3.Shader\ShadowShader</Filter>
     </ClCompile>
     <ClCompile Include="UiMeshComponent.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="BombDragonAnimationState.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="StrongDragonAnimationState.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>

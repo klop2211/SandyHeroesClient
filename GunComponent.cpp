@@ -63,7 +63,9 @@ void GunComponent::ReloadBullets()
     //TODO: 재장전 애니메이션 수행
     if (!is_reload_)
     {
-        loading_time_ = reload_time_;
+        //TODO: 데모 버젼 노쿨
+        loading_time_ = 0.f;
+        //loading_time_ = reload_time_;
         is_reload_ = true;
 
     }

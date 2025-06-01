@@ -210,9 +210,19 @@ XMFLOAT2 Scene::screen_size() const
 	return game_framework_->client_size();
 }
 
+bool Scene::is_play_cutscene() const
+{
+	return is_play_cutscene_;
+}
+
 void Scene::set_main_camera(CameraComponent* value)
 {
 	main_camera_ = value;
+}
+
+void Scene::set_is_play_cutscene(bool value)
+{
+	is_play_cutscene_ = value;
 }
 
 void Scene::AddObject(Object* object)

@@ -14,7 +14,7 @@ ParticleSystem::ParticleSystem(Mesh* particle_mesh, Material* particle_material)
 Object* ParticleSystem::CreateParticle(XMFLOAT3 position, XMFLOAT3 direction, float speed)
 {
 	Object* particle = new Object();
-	particle->Scale(0.1f);
+	particle->Scale(0.06f);
 	particle->set_position_vector(position);
 	particle->AddComponent(new MeshComponent(particle, particle_mesh_, particle_material_));
 	MovementComponent* movement_component = new MovementComponent(particle);
@@ -37,7 +37,7 @@ Object* ParticleSystem::CreateParticle(XMFLOAT3 position, XMFLOAT3 direction, fl
 void ParticleSystem::SpawnParticle(Scene* scene, XMFLOAT3 position, int particle_count, float particle_time)
 {
 	constexpr float kMinSpeed = 1.f;
-	constexpr float kMaxSpeed = 10.f;
+	constexpr float kMaxSpeed = 4.f;
 	XMVECTOR direction = XMVectorSet(0.f, 1.f, 0.f, 0.f);
 	XMMATRIX rotation_z = XMMatrixRotationAxis(XMVectorSet(0.f, 0.f, 1.f, 0.f), XMConvertToRadians(30.f));
 	XMMATRIX rotation_y = XMMatrixRotationAxis(XMVectorSet(0.f, 1.f, 0.f, 0.f), XMConvertToRadians(30.f));

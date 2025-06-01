@@ -30,6 +30,8 @@ void CutSceneTrack::Play(Scene* scene)
 	scene_camera_ = scene->main_camera()->owner();
 	auto camera_component = Object::GetComponent<CameraComponent>(camera_);
 	scene->set_main_camera(camera_component);
+	scene_->set_is_play_cutscene(true);
+
 }
 
 void CutSceneTrack::Pause()
@@ -43,6 +45,7 @@ void CutSceneTrack::Stop()
 	track_position_ = 0.f;
 	auto camera_component = Object::GetComponent<CameraComponent>(scene_camera_);
 	scene_->set_main_camera(camera_component);
+	scene_->set_is_play_cutscene(false);
 	scene_camera_ = nullptr;
 	scene_ = nullptr;
 }

@@ -16,6 +16,8 @@ public:
 
     virtual void Update(float elapsed_time) override;
 
+    void Stop();
+
     void set_camera_object(Object* value);
     void set_scene(Scene* value);
 

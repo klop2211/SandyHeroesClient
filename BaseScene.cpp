@@ -34,9 +34,15 @@
 #include "HitDragonAnimationState.h"
 #include "ShotDragonAnimationState.h"
 #include "UiMeshComponent.h"
+#include "BombDragonAnimationState.h"
+#include "StrongDragonAnimationState.h"
 
 void BaseScene::Initialize(ID3D12Device* device, ID3D12GraphicsCommandList* command_list, ID3D12RootSignature* root_signature, GameFramework* game_framework)
 {
+	constexpr int kCutSceneTrackCount = 1;
+	cut_scene_tracks_.reserve(kCutSceneTrackCount);
+	cut_scene_tracks_.emplace_back("CutScene");
+
 	Scene::Initialize(device, command_list, root_signature, game_framework);
 
 	particle_system_ = std::make_unique<ParticleSystem>(Scene::FindMesh("green_cube", meshes_), 
@@ -114,6 +120,7 @@ void BaseScene::BuildMesh(ID3D12Device* device, ID3D12GraphicsCommandList* comma
 	model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/Monster/Hit_Dragon.bin", meshes_, materials_, textures_));
 	model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/Monster/Shot_Dragon.bin", meshes_, materials_, textures_));
 	model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/Monster/Bomb_Dragon.bin", meshes_, materials_, textures_));
+	model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/Monster/Strong_Dragon.bin", meshes_, materials_, textures_));
 
 	//BuildScene("Base");
 
@@ -213,11 +220,11 @@ void BaseScene::BuildMaterial(ID3D12Device* device, ID3D12GraphicsCommandList* c
 	{
 		material = new Material{ "Breathing", (int)ShaderType::kBreathing };
 		Material* mat = Scene::FindMaterial("Desert_(Instance)", materials_);
-		textures_.push_back(std::make_unique<Texture>());
-		textures_.back()->name = "Desert";
-		textures_.back()->type = TextureType::kAlbedoMap;
+		//textures_.push_back(std::make_unique<Texture>());
+		//textures_.back()->name = "Desert";
+		//textures_.back()->type = TextureType::kAlbedoMap;
 		material->CopyMaterialData(mat);
-		material->AddTexture(textures_.back().get());
+		material->AddTexture(FindTexture("Desert",textures_));
 		materials_.emplace_back();
 		materials_.back().reset(material);
 	}
@@ -333,6 +340,18 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 	object_list_.emplace_back();
 	object_list_.back().reset(camera_object);
 
+	//컷씬 적용 카메라
+	camera_object = new Object{};
+	camera_object->set_name("CutSceneCamera");
+
+	camera_component = new CameraComponent(camera_object, 0.3, 10000,
+		(float)kDefaultFrameBufferWidth / (float)kDefaultFrameBufferHeight, 58);
+	camera_object->AddComponent(camera_component);
+
+	cut_scene_tracks_.back().set_camera(camera_object);
+
+	AddObject(camera_object);
+
 	//모든 메쉬 있는 객체에 메쉬 콜라이더 추가(주의사항: 새롭게 만들어지는 메쉬있는 객체는 메쉬콜라이더가 없음)
 	//+ 디버그용 메쉬 추가
 	Mesh* debug_mesh = Scene::FindMesh("Debug_Mesh", meshes_);
@@ -385,6 +404,7 @@ void BaseScene::CreateMonsterSpawner()
 	//hit dragon
 	ModelInfo* hit_dragon = FindModelInfo("Hit_Dragon");
 	hit_dragon->hierarchy_root()->set_collide_type(true, true);
+	hit_dragon->hierarchy_root()->set_tag("Hit_Dragon");
 	auto ui_head_socket = hit_dragon->hierarchy_root()->FindFrame("Ui_Head");
 
 	auto ui_material = Scene::FindMaterial("ProgressBarBackground", materials_);
@@ -407,6 +427,7 @@ void BaseScene::CreateMonsterSpawner()
 	//shot dragon
 	ModelInfo* shot_dragon = FindModelInfo("Shot_Dragon");
 	shot_dragon->hierarchy_root()->set_collide_type(true, true);
+	shot_dragon->hierarchy_root()->set_tag("Shot_Dragon");
 	ui_head_socket = shot_dragon->hierarchy_root()->FindFrame("Ui_Head");
 
 	ui_material = Scene::FindMaterial("ProgressBarBackground", materials_);
@@ -426,25 +447,37 @@ void BaseScene::CreateMonsterSpawner()
 	int shot_spawner_id = 0;
 
 	//bomb dragon
-	//ModelInfo* bomb_dragon = FindModelInfo("Shot_Dragon");
-	//bomb_dragon->hierarchy_root()->set_collide_type(true, true);
-	//ui_head_socket = bomb_dragon->hierarchy_root()->FindFrame("Ui_Head");
+	ModelInfo* bomb_dragon = FindModelInfo("Bomb_Dragon");
+	bomb_dragon->hierarchy_root()->set_collide_type(true, true);
+	bomb_dragon->hierarchy_root()->set_tag("Bomb_Dragon");
+	ui_head_socket = bomb_dragon->hierarchy_root()->FindFrame("Ui_Head");
 
-	//ui_material = Scene::FindMaterial("ProgressBarBackground", materials_);
-	//ui_mesh_component = new UiMeshComponent(ui_head_socket,
-	//	Scene::FindMesh("ProgressBarBackground", meshes_), ui_material, this);
-	//ui_material->DeleteMeshComponent(ui_mesh_component);
-	//ui_head_socket->AddComponent(ui_mesh_component);
+	ui_material = Scene::FindMaterial("ProgressBarBackground", materials_);
+	ui_mesh_component = new UiMeshComponent(ui_head_socket,
+		Scene::FindMesh("ProgressBarBackground", meshes_), ui_material, this);
+	ui_material->DeleteMeshComponent(ui_mesh_component);
+	ui_head_socket->AddComponent(ui_mesh_component);
 
-	//ui_material = Scene::FindMaterial("HpBar", materials_);
-	//ui_mesh_component = new UiMeshComponent(ui_head_socket,
-	//	Scene::FindMesh("ProgressBar", meshes_), ui_material, this);
-	//ui_material->DeleteMeshComponent(ui_mesh_component);
-	//ui_head_socket->AddComponent(ui_mesh_component);
+	ui_material = Scene::FindMaterial("HpBar", materials_);
+	ui_mesh_component = new UiMeshComponent(ui_head_socket,
+		Scene::FindMesh("ProgressBar", meshes_), ui_material, this);
+	ui_material->DeleteMeshComponent(ui_mesh_component);
+	ui_head_socket->AddComponent(ui_mesh_component);
 
-	//animator = Object::GetComponentInChildren<AnimatorComponent>(bomb_dragon->hierarchy_root());
-	//animator->set_animation_state(new ShotDragonAnimationState);
-	//int bomb_spawner_id = 0;
+	animator = Object::GetComponentInChildren<AnimatorComponent>(bomb_dragon->hierarchy_root());
+	animator->set_animation_state(new BombDragonAnimationState);
+	int bomb_spawner_id = 0;
+
+	//strong dragon
+	ModelInfo* strong_dragon = FindModelInfo("Strong_Dragon");
+	strong_dragon->hierarchy_root()->set_collide_type(true, true);
+	strong_dragon->hierarchy_root()->set_tag("Strong_Dragon");
+
+	//TODO: 보스 전용 HP바 구현
+
+	animator = Object::GetComponentInChildren<AnimatorComponent>(strong_dragon->hierarchy_root());
+	animator->set_animation_state(new StrongDragonAnimationState);
+	int strong_spawner_id = 0;
 
 	//Stage 1
 	{
@@ -601,6 +634,49 @@ void BaseScene::CreateMonsterSpawner()
 		AddObject(spawner);
 		stage_monster_spawner_list_[1].push_back(spawner_component);
 
+		//bomb 1
+		spawner = new Object();
+		spawner->set_name("Bomb_Dragon_Spawner_" + std::to_string(++bomb_spawner_id));
+		spawner->set_position_vector(50.f, 0.47f, 24.14f);
+		monster_component = new MonsterComponent(nullptr);
+		monster_component->set_target(player_);
+		spawner_component = new SpawnerComponent(spawner, this, bomb_dragon);
+		spawner_component->SetSpawnerInfo(2, 14.f, 4.f);
+		spawner_component->AddComponent(monster_component);
+		spawner_component->AddComponent(std::make_unique<MovementComponent>(nullptr));
+		spawner->AddComponent(spawner_component);
+		AddObject(spawner);
+		stage_monster_spawner_list_[1].push_back(spawner_component);
+
+		//bomb 2
+		spawner = new Object();
+		spawner->set_name("Bomb_Dragon_Spawner_" + std::to_string(++bomb_spawner_id));
+		spawner->set_position_vector(49.43f, 0.47f, -15.51f);
+		monster_component = new MonsterComponent(nullptr);
+		monster_component->set_target(player_);
+		spawner_component = new SpawnerComponent(spawner, this, bomb_dragon);
+		spawner_component->SetSpawnerInfo(2, 14.f, 4.f);
+		spawner_component->AddComponent(monster_component);
+		spawner_component->AddComponent(std::make_unique<MovementComponent>(nullptr));
+		spawner->AddComponent(spawner_component);
+		AddObject(spawner);
+		stage_monster_spawner_list_[1].push_back(spawner_component);
+	}
+
+	//Stage 4
+	{
+		spawner = new Object();
+		spawner->set_name("Strong_Dragon_Spawner_" + std::to_string(++strong_spawner_id));
+		spawner->set_position_vector(55.36f, 1.2f, -156.52f);
+		monster_component = new MonsterComponent(nullptr);
+		monster_component->set_target(player_);
+		spawner_component = new SpawnerComponent(spawner, this, strong_dragon);
+		spawner_component->SetSpawnerInfo(1, 0.f, 4.f);
+		spawner_component->AddComponent(monster_component);
+		spawner_component->AddComponent(std::make_unique<MovementComponent>(nullptr));
+		spawner->AddComponent(spawner_component);
+		AddObject(spawner);
+		stage_monster_spawner_list_[3].push_back(spawner_component);
 	}
 }
 
@@ -620,8 +696,12 @@ bool BaseScene::ProcessInput(UINT id, WPARAM w_param, LPARAM l_param, float time
 {
 	if (main_input_controller_)
 	{
-		if (main_input_controller_->ProcessInput(id, w_param, l_param, time))
-			return true;
+		//컷씬 실행중에는 인풋처리를 끈다!
+		if (!is_play_cutscene_)
+		{
+			if (main_input_controller_->ProcessInput(id, w_param, l_param, time))
+				return true;
+		}
 	}
 	switch (id)
 	{
@@ -657,7 +737,9 @@ bool BaseScene::ProcessInput(UINT id, WPARAM w_param, LPARAM l_param, float time
 		}
 		if (w_param == 'O')
 		{
-			--stage_clear_num_;
+			cut_scene_tracks_[0].Play(this);
+			auto movement = Object::GetComponent<MovementComponent>(player_);
+			movement->Stop();
 			return true;
 		}
 		if (w_param == 'P')
@@ -691,6 +773,12 @@ bool BaseScene::ProcessInput(UINT id, WPARAM w_param, LPARAM l_param, float time
 		{
 			is_render_debug_mesh_ = !is_render_debug_mesh_;
 			return true;
+		}	
+		if (w_param == 'B')
+		{
+			auto pos = player_->position_vector();
+			player_->set_position_vector(pos.x, pos.y + 10.f, pos.z);
+			return true;
 		}
 		break;
 	default:
@@ -701,6 +789,11 @@ bool BaseScene::ProcessInput(UINT id, WPARAM w_param, LPARAM l_param, float time
 
 void BaseScene::Update(float elapsed_time)
 {
+	for (auto& cut_scene_track : cut_scene_tracks_)
+	{
+		cut_scene_track.Run(elapsed_time);
+	}
+
 	Scene::Update(elapsed_time);
 
 	particle_system_->Update(elapsed_time);
@@ -720,6 +813,12 @@ void BaseScene::Update(float elapsed_time)
 	UpdateStageClear();
 
 	CheckSpawnBoxHitPlayer();
+
+	std::string temp = "stage_clear_num: " + std::to_string(stage_clear_num_) + ", catch_monster_num: " + std::to_string(catch_monster_num_) + "\n";
+	std::wstring debug_str;
+	debug_str.assign(temp.begin(), temp.end());
+	OutputDebugString(debug_str.c_str());
+
 }
 
 void BaseScene::AddObject(Object* object)
@@ -832,16 +931,17 @@ void BaseScene::UpdateStageClear()
 			return;
 		break;
 	case 1:
-		if (catch_monster_num_ < 9)
+		if (catch_monster_num_ < 11)
 			return;
 		break;
 	case 2:
-		if (catch_monster_num_ < 10)
+		if (catch_monster_num_ < 14)
 			return;
 		break;
-	case 3:
+	case 3:		
+		if (catch_monster_num_ < 1)
+			return;
 		//TODO: 스테이지 3번은 투명발판을 밟아 다음 스테이지로 진행해야 클리어
-		return;
 	case 4:
 		if (catch_monster_num_ < 1)
 			return;
@@ -883,6 +983,8 @@ void BaseScene::UpdateStageClear()
 	// 스테이지 넘버 증가
 	++stage_clear_num_;
 	catch_monster_num_ = 0;
+
+	is_activate_spawner_ = false;
 
 }
 
@@ -1219,9 +1321,21 @@ void BaseScene::CheckSpawnBoxHitPlayer()
 	{
 		BoundingBox mesh_animated_aabb;
 		mesh->GetMesh()->bounds().Transform(mesh_animated_aabb, XMLoadFloat4x4(&mesh->owner()->world_matrix()));
-		if (spawn_box->animated_box().Intersects(mesh_animated_aabb))
+		if (spawn_box->animated_box().Intersects(mesh_animated_aabb) && !is_activate_spawner_)
 		{
+			if (stage_clear_num_ == 4)
+			{
+				auto& mesh_list = Object::GetComponentsInChildren<SkinnedMeshComponent>(player_);
+				for (auto& mesh : mesh_list)
+				{
+					mesh->set_is_visible(!mesh->IsVisible());
+				}
+				cut_scene_tracks_[0].Play(this);
+				auto controller = Object::GetComponent<FPSControllerComponent>(player_);
+				controller->Stop();
+			}
 			ActivateStageMonsterSpawner(stage_clear_num_ - 1);
+			is_activate_spawner_ = true;
 		}
 	}
 }

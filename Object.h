@@ -36,6 +36,7 @@ public:
 
 	UINT id() const;
 	std::string name() const;
+	std::string tag() const;
 	Object* child() const;
 	Object* sibling() const;
 	Object* parent() const;
@@ -57,6 +58,7 @@ public:
 	void set_up_vector(const XMFLOAT3& value);
 
 	void set_name(const std::string& value);
+	void set_tag(const std::string& value);
 	void set_is_dead(bool is_dead);
 
 	void set_is_ground(bool on_ground);
@@ -178,6 +180,7 @@ protected:
 	std::list<std::unique_ptr<Component>> component_list_;
 
 	std::string name_ = "None";
+	std::string tag_ = "None_Tag";	//오브젝트를 "분류"하기 위한 태그 값 ex) "Player", "HitDragon", "ShotDragon"
 
 	bool is_dead_ = false;	//죽은 오브젝트인가?	
 

@@ -72,9 +72,11 @@ public:
 	const std::vector<std::unique_ptr<Mesh>>& meshes() const;
 	CameraComponent* main_camera() const;
 	XMFLOAT2 screen_size() const;
+	bool is_play_cutscene() const;
 
 	//setter
 	void set_main_camera(CameraComponent* value);
+	void set_is_play_cutscene(bool value);
 
 protected:
 	std::list<std::unique_ptr<Object>> object_list_;
@@ -99,6 +101,8 @@ protected:
 
 	float total_time_{ 0 };
 
+	bool is_play_cutscene_{ false };
+
 protected:
 	//그림자를 위해 일부 base scene 멤버 변수들 scene으로 옮김
 	bool is_prepare_ground_checking_ = false;
@@ -110,5 +114,7 @@ protected:
 
 	//TODO: Player 객체 구현
 	Object* player_ = nullptr;
+
+
 };
 

@@ -5,6 +5,7 @@
 #include "AnimationState.h"
 #include "MovementComponent.h"
 #include "UiMeshComponent.h"
+#include "ShotDragonAnimationState.h"
 
 MonsterComponent::MonsterComponent(Object* owner) : Component(owner)
 {
@@ -93,6 +94,19 @@ void MonsterComponent::Update(float elapsed_time)
 				}
 				angle = XMConvertToDegrees(angle);
 				owner_->Rotate(0.f, angle, 0.f);
+            }
+            if (owner_->tag() == "Shot_Dragon")
+            {
+                auto animator = Object::GetComponent<AnimatorComponent>(owner_);
+                auto animation_state = animator->animation_state();
+                animation_state->ChangeAnimationTrack((int)ShotDragonAnimationTrack::kAttack, owner_, animator);
+                animation_state->set_animation_loop_type(0); // Loop
+
+                return;
+            }
+            if (owner_->tag() == "Strong_Dragon")
+            {
+                return;
             }
 
 			movement->MoveXZ(direction.x, direction.z, 5.f);
