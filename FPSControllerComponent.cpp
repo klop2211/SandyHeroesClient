@@ -262,7 +262,7 @@ void FPSControllerComponent::Update(float elapsed_time)
 		AnimatorComponent* animator = Object::GetComponent<AnimatorComponent>(owner_);
 		if (animator)
 		{
-			animator->animation_state()->set_animation_track((int)PlayerAnimationTrack::kIdle);
+			animator->animation_state()->ChangeAnimationTrack((int)PlayerAnimationTrack::kIdle, owner_, animator);
 		}
 	}
 	dash_cool_delta_time_ -= elapsed_time;

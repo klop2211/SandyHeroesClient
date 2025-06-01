@@ -238,7 +238,7 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 	//플레이어 생성
 	Object* player = model_infos_[0]->GetInstance();
 	player->set_name("Player");
-	player->set_position_vector(XMFLOAT3{ -15, 30, 0 });
+	player->set_position_vector(XMFLOAT3{ -15, 6, 0 });
 	player->set_collide_type(true, true);
 	player->AddComponent(new MovementComponent(player));
 	AnimatorComponent* animator = Object::GetComponent<AnimatorComponent>(player);
@@ -291,6 +291,16 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 
 	//Create Monster spawner
 	CreateMonsterSpawner();
+
+	//Set Spawn Boxs
+	constexpr int kSpawnBoxCount = 5;
+	spawn_boxs_.reserve(kSpawnBoxCount);
+	for (int i = 0; i < kSpawnBoxCount; ++i)
+	{
+		const auto& box_object = FindObject("SpawnBox" + std::to_string(i + 1));
+		const auto& box = Object::GetComponent<BoxColliderComponent>(box_object);
+		spawn_boxs_.push_back(box);
+	}
 
 	//Create CroosHair
 	Object* ui = new Object();
@@ -415,15 +425,36 @@ void BaseScene::CreateMonsterSpawner()
 	animator->set_animation_state(new ShotDragonAnimationState);
 	int shot_spawner_id = 0;
 
+	//bomb dragon
+	//ModelInfo* bomb_dragon = FindModelInfo("Shot_Dragon");
+	//bomb_dragon->hierarchy_root()->set_collide_type(true, true);
+	//ui_head_socket = bomb_dragon->hierarchy_root()->FindFrame("Ui_Head");
+
+	//ui_material = Scene::FindMaterial("ProgressBarBackground", materials_);
+	//ui_mesh_component = new UiMeshComponent(ui_head_socket,
+	//	Scene::FindMesh("ProgressBarBackground", meshes_), ui_material, this);
+	//ui_material->DeleteMeshComponent(ui_mesh_component);
+	//ui_head_socket->AddComponent(ui_mesh_component);
+
+	//ui_material = Scene::FindMaterial("HpBar", materials_);
+	//ui_mesh_component = new UiMeshComponent(ui_head_socket,
+	//	Scene::FindMesh("ProgressBar", meshes_), ui_material, this);
+	//ui_material->DeleteMeshComponent(ui_mesh_component);
+	//ui_head_socket->AddComponent(ui_mesh_component);
+
+	//animator = Object::GetComponentInChildren<AnimatorComponent>(bomb_dragon->hierarchy_root());
+	//animator->set_animation_state(new ShotDragonAnimationState);
+	//int bomb_spawner_id = 0;
+
 	//Stage 1
 	{
 		spawner = new Object();
 		spawner->set_name("Hit_Dragon_Spawner_" + std::to_string(++hit_spawner_id));
-		spawner->set_position_vector(59.f, 9.3f, 42.8f);
+		spawner->set_position_vector(17.38f, 0.61f, -0.92f);
 		monster_component = new MonsterComponent(nullptr);
 		monster_component->set_target(player_);
 		spawner_component = new SpawnerComponent(spawner, this, hit_dragon);
-		spawner_component->SetSpawnerInfo(3, 13.f, 5.f);
+		spawner_component->SetSpawnerInfo(3, 3.f, 5.f);
 		spawner_component->AddComponent(monster_component);
 		spawner_component->AddComponent(std::make_unique<MovementComponent>(nullptr));
 		spawner->AddComponent(spawner_component);
@@ -432,11 +463,11 @@ void BaseScene::CreateMonsterSpawner()
 
 		spawner = new Object();
 		spawner->set_name("Hit_Dragon_Spawner_" + std::to_string(++hit_spawner_id));
-		spawner->set_position_vector(67.8f, 2.6f, -1.5f);
+		spawner->set_position_vector(16.f, 2.6f, 11.74f);
 		monster_component = new MonsterComponent(nullptr);
 		monster_component->set_target(player_);
 		spawner_component = new SpawnerComponent(spawner, this, hit_dragon);
-		spawner_component->SetSpawnerInfo(3, 5.f, 5.f);
+		spawner_component->SetSpawnerInfo(3, 4.f, 4.f);
 		spawner_component->AddComponent(monster_component);
 		spawner_component->AddComponent(std::make_unique<MovementComponent>(nullptr));
 		spawner->AddComponent(spawner_component);
@@ -445,11 +476,11 @@ void BaseScene::CreateMonsterSpawner()
 
 		spawner = new Object();
 		spawner->set_name("Hit_Dragon_Spawner_" + std::to_string(++hit_spawner_id));
-		spawner->set_position_vector(88.2f, 10.f, -36.1f);
+		spawner->set_position_vector(16.84f, 1.24f, -9.07f);
 		monster_component = new MonsterComponent(nullptr);
 		monster_component->set_target(player_);
 		spawner_component = new SpawnerComponent(spawner, this, hit_dragon);
-		spawner_component->SetSpawnerInfo(3, 8.f, 5.f);
+		spawner_component->SetSpawnerInfo(3, 5.f, 3.f);
 		spawner_component->AddComponent(monster_component);
 		spawner_component->AddComponent(std::make_unique<MovementComponent>(nullptr));
 		spawner->AddComponent(spawner_component);
@@ -458,11 +489,11 @@ void BaseScene::CreateMonsterSpawner()
 
 		spawner = new Object();
 		spawner->set_name("Shot_Dragon_Spawner_" + std::to_string(++shot_spawner_id));
-		spawner->set_position_vector(97.1f, 20.8f, 40.f);
+		spawner->set_position_vector(27.85f, 6.73f, -8.07f);
 		monster_component = new MonsterComponent(nullptr);
 		monster_component->set_target(player_);
 		spawner_component = new SpawnerComponent(spawner, this, shot_dragon);
-		spawner_component->SetSpawnerInfo(3, 9.f, 5.f);
+		spawner_component->SetSpawnerInfo(1, 9.f, 5.f);
 		spawner_component->AddComponent(monster_component);
 		spawner_component->AddComponent(std::make_unique<MovementComponent>(nullptr));
 		spawner->AddComponent(spawner_component);
@@ -471,11 +502,11 @@ void BaseScene::CreateMonsterSpawner()
 
 		spawner = new Object();
 		spawner->set_name("Shot_Dragon_Spawner_" + std::to_string(++shot_spawner_id));
-		spawner->set_position_vector(111.6f, 26.9f, -32.6f);
+		spawner->set_position_vector(24.53f, 5.31f, 10.05f);
 		monster_component = new MonsterComponent(nullptr);
 		monster_component->set_target(player_);
 		spawner_component = new SpawnerComponent(spawner, this, shot_dragon);
-		spawner_component->SetSpawnerInfo(3, 11.f, 5.f);
+		spawner_component->SetSpawnerInfo(1, 11.f, 5.f);
 		spawner_component->AddComponent(monster_component);
 		spawner_component->AddComponent(std::make_unique<MovementComponent>(nullptr));
 		spawner->AddComponent(spawner_component);
@@ -486,44 +517,89 @@ void BaseScene::CreateMonsterSpawner()
 
 	//Stage 2
 	{
+		//hit 1
 		spawner = new Object();
 		spawner->set_name("Hit_Dragon_Spawner_" + std::to_string(++hit_spawner_id));
-		spawner->set_position_vector(235.8f, 10.6f, 20.5f);
+		spawner->set_position_vector(58.91f, 2.97f, 0.28f);
 		monster_component = new MonsterComponent(nullptr);
 		monster_component->set_target(player_);
 		spawner_component = new SpawnerComponent(spawner, this, hit_dragon);
-		spawner_component->SetSpawnerInfo(3, 0.f, 5.f);
+		spawner_component->SetSpawnerInfo(3, 0.5f, 5.f);
 		spawner_component->AddComponent(monster_component);
 		spawner_component->AddComponent(std::make_unique<MovementComponent>(nullptr));
 		spawner->AddComponent(spawner_component);
 		AddObject(spawner);
 		stage_monster_spawner_list_[1].push_back(spawner_component);
 
+		//hit 2
 		spawner = new Object();
 		spawner->set_name("Hit_Dragon_Spawner_" + std::to_string(++hit_spawner_id));
-		spawner->set_position_vector(235.8f, 1.62f, 95.3f);
+		spawner->set_position_vector(58.91f, 2.97f, 9.13f);
 		monster_component = new MonsterComponent(nullptr);
 		monster_component->set_target(player_);
 		spawner_component = new SpawnerComponent(spawner, this, hit_dragon);
-		spawner_component->SetSpawnerInfo(3, 4.f, 5.f);
+		spawner_component->SetSpawnerInfo(3, 0.5f, 5.f);
 		spawner_component->AddComponent(monster_component);
 		spawner_component->AddComponent(std::make_unique<MovementComponent>(nullptr));
 		spawner->AddComponent(spawner_component);
 		AddObject(spawner);
 		stage_monster_spawner_list_[1].push_back(spawner_component);
 
-		//spawner = new Object();
-		//spawner->set_name("Shot_Dragon_Spawner_" + std::to_string(++shot_spawner_id));
-		//spawner->set_position_vector(97.1f, 20.8f, 40.f);
-		//monster_component = new MonsterComponent(nullptr);
-		//monster_component->set_target(player_);
-		//spawner_component = new SpawnerComponent(spawner, this, shot_dragon);
-		//spawner_component->SetSpawnerInfo(3, 9.f, 5.f);
-		//spawner_component->AddComponent(monster_component);
-		//spawner_component->AddComponent(std::make_unique<MovementComponent>(nullptr));
-		//spawner->AddComponent(spawner_component);
-		//AddObject(spawner);
-		//stage_monster_spawner_list_[1].push_back(spawner_component);
+		//shot 1
+		spawner = new Object();
+		spawner->set_name("Shot_Dragon_Spawner_" + std::to_string(++shot_spawner_id));
+		spawner->set_position_vector(63.63f, 7.66f, -3.49f);
+		monster_component = new MonsterComponent(nullptr);
+		monster_component->set_target(player_);
+		spawner_component = new SpawnerComponent(spawner, this, shot_dragon);
+		spawner_component->SetSpawnerInfo(1, 3.f, 5.f);
+		spawner_component->AddComponent(monster_component);
+		spawner_component->AddComponent(std::make_unique<MovementComponent>(nullptr));
+		spawner->AddComponent(spawner_component);
+		AddObject(spawner);
+		stage_monster_spawner_list_[1].push_back(spawner_component);
+
+		//shot 2
+		spawner = new Object();
+		spawner->set_name("Shot_Dragon_Spawner_" + std::to_string(++shot_spawner_id));
+		spawner->set_position_vector(63.63f, 7.66f, 11.94f);
+		monster_component = new MonsterComponent(nullptr);
+		monster_component->set_target(player_);
+		spawner_component = new SpawnerComponent(spawner, this, shot_dragon);
+		spawner_component->SetSpawnerInfo(1, 3.f, 5.f);
+		spawner_component->AddComponent(monster_component);
+		spawner_component->AddComponent(std::make_unique<MovementComponent>(nullptr));
+		spawner->AddComponent(spawner_component);
+		AddObject(spawner);
+		stage_monster_spawner_list_[1].push_back(spawner_component);
+
+		//shot 3
+		spawner = new Object();
+		spawner->set_name("Shot_Dragon_Spawner_" + std::to_string(++shot_spawner_id));
+		spawner->set_position_vector(80.41f, 7.66f, 11.94f);
+		monster_component = new MonsterComponent(nullptr);
+		monster_component->set_target(player_);
+		spawner_component = new SpawnerComponent(spawner, this, shot_dragon);
+		spawner_component->SetSpawnerInfo(1, 8.f, 5.f);
+		spawner_component->AddComponent(monster_component);
+		spawner_component->AddComponent(std::make_unique<MovementComponent>(nullptr));
+		spawner->AddComponent(spawner_component);
+		AddObject(spawner);
+		stage_monster_spawner_list_[1].push_back(spawner_component);
+
+		//shot 4
+		spawner = new Object();
+		spawner->set_name("Shot_Dragon_Spawner_" + std::to_string(++shot_spawner_id));
+		spawner->set_position_vector(80.41f, 7.66f, -3.45f);
+		monster_component = new MonsterComponent(nullptr);
+		monster_component->set_target(player_);
+		spawner_component = new SpawnerComponent(spawner, this, shot_dragon);
+		spawner_component->SetSpawnerInfo(1, 8.f, 5.f);
+		spawner_component->AddComponent(monster_component);
+		spawner_component->AddComponent(std::make_unique<MovementComponent>(nullptr));
+		spawner->AddComponent(spawner_component);
+		AddObject(spawner);
+		stage_monster_spawner_list_[1].push_back(spawner_component);
 
 	}
 }
@@ -586,8 +662,7 @@ bool BaseScene::ProcessInput(UINT id, WPARAM w_param, LPARAM l_param, float time
 		}
 		if (w_param == 'P')
 		{
-			ActivateStageMonsterSpawner(stage_clear_num_);
-			catch_monster_num_ = 8;
+			catch_monster_num_ = 1;
 			//++stage_clear_num_;
 			return true;
 		}
@@ -644,6 +719,7 @@ void BaseScene::Update(float elapsed_time)
 
 	UpdateStageClear();
 
+	CheckSpawnBoxHitPlayer();
 }
 
 void BaseScene::AddObject(Object* object)
@@ -749,32 +825,65 @@ void BaseScene::UpdateStageClear()
 	{
 		PrepareGroundChecking();
 	}
-	if (catch_monster_num_ > 3)
+	switch (stage_clear_num_)
 	{
-		// 현재 스테이지에서 "Cube" 메쉬 제거
-		auto& mesh_list = checking_maps_mesh_collider_list_[stage_clear_num_];
-		mesh_list.remove_if([](MeshColliderComponent* collider) {
-			return collider->mesh() && collider->mesh()->name() == "Cube";
-			});
+	case 0:
+		if (catch_monster_num_ <= 0)
+			return;
+		break;
+	case 1:
+		if (catch_monster_num_ < 9)
+			return;
+		break;
+	case 2:
+		if (catch_monster_num_ < 10)
+			return;
+		break;
+	case 3:
+		//TODO: 스테이지 3번은 투명발판을 밟아 다음 스테이지로 진행해야 클리어
+		return;
+	case 4:
+		if (catch_monster_num_ < 1)
+			return;
+		break;
+	case 5:
+		if (catch_monster_num_ < 10)
+			return;
+		break;
+	case 6:
+		for (auto& object : ground_check_object_list_)
+		{
+			auto movement = Object::GetComponentInChildren<MovementComponent>(object);
+			CheckPlayerHitPyramid(object);
+		}
+		if (get_key_num_ == 3)
+		{
+			auto& mesh_list = checking_maps_mesh_collider_list_[stage_clear_num_];
+			mesh_list.remove_if([](MeshColliderComponent* collider) {
+				return collider->mesh() && collider->mesh()->name() == "Cube";
+				});
+			++stage_clear_num_;
+			get_key_num_ = 0;
+		}
+		break;
+	case 7:
+		// TODO: 게임클리어!
+		if (catch_monster_num_ < 1)
+			return;
+		break;
+	default:
+		break;
+	}
+	// 현재 스테이지에서 "Cube" 메쉬 제거
+	auto& mesh_list = checking_maps_mesh_collider_list_[stage_clear_num_];
+	mesh_list.remove_if([](MeshColliderComponent* collider) {
+		return collider->mesh() && collider->mesh()->name() == "Cube";
+		});
 
-		// 스테이지 넘버 증가
-		++stage_clear_num_;
-		catch_monster_num_ = 0;
-	}
-	for (auto& object : ground_check_object_list_)
-	{
-		auto movement = Object::GetComponentInChildren<MovementComponent>(object);
-		CheckPlayerHitPyramid(object);
-	}
-	if (get_key_num_ == 3)
-	{
-		auto& mesh_list = checking_maps_mesh_collider_list_[stage_clear_num_];
-		mesh_list.remove_if([](MeshColliderComponent* collider) {
-			return collider->mesh() && collider->mesh()->name() == "Cube";
-			});
-		++stage_clear_num_;
-		get_key_num_ = 0;
-	}
+	// 스테이지 넘버 증가
+	++stage_clear_num_;
+	catch_monster_num_ = 0;
+
 }
 
 void BaseScene::CheckObjectIsGround(Object* object)
@@ -1043,11 +1152,11 @@ void BaseScene::CheckObjectHitBullet(Object* object)
 
 			if (bullet_collider->animated_box().Intersects(box_collider->animated_box()))
 			{
-				if (bullet->is_dead())
+				MonsterComponent* monster = Object::GetComponent<MonsterComponent>(object);
+				if (monster && monster->IsDead())
 					continue;
 				particle_system_->SpawnParticle(this, box_collider->animated_box().Center, 10, 0.5f);
 				bullet->set_is_dead(true);
-				MonsterComponent* monster = Object::GetComponent<MonsterComponent>(object);
 				if (monster && !monster->IsDead())
 				{
 					monster->set_hp(monster->hp() - gun->damage());
@@ -1055,7 +1164,6 @@ void BaseScene::CheckObjectHitBullet(Object* object)
 					if(monster->IsDead())
 						catch_monster_num_++;
 				}
-				return;
 			}
 		}
 	}
@@ -1097,6 +1205,23 @@ void BaseScene::CheckPlayerHitPyramid(Object* object)
 				});
 
 			break;
+		}
+	}
+}
+
+void BaseScene::CheckSpawnBoxHitPlayer()
+{
+	if (stage_clear_num_ < 1)
+		return;
+	const auto& const spawn_box = spawn_boxs_[stage_clear_num_ - 1];
+	auto& player_meshes = Object::GetComponentsInChildren<MeshComponent>(player_);
+	for (const auto& mesh : player_meshes)
+	{
+		BoundingBox mesh_animated_aabb;
+		mesh->GetMesh()->bounds().Transform(mesh_animated_aabb, XMLoadFloat4x4(&mesh->owner()->world_matrix()));
+		if (spawn_box->animated_box().Intersects(mesh_animated_aabb))
+		{
+			ActivateStageMonsterSpawner(stage_clear_num_ - 1);
 		}
 	}
 }

@@ -275,7 +275,6 @@ namespace file_load_util
 			std::wstring debug_str;
 			debug_str.assign(temp.begin(), temp.end());
 			OutputDebugString(debug_str.c_str());
-			throw;
 		}
 
 	}

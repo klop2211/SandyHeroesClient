@@ -5,29 +5,34 @@
 
 HitDragonAnimationState::HitDragonAnimationState()
 {
-	animation_track_ = (int)HitDragonAnimationTrack::kIdle;
+	set_animation_track((int)HitDragonAnimationTrack::kIdle);
 }
 
-int HitDragonAnimationState::Run(Object* object, bool is_end)
+void HitDragonAnimationState::Enter(int animation_track, Object* object, AnimatorComponent* animator)
+{
+}
+
+int HitDragonAnimationState::Run(Object* object, bool is_end, AnimatorComponent* animator)
 {
 	auto movement = Object::GetComponentInChildren<MovementComponent>(object);
 	auto velocity_xz = movement->velocity();
 	velocity_xz.y = 0.f;
 	float speed = xmath_util_float3::Length(velocity_xz);
 
-	switch ((HitDragonAnimationTrack)animation_track_)
+	switch ((HitDragonAnimationTrack)animation_track())
 	{
 	case HitDragonAnimationTrack::kIdle:
 		if (speed > 0.f)
 		{
-			animation_track_ = (int)HitDragonAnimationTrack::kRun;
+			ChangeAnimationTrack((int)HitDragonAnimationTrack::kRun, object, animator);
 		}
 		break;
 	case HitDragonAnimationTrack::kRun:
 		if (IsZero(speed))
 		{
-			animation_track_ = (int)HitDragonAnimationTrack::kIdle;
+			ChangeAnimationTrack((int)HitDragonAnimationTrack::kIdle, object, animator);
 		}
+		break;
 	case HitDragonAnimationTrack::kDie:
 		if (is_end)
 		{
@@ -37,7 +42,11 @@ int HitDragonAnimationState::Run(Object* object, bool is_end)
 	default:
 		break;
 	}
-    return animation_track_;
+    return animation_track();
+}
+
+void HitDragonAnimationState::Exit(int animation_track, Object* object, AnimatorComponent* animator)
+{
 }
 
 AnimationState* HitDragonAnimationState::GetCopy()

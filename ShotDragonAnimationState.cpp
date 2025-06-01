@@ -3,26 +3,31 @@
 #include "Object.h"
 #include "MovementComponent.h"
 
-int ShotDragonAnimationState::Run(Object* object, bool is_end)
+void ShotDragonAnimationState::Enter(int animation_track, Object* object, AnimatorComponent* animator)
+{
+}
+
+int ShotDragonAnimationState::Run(Object* object, bool is_end, AnimatorComponent* animator)
 {
 	auto movement = Object::GetComponentInChildren<MovementComponent>(object);
 	auto velocity_xz = movement->velocity();
 	velocity_xz.y = 0.f;
 	float speed = xmath_util_float3::Length(velocity_xz);
 
-	switch ((ShotDragonAnimationTrack)animation_track_)
+	switch ((ShotDragonAnimationTrack)animation_track())
 	{
 	case ShotDragonAnimationTrack::kIdle:
 		if (speed > 0.f)
 		{
-			animation_track_ = (int)ShotDragonAnimationTrack::kRun;
+			ChangeAnimationTrack((int)ShotDragonAnimationTrack::kRun, object, animator);
 		}
 		break;
 	case ShotDragonAnimationTrack::kRun:
 		if (IsZero(speed))
 		{
-			animation_track_ = (int)ShotDragonAnimationTrack::kIdle;
+			ChangeAnimationTrack((int)ShotDragonAnimationTrack::kIdle, object, animator);
 		}
+		break;
 	case ShotDragonAnimationTrack::kDie:
 		if (is_end)
 		{
@@ -32,7 +37,11 @@ int ShotDragonAnimationState::Run(Object* object, bool is_end)
 	default:
 		break;
 	}
-	return animation_track_;
+	return animation_track();
+}
+
+void ShotDragonAnimationState::Exit(int animation_track, Object* object, AnimatorComponent* animator)
+{
 }
 
 AnimationState* ShotDragonAnimationState::GetCopy()

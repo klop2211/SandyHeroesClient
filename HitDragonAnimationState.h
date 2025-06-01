@@ -11,7 +11,10 @@ public:
 	HitDragonAnimationState();
 	virtual ~HitDragonAnimationState() {}
 
-	virtual int Run(Object* object, bool is_end) override;
+	virtual void Enter(int animation_track, Object* object, AnimatorComponent* animator) override;
+	virtual int Run(Object* object, bool is_end, AnimatorComponent* animator) override;
+	virtual void Exit(int animation_track, Object* object, AnimatorComponent* animator) override;
+
 	virtual AnimationState* GetCopy() override;
 
 	virtual int GetDeadAnimationTrack() const override;

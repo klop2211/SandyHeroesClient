@@ -23,7 +23,12 @@ public:
 
     void AttachBoneFrames();
 
+    //setter
     void set_animation_state(AnimationState* value);
+    void set_speed_scale(float value);
+    void set_is_ignore_root_bone_traslation(bool value);
+
+    //getter
     AnimationState* animation_state() const;
 
 private:
@@ -43,5 +48,9 @@ private:
 
     //활성화 시 스킨메쉬의 루트본에 가해지는 translation 값이 root_node에 적용됨
     bool is_root_motion_animation_ = false; 
+    bool is_ignore_root_bone_traslation_ = false; // true면 root_bone에 적용되는 애니메이션의 translation 값이 무시됨
+
+    //애니메이션 재생 속도
+    float speed_scale_ = 1.f;
 };
 

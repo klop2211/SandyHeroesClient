@@ -4,6 +4,7 @@
 
 class MeshColliderComponent;
 class SpawnerComponent;
+class BoxColliderComponent;
 
 class BaseScene :
     public Scene
@@ -44,6 +45,7 @@ public:
 	void CheckObjectHitObject(Object* object);
 	void CheckObjectHitBullet(Object* object);
 	void CheckPlayerHitPyramid(Object* object);
+	void CheckSpawnBoxHitPlayer();
 
 	//getter
 	std::list<MeshColliderComponent*> checking_maps_mesh_collider_list(int index);
@@ -65,6 +67,8 @@ private:
 	std::list<Object*> wall_check_object_list_;	//벽 체크가 필요한 객체들의 리스트(플레이어, monster, NPC)
 
 	std::unique_ptr<ParticleSystem> particle_system_{ nullptr };	//파티클 시스템
+
+	std::vector<BoxColliderComponent*> spawn_boxs_{}; // 스테이지 몬스터 생성 체크를 위한 박스들
 
 };
 

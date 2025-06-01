@@ -248,7 +248,7 @@ void Scene::UpdateRenderPassConstantBuffer(ID3D12GraphicsCommandList* command_li
 	//TODO: 조명 관련 클래스를 생성후 그것을 사용하여 아래 정보 업데이트(현재는 테스트용 하드코딩)
 	cb_pass.ambient_light = XMFLOAT4{ 0.01,0.01,0.01, 1 };
 	cb_pass.lights[0].strength = XMFLOAT3{ 0.7, 0.7, 0.7 };
-	cb_pass.lights[0].direction = XMFLOAT3{ 0, -1, 0.f };
+	cb_pass.lights[0].direction = XMFLOAT3{ 0.577350020,  -0.577350020, 0.577350020 };
 	cb_pass.lights[0].enable = true;
 	cb_pass.lights[0].type = 0;
 

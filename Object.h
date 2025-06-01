@@ -175,7 +175,6 @@ protected:
 	Object* child_ = nullptr;
 	Object* sibling_ = nullptr;
 
-
 	std::list<std::unique_ptr<Component>> component_list_;
 
 	std::string name_ = "None";

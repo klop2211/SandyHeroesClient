@@ -42,8 +42,17 @@ void MonsterComponent::Update(float elapsed_time)
 
     if (hp_ <= 0)
     {
+        auto animator = Object::GetComponentInChildren<AnimatorComponent>(owner_);
+        if (!animator)
+        {
+            std::string temp = owner_->name() + "의 MonsterComponent 죽음 애니메이션 출력 과정에서 문제가 생겼습니다.";
+            std::wstring debug_str;
+            debug_str.assign(temp.begin(), temp.end());
 
-		auto animation_state = Object::GetComponentInChildren<AnimatorComponent>(owner_)->animation_state();
+            OutputDebugString(debug_str.c_str());
+            return;
+        }
+		auto animation_state = animator->animation_state();
         if (animation_state)
         {
             if (animation_state->GetDeadAnimationTrack() == -1)
@@ -53,7 +62,7 @@ void MonsterComponent::Update(float elapsed_time)
                 return;
             }
 			// 죽는 애니메이션으로 전환
-			animation_state->set_animation_track(animation_state->GetDeadAnimationTrack());
+			animation_state->ChangeAnimationTrack(animation_state->GetDeadAnimationTrack(), owner_, animator);
 			animation_state->set_animation_loop_type(1); // Once
             is_dead_animationing_ = true;
             return;
@@ -87,7 +96,7 @@ void MonsterComponent::Update(float elapsed_time)
             }
 
 			movement->MoveXZ(direction.x, direction.z, 5.f);
-            movement->set_max_speed_xz(5.f);
+            movement->set_max_speed_xz(3.5f);
 		}
 	}
 
