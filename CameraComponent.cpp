@@ -1,12 +1,13 @@
 #include "stdafx.h"
 #include "CameraComponent.h"
 #include "Object.h"
-
+#include "MeshComponent.h"
 
 CameraComponent::CameraComponent(Object* owner, 
 	float near_plane_distance, float far_plane_distance, float aspect_ratio, float fov_angle) : Component(owner)
 {
 	CreateProjectionMatrix(near_plane_distance, far_plane_distance, aspect_ratio, fov_angle);
+	BoundingFrustum::CreateFromMatrix(view_frustum_, XMLoadFloat4x4(&projection_matrix_));
 }
 
 CameraComponent::CameraComponent(const CameraComponent& other) : 
@@ -32,6 +33,19 @@ void CameraComponent::CreateProjectionMatrix(
 		xmath_util_float4x4::PerspectiveFovLH(
 			XMConvertToRadians(fov_angle), aspect_ratio, near_plane_distance, far_plane_distance);
 
+}
+
+bool CameraComponent::CollisionCheckByMeshComponent(MeshComponent* mesh_component)
+{
+	BoundingOrientedBox obb;
+	auto aabb = mesh_component->GetMesh()->bounds();
+	BoundingOrientedBox::CreateFromBoundingBox(obb, aabb);
+	obb.Transform(obb, XMLoadFloat4x4(& mesh_component->owner()->world_matrix()));
+	auto view = XMLoadFloat4x4(&view_matrix_);
+	auto inv_view = XMMatrixInverse(&XMMatrixDeterminant(view), view);
+	BoundingFrustum world_frustum;
+	view_frustum_.Transform(world_frustum, inv_view);
+	return world_frustum.Intersects(obb);
 }
 
 using namespace xmath_util_float3;

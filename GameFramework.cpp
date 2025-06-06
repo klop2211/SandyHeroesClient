@@ -600,8 +600,6 @@ void GameFramework::FrameAdvance()
         &CurrentBackBufferView(),
         true, &DepthStencilView());
 
-
-
     scene_->Render(d3d_command_list_.Get());
 
     d3d_command_list_->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(

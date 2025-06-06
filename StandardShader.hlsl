@@ -75,8 +75,8 @@ VertexOut SkinnedMeshVS(SkinnedMeshVertexIn v_in)
 
 float4 PS(VertexOut p_in) : SV_Target
 {
-    const float fog_start = 40.f;
-    const float fog_range = 120.f;
+    const float fog_start = 30.f;
+    const float fog_range = 70.f;
     const float4 fog_color = float4(1.0, 0.8, 0.6, 1.f);
     float dist_to_eye = length(g_camera_position - p_in.position_w);
 

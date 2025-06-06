@@ -4,6 +4,7 @@
 SkyboxShader::SkyboxShader()
 {
 	shader_type_ = ShaderType::kSkybox;
+	is_frustum_culling_ = false;
 }
 
 D3D12_INPUT_LAYOUT_DESC SkyboxShader::CreateInputLayout()

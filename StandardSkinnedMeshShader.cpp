@@ -36,7 +36,7 @@ D3D12_BLEND_DESC StandardSkinnedMeshShader::CreateBlendState()
 	D3D12_BLEND_DESC blend_desc{};
 	blend_desc.AlphaToCoverageEnable = FALSE;
 	blend_desc.IndependentBlendEnable = FALSE;
-	blend_desc.RenderTarget[0].BlendEnable = TRUE;
+	blend_desc.RenderTarget[0].BlendEnable = FALSE;
 	blend_desc.RenderTarget[0].LogicOpEnable = FALSE;
 	blend_desc.RenderTarget[0].SrcBlend = D3D12_BLEND_ONE;
 	blend_desc.RenderTarget[0].DestBlend = D3D12_BLEND_ZERO;

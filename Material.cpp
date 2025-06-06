@@ -5,6 +5,7 @@
 #include "Shader.h"
 #include "MeshComponent.h"
 #include "Scene.h"
+#include "CameraComponent.h"
 
 using namespace file_load_util;
 
@@ -111,14 +112,22 @@ void Material::UpdateShaderVariables(ID3D12GraphicsCommandList* command_list,
 }
 
 void Material::Render(ID3D12GraphicsCommandList* command_list, 
-	FrameResource* curr_frame_resource, DescriptorManager* descriptor_manager)
+	FrameResource* curr_frame_resource, DescriptorManager* descriptor_manager, CameraComponent* camera)
 {
 	//set current material at graphics pipeline
 	UpdateShaderVariables(command_list, curr_frame_resource, descriptor_manager);
 
 	for (const auto& mesh_component : mesh_component_list_)
 	{
-		mesh_component->Render(this, command_list, curr_frame_resource);
+		if (camera)
+		{
+			if (camera->CollisionCheckByMeshComponent(mesh_component))
+				mesh_component->Render(this, command_list, curr_frame_resource);
+		}
+		else
+		{
+			mesh_component->Render(this, command_list, curr_frame_resource);
+		}
 	}
 }
 

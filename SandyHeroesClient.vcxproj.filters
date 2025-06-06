@@ -133,6 +133,18 @@
     <Filter Include="3.Shader\ShadowShader">
       <UniqueIdentifier>{8f917bd3-7cf7-40ca-94ac-41af533b59b9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Animation\State\HitDragon">
+      <UniqueIdentifier>{3e506701-8d07-4d35-bcde-212381278248}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Animation\State\ShotDragon">
+      <UniqueIdentifier>{91ebb810-ccd0-49e7-82a4-adc13f4746f2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Animation\State\BombDragon">
+      <UniqueIdentifier>{784370e4-4a07-4de7-b283-7705eae42c3f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="3.Shader\Breathing">
+      <UniqueIdentifier>{08f0a973-8afc-4d07-b343-52e80bc743f2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="targetver.h">
@@ -291,13 +303,7 @@
     <ClInclude Include="PlayerAnimationState.h">
       <Filter>Animation\State\Player</Filter>
     </ClInclude>
-    <ClInclude Include="HitDragonAnimationState.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
     <ClInclude Include="RecordingScene.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="ShotDragonAnimationState.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="ParticleSystem.h">
@@ -309,9 +315,6 @@
     <ClInclude Include="CutSceneTrack.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="BreathingShader.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
     <ClInclude Include="TransparentShader.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
@@ -321,11 +324,20 @@
     <ClInclude Include="UiMeshComponent.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="BombDragonAnimationState.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
     <ClInclude Include="StrongDragonAnimationState.h">
       <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="HitDragonAnimationState.h">
+      <Filter>Animation\State\HitDragon</Filter>
+    </ClInclude>
+    <ClInclude Include="ShotDragonAnimationState.h">
+      <Filter>Animation\State\ShotDragon</Filter>
+    </ClInclude>
+    <ClInclude Include="BombDragonAnimationState.h">
+      <Filter>Animation\State\BombDragon</Filter>
+    </ClInclude>
+    <ClInclude Include="BreathingShader.h">
+      <Filter>3.Shader\Breathing</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -470,13 +482,7 @@
     <ClCompile Include="PlayerAnimationState.cpp">
       <Filter>Animation\State\Player</Filter>
     </ClCompile>
-    <ClCompile Include="HitDragonAnimationState.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
     <ClCompile Include="RecordingScene.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="ShotDragonAnimationState.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="ParticleSystem.cpp">
@@ -488,9 +494,6 @@
     <ClCompile Include="CutSceneTrack.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="BreathingShader.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
     <ClCompile Include="TransparentShader.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
@@ -500,11 +503,20 @@
     <ClCompile Include="UiMeshComponent.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="BombDragonAnimationState.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
     <ClCompile Include="StrongDragonAnimationState.cpp">
       <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="HitDragonAnimationState.cpp">
+      <Filter>Animation\State\HitDragon</Filter>
+    </ClCompile>
+    <ClCompile Include="ShotDragonAnimationState.cpp">
+      <Filter>Animation\State\ShotDragon</Filter>
+    </ClCompile>
+    <ClCompile Include="BombDragonAnimationState.cpp">
+      <Filter>Animation\State\BombDragon</Filter>
+    </ClCompile>
+    <ClCompile Include="BreathingShader.cpp">
+      <Filter>3.Shader\Breathing</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

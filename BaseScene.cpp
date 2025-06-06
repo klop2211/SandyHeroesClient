@@ -288,7 +288,7 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 	camera_object->set_position_vector(0, 0.3f, 0); // 플레이어 캐릭터의 키가 150인것을 고려하여 머리위치에 배치
 	camera_object->set_name("CAMERA_1");
 	CameraComponent* camera_component =
-		new CameraComponent(camera_object, 0.01, 10000,
+		new CameraComponent(camera_object, 0.01, 120,
 			(float)kDefaultFrameBufferWidth / (float)kDefaultFrameBufferHeight, 58);
 	camera_object->AddComponent(camera_component);
 	main_camera_ = camera_component;
@@ -327,7 +327,7 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 	camera_object = new Object;
 	camera_object->set_name("CAMERA_2");
 	camera_component =
-		new CameraComponent(camera_object, 0.3, 10000,
+		new CameraComponent(camera_object, 0.01, 120,
 			(float)kDefaultFrameBufferWidth / (float)kDefaultFrameBufferHeight, 58);
 	TestControllerComponent* controller = new TestControllerComponent(camera_object);
 	controller->set_client_wnd(game_framework_->main_wnd());
@@ -344,7 +344,7 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 	camera_object = new Object{};
 	camera_object->set_name("CutSceneCamera");
 
-	camera_component = new CameraComponent(camera_object, 0.3, 10000,
+	camera_component = new CameraComponent(camera_object, 0.01, 120,
 		(float)kDefaultFrameBufferWidth / (float)kDefaultFrameBufferHeight, 58);
 	camera_object->AddComponent(camera_component);
 
@@ -814,10 +814,6 @@ void BaseScene::Update(float elapsed_time)
 
 	CheckSpawnBoxHitPlayer();
 
-	std::string temp = "stage_clear_num: " + std::to_string(stage_clear_num_) + ", catch_monster_num: " + std::to_string(catch_monster_num_) + "\n";
-	std::wstring debug_str;
-	debug_str.assign(temp.begin(), temp.end());
-	OutputDebugString(debug_str.c_str());
 
 }
 

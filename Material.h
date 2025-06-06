@@ -3,6 +3,7 @@
 class DescriptorManager;
 class Shader;
 class MeshComponent;
+class CameraComponent;
 struct FrameResource;
 
 constexpr int kTextureMaskAlbedo(1 << 0);
@@ -52,7 +53,7 @@ public:
         FrameResource* curr_frame_resource, DescriptorManager* descriptor_manager);
 
     void Render(ID3D12GraphicsCommandList* command_list,
-        FrameResource* curr_frame_resource, DescriptorManager* descriptor_manager);
+        FrameResource* curr_frame_resource, DescriptorManager* descriptor_manager, CameraComponent* camera);
 
     // SRV를 생성하고 다음 시작 인덱스를 리턴(리턴값을 받아서 다음 머터리얼의 srv 생성에 사용하면 됨)
     int CreateShaderResourceViews(ID3D12Device* device, DescriptorManager* descriptor_manager, int start_index);

@@ -393,7 +393,7 @@ void Scene::Render(ID3D12GraphicsCommandList* command_list)
 		{
 			continue;
 		}
-		shader->Render(command_list, curr_frame_resource, game_framework_->descriptor_manager());
+		shader->Render(command_list, curr_frame_resource, game_framework_->descriptor_manager(), main_camera_);
 	}
 }
 
@@ -412,7 +412,7 @@ void Scene::ShadowRender(ID3D12GraphicsCommandList* command_list)
 		if (type == (int)ShaderType::kShadow)
 		{
 			auto& shadow_shader = shader;
-			shadow_shader->Render(command_list, curr_frame_resource, game_framework_->descriptor_manager());
+			shadow_shader->Render(command_list, curr_frame_resource, game_framework_->descriptor_manager(), main_camera_);
 
 			for (int i = -1; i <= 1; ++i)
 			{

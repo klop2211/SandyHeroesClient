@@ -3,6 +3,7 @@
 #include "Material.h"
 #include "FrameResource.h"
 #include "DescriptorManager.h"
+#include "CameraComponent.h"
 
 
 D3D12_RASTERIZER_DESC Shader::CreateRasterizerState()
@@ -139,12 +140,17 @@ void Shader::AddMaterial(Material* material)
 }
 
 void Shader::Render(ID3D12GraphicsCommandList* command_list, 
-	FrameResource* curr_frame_resource, DescriptorManager* descriptor_manager)
+	FrameResource* curr_frame_resource, DescriptorManager* descriptor_manager, CameraComponent* camera)
 {
 	command_list->SetPipelineState(d3d_pipeline_state_.Get());
 
 	for (const auto& const material : materials_)
 	{
-		material->Render(command_list, curr_frame_resource, descriptor_manager);
+		if(is_frustum_culling_)
+			material->Render(command_list, curr_frame_resource, descriptor_manager, camera);
+		else
+		{
+			material->Render(command_list, curr_frame_resource, descriptor_manager, nullptr);
+		}
 	}
 }

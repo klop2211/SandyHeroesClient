@@ -2,6 +2,7 @@
 
 class Material;
 class DescriptorManager;
+class CameraComponent;
 struct FrameResource;
 
 enum class ShaderType
@@ -35,12 +36,14 @@ public:
 	void AddMaterial(Material* material);
 
 	void Render(ID3D12GraphicsCommandList* command_list, 
-		FrameResource* curr_frame_resource, DescriptorManager* descriptor_manager);
+		FrameResource* curr_frame_resource, DescriptorManager* descriptor_manager, CameraComponent* camera);
 
 protected:
 	ComPtr<ID3D12PipelineState> d3d_pipeline_state_;
 
 	ShaderType shader_type_ = ShaderType::kNone;
+
+	bool is_frustum_culling_ = true;
 
 	std::vector<Material*> materials_{};
 };

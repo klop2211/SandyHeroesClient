@@ -1,6 +1,8 @@
 #pragma once
 #include "Component.h"
 
+class MeshComponent;
+
 //오브젝트에 카메라 기능 추가
 class CameraComponent :
     public Component
@@ -18,6 +20,8 @@ public:
 
 	void CreateProjectionMatrix(float near_plane_distance, float far_plane_distance, float aspect_ratio, float fov_angle);
 
+	bool CollisionCheckByMeshComponent(MeshComponent* mesh_component);
+
 	//owner의 월드 행렬 기반으로 view matrix 업데이트 
 	//(owner의 월드행렬이 업데이트가 되고 이 함수가 호출되어야함)
 	void UpdateCameraInfo();
@@ -33,5 +37,6 @@ private:
 
 	XMFLOAT3 world_position_{ 0,0,0 };
 
+	BoundingFrustum view_frustum_{};
 };
 
