@@ -499,10 +499,32 @@ void Scene::BuildDescriptorHeap(ID3D12Device* device)
 
 void Scene::BuildShaderResourceViews(ID3D12Device* device)
 {
-	int heap_index = game_framework_->descriptor_manager()->srv_offset();
-	for (std::unique_ptr<Material>& material : materials_)
+	int i = game_framework_->descriptor_manager()->srv_offset();
+	auto descriptor_manager = game_framework_->descriptor_manager();
+
+	D3D12_SHADER_RESOURCE_VIEW_DESC srv_desc{};
+	srv_desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	srv_desc.Texture2D.MostDetailedMip = 0;
+	srv_desc.Texture2D.ResourceMinLODClamp = 0.f;
+
+	D3D12_CPU_DESCRIPTOR_HANDLE descriptor;
+
+	for (const auto& const texture : textures_)
 	{
-		heap_index = material->CreateShaderResourceViews(device, game_framework_->descriptor_manager(), heap_index);
+		descriptor = descriptor_manager->GetCpuHandle(i);
+		srv_desc.Format = texture->resource->GetDesc().Format;
+		srv_desc.Texture2D.MipLevels = texture->resource->GetDesc().MipLevels;
+		if (texture->type == TextureType::kCubeMap)
+		{
+			srv_desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURECUBE;
+		}
+		else
+		{
+			srv_desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+		}
+		device->CreateShaderResourceView(texture->resource.Get(), &srv_desc, descriptor);
+		texture->heap_index = i;
+		++i;
 	}
 }
 
