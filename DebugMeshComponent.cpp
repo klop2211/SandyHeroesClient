@@ -32,6 +32,7 @@ Component* DebugMeshComponent::GetCopy()
 
 void DebugMeshComponent::UpdateConstantBuffer(FrameResource* current_frame_resource, int cb_index)
 {
+	if (cb_index == -1) cb_index = constant_buffer_index_;
 	constant_buffer_index_ = cb_index;
 
 	CBObject object_buffer{};
