@@ -25,6 +25,7 @@ public:
 
 	//�� �޽��� ����ϴ� object�� ������ŭ cb�� ������Ʈ
 	virtual void UpdateConstantBuffer(FrameResource* curr_frame_resource, int& start_index);
+	virtual void UpdateConstantBufferForShadow(FrameResource* curr_frame_resource, int& start_index);
 
 	virtual void Render(ID3D12GraphicsCommandList* command_list, int material_index);
 

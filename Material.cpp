@@ -112,10 +112,11 @@ void Material::UpdateShaderVariables(ID3D12GraphicsCommandList* command_list,
 }
 
 void Material::Render(ID3D12GraphicsCommandList* command_list, 
-	FrameResource* curr_frame_resource, DescriptorManager* descriptor_manager, CameraComponent* camera)
+	FrameResource* curr_frame_resource, DescriptorManager* descriptor_manager, CameraComponent* camera, bool bShadow)
 {
 	//set current material at graphics pipeline
-	UpdateShaderVariables(command_list, curr_frame_resource, descriptor_manager);
+	if(!bShadow)
+		UpdateShaderVariables(command_list, curr_frame_resource, descriptor_manager);
 
 	for (const auto& mesh_component : mesh_component_list_)
 	{
