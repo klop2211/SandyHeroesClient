@@ -150,6 +150,11 @@ public class SceneExtract : MonoBehaviour
 		binaryWriter.Write(v.y);
 	}
 
+	void WriteVector(BinaryWriter bWriter, Vector2 v)
+	{
+		bWriter.Write(v.x);
+		bWriter.Write(v.y);
+	}
 	void WriteVector(string strHeader, Vector2 v)
 	{
 		binaryWriter.Write(strHeader);
@@ -163,6 +168,12 @@ public class SceneExtract : MonoBehaviour
 		binaryWriter.Write(v.z);
 	}
 
+	void WriteVector(BinaryWriter bWriter, Vector3 v)
+	{
+		bWriter.Write(v.x);
+		bWriter.Write(v.y);
+		bWriter.Write(v.z);
+	}
 	void WriteVector(string strHeader, Vector3 v)
 	{
 		binaryWriter.Write(strHeader);
@@ -285,6 +296,13 @@ public class SceneExtract : MonoBehaviour
 		binaryWriter.Write(strHeader);
 		WriteVector(center);
 		WriteVector(extents);
+	}
+	void WriteBoundingBox(BinaryWriter bWriter, string strHeader, Vector3 center, Vector3 size)
+	{
+		Vector3 extents = new Vector3(size.x / 2, size.y / 2, size.z / 2);
+		bWriter.Write(strHeader);
+		WriteVector(bWriter, center);
+		WriteVector(bWriter, extents);
 	}
 
 	void WriteMatrix(Matrix4x4 matrix)
@@ -818,7 +836,14 @@ public class SceneExtract : MonoBehaviour
 
 			if(m_pModelInfoNames.Contains(objectModelName)) // 이미 이 모델에 대한 정보를 추출했음
 			{
-				sceneWriter.Write("@" + objectModelName);					// objectModelName 이 모델을
+				sceneWriter.Write("@" + objectModelName);								// objectModelName 이 모델을
+
+				Sector sector = rootObject.GetComponent<Sector>();
+				if(sector)
+				{
+					WriteBoundingBox(sceneWriter, "<SectorBounds>:", sector.sectorCollider.center, sector.sectorCollider.size);
+				}
+
 				WriteLocalMatrix(sceneWriter, "<Transform>", rootObject.transform);		// gameOject.transform을 사용하여 씬에 배치하라
 			}
 			else
@@ -832,9 +857,13 @@ public class SceneExtract : MonoBehaviour
 				{
 					m_pSkinnedMeshRenderers[i].forceMatrixRecalculationPerRender = true;
 				}
-
+				Sector sector = rootObject.GetComponent<Sector>();
+				if (sector)
+				{
+					WriteBoundingBox(sceneWriter, "<SectorBounds>:", sector.sectorCollider.center, sector.sectorCollider.size);
+				}
 				WriteLocalMatrix(sceneWriter, "<Transform>", rootObject.transform);
-
+				
 				Vector3 position = rootObject.transform.position;
 				Quaternion rotation = rootObject.transform.rotation;
 				Vector3 scale = rootObject.transform.localScale;

@@ -4,6 +4,7 @@
 #include "Material.h"
 #include "Mesh.h"
 #include "ModelInfo.h"
+#include "Sector.h"
 
 class FrameResourceManager;
 class DescriptorManager;
@@ -32,6 +33,8 @@ public:
 	virtual void BuildShaderResourceViews(ID3D12Device* device);
 	
 	void BuildScene();
+	//섹터의 오브젝트 리스트를 초기화한다.
+	void InitializeSectorObjectlist();
 
 	virtual bool CheckObjectByObjectCollisions() { return false; };
 
@@ -61,6 +64,12 @@ public:
 
 	void UpdateObjectWorldMatrix();
 
+	//Sector를 순회하며 오브젝트가 올바른 섹터에 있는지 확인하고 업데이트한다.
+	void UpdateSector();
+
+	//View Frustum Culling 실시
+	void RunViewFrustumCulling();
+
 	Object* FindObject(const std::string& object_name);
 	ModelInfo* FindModelInfo(const std::string& name);
 
@@ -85,6 +94,8 @@ protected:
 	std::vector<std::unique_ptr<ModelInfo>> model_infos_;
 	std::vector<std::unique_ptr<Material>> materials_;
 	std::vector<std::unique_ptr<Texture>> textures_;
+	std::vector<Sector> sectors_;
+
 
 	GameFramework* game_framework_{ nullptr };
 

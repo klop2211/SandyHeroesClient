@@ -31,6 +31,9 @@ public:
     bool IsVisible() const;
 
     void set_is_visible(bool value);
+	void set_is_in_view_frustum(bool value);
+
+	bool is_in_view_frustum() const;
 
     Mesh* GetMesh() const;
 
@@ -45,5 +48,7 @@ protected:
     std::vector<Material*> materials_;
 
     bool is_visible_ = true;
+
+	bool is_in_view_frustum_ = false;
 };
 

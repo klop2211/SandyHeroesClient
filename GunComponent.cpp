@@ -7,6 +7,7 @@
 #include "BoxColliderComponent.h"
 #include "DebugMeshComponent.h"
 #include "MeshColliderComponent.h"
+#include "Scene.h"
 
 std::unordered_map<std::string, GunInfo> GunComponent::kGunInfos{};
 
@@ -20,10 +21,6 @@ GunComponent::GunComponent(const GunComponent& other) : Component(other.owner_)
 
 GunComponent::~GunComponent()
 {
-    for (const auto& bullet : fired_bullet_list_)
-    {
-        delete bullet;
-    }
 }
 
 Component* GunComponent::GetCopy()
@@ -71,7 +68,7 @@ void GunComponent::ReloadBullets()
     }
 }
 
-bool GunComponent::FireBullet(XMFLOAT3 direction, Object* bullet_model)
+bool GunComponent::FireBullet(XMFLOAT3 direction, Object* bullet_model, Scene* scene)
 {
     if (loaded_bullets_ > 0)
     {
@@ -80,6 +77,7 @@ bool GunComponent::FireBullet(XMFLOAT3 direction, Object* bullet_model)
         {
             cooling_time_ = 0.f;
             Object* bullet = bullet_model;
+            bullet->set_is_movable(true);
             XMFLOAT3 bullet_look = xmath_util_float3::Normalize(bullet->look_vector());
 			XMFLOAT3 rotate_axis = xmath_util_float3::CrossProduct(bullet_look, direction);
 			float angle = xmath_util_float3::AngleBetween(bullet_look, direction);
@@ -97,6 +95,11 @@ bool GunComponent::FireBullet(XMFLOAT3 direction, Object* bullet_model)
             movement->set_max_speed_xz(bullet_speed_);
             movement->Move(direction, bullet_speed_);
             bullet->Scale(3.f);
+			scene->AddObject(bullet);
+			std::function<void(Object*)> on_destroy_func = [this](Object* bullet) {
+				fired_bullet_list_.remove(bullet);
+				};
+			bullet->OnDestroy(on_destroy_func);
             fired_bullet_list_.push_back(bullet);
             --loaded_bullets_;
         }

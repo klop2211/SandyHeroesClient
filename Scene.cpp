@@ -11,6 +11,7 @@
 #include "SkinnedMesh.h"
 #include "DDSTextureLoader.h"
 #include "UIMesh.h"
+#include "Sector.h"
 
 
 XMVECTOR Scene::GetPickingPointAtWorld(float sx, float sy, Object* picked_object)
@@ -108,13 +109,25 @@ void Scene::Update(float elapsed_time)
 		object->Update(elapsed_time);
 	}
 
+	UpdateSector();
+
 	total_time_ += elapsed_time;
 }
 
 void Scene::DeleteDeadObjects()
 {
+	for (auto& sector : sectors_)
+	{
+		sector.DeleteDeadObject();
+	}
+
 	object_list_.remove_if([](const std::unique_ptr<Object>& object) {
-		return object->is_dead();
+		if (object->is_dead())
+		{
+			object->Destroy();
+			return true;
+		}
+		return false;
 		});
 }
 
@@ -124,6 +137,67 @@ void Scene::UpdateObjectWorldMatrix()
 	{
 		object->UpdateWorldMatrix(nullptr);
 	}
+}
+
+void Scene::UpdateSector()
+{
+	for (auto& sector : sectors_)
+	{
+		//섹터로 부터 벗어난 오브젝트를 해당 섹터에서 삭제
+		sector.DeleteOutOfBoundsObjects();
+	}
+
+	for (const auto& object : object_list_)
+	{
+		if(!object->is_movable())
+			continue;
+		bool is_inserted = false;
+		for (auto& sector : sectors_)
+		{
+			if (sector.CheckObjectInSectorObjectList(object.get()))
+			{
+				is_inserted = true;
+				break;
+			}
+		}
+		if (is_inserted)
+			continue;
+		for (auto& sector : sectors_)
+		{
+			if (sector.InsertObject(object.get()))
+				break;
+		}
+	}
+}
+
+void Scene::RunViewFrustumCulling()
+{
+	int i = 0;
+	int j = 0;
+	for (auto& sector : sectors_)
+	{
+		BoundingFrustum world_frustum;	
+		auto view = XMLoadFloat4x4(&main_camera_->view_matrix());
+		auto inv_view = XMMatrixInverse(&XMMatrixDeterminant(view), view);
+		main_camera_->view_frustum().Transform(world_frustum, inv_view);
+		if (sector.bounds().Intersects(world_frustum))
+		{
+			++j;
+			for (const auto& object : sector.object_list())
+			{
+				auto mesh_component_list = Object::GetComponentsInChildren<MeshComponent>(object);
+				for (const auto& mesh_component : mesh_component_list)
+				{
+					mesh_component->set_is_in_view_frustum(main_camera_->CollisionCheckByMeshComponent(mesh_component));
+					++i;
+				}
+			}
+
+		}
+	}
+	std::string str = "View Frustum Culling: " + std::to_string(i) + " objects checked.\n" + std::to_string(j) + " Sectors checked.\n";
+	std::wstring wstr(str.begin(), str.end());
+	OutputDebugString(wstr.c_str());
 }
 
 Object* Scene::FindObject(const std::string& object_name)
@@ -233,6 +307,11 @@ void Scene::AddObject(Object* object)
 
 void Scene::DeleteObject(Object* object)
 {
+	for (auto& sector : sectors_)
+	{
+		sector.DeleteObject(object);
+	}
+
 	object_list_.remove_if([&object](const std::unique_ptr<Object>& obj) {
 		return obj.get() == object;
 		});
@@ -383,6 +462,8 @@ void Scene::Render(ID3D12GraphicsCommandList* command_list)
 	FrameResourceManager* frame_resource_manager = game_framework_->frame_resource_manager();
 	auto curr_frame_resource = frame_resource_manager->curr_frame_resource();
 
+	RunViewFrustumCulling();
+
 	//Default-Render-Pass
 	UpdateRenderPassConstantBuffer(command_list);
 	UpdateObjectConstantBuffer(curr_frame_resource);
@@ -456,6 +537,7 @@ void Scene::Initialize(ID3D12Device* device, ID3D12GraphicsCommandList* command_
 	BuildMesh(device, command_list);
 	BuildMaterial(device, command_list);
 	BuildObject(device, command_list);
+	InitializeSectorObjectlist();
 	BuildFrameResources(device);
 	BuildDescriptorHeap(device);
 	BuildConstantBufferViews(device);
@@ -564,6 +646,29 @@ void Scene::BuildScene()
 
 			object_list_.back()->set_transform_matrix(transfrom);
 
+		}
+	}
+}
+
+void Scene::InitializeSectorObjectlist()
+{
+	for (const auto& object : object_list_)
+	{
+		bool is_inserted = false;
+		for (auto& sector : sectors_)
+		{
+			if (sector.CheckObjectInSectorObjectList(object.get()))
+			{
+				is_inserted = true;
+				break;
+			}
+		}
+		if (is_inserted)
+			continue;
+		for (auto& sector : sectors_)
+		{
+			if (sector.InsertObject(object.get()))
+				break;
 		}
 	}
 }
