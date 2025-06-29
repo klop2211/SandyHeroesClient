@@ -18,6 +18,7 @@
 #include "GunComponent.h"
 #include "SkyboxShader.h"
 #include "SkyboxMesh.h"
+#include "SkinnedShadowShader.h"
 #include "MeshColliderComponent.h"
 #include "DebugMeshComponent.h"
 #include "DebugShader.h"
@@ -62,6 +63,7 @@ void BaseScene::BuildShader(ID3D12Device* device, ID3D12RootSignature* root_sign
 	shaders_[(int)ShaderType::kUI] = std::make_unique<UIShader>();
 	shaders_[(int)ShaderType::kBreathing] = std::make_unique<BreathingShader>();
 	shaders_[(int)ShaderType::kShadow] = std::make_unique<ShadowShader>();
+	shaders_[(int)ShaderType::kSkinnedShadow] = std::make_unique<SkinnedShadowShader>();
 
 	//TODO: ���̴��� �����Ǵ� ���׸��� ���� Reserve
 
@@ -799,6 +801,7 @@ bool BaseScene::ProcessInput(UINT id, WPARAM w_param, LPARAM l_param, float time
 		{
 			catch_monster_num_ = 1;
 			//++stage_clear_num_;
+			++stage_clear_num_;
 			return true;
 		}
 		if (w_param == 'N')
@@ -973,56 +976,56 @@ void BaseScene::UpdateStageClear()
 	{
 		PrepareGroundChecking();
 	}
-	switch (stage_clear_num_)
-	{
-	case 0:
-		if (catch_monster_num_ <= 0)
-			return;
-		break;
-	case 1:
-		if (catch_monster_num_ < 11)
-			return;
-		break;
-	case 2:
-		if (catch_monster_num_ < 14)
-			return;
-		break;
-	case 3:		
-		if (catch_monster_num_ < 1)
-			return;
-		//TODO: 스테이지 3번은 투명발판을 밟아 다음 스테이지로 진행해야 클리어
-	case 4:
-		if (catch_monster_num_ < 1)
-			return;
-		break;
-	case 5:
-		if (catch_monster_num_ < 10)
-			return;
-		break;
-	case 6:
-		for (auto& object : ground_check_object_list_)
-		{
-			auto movement = Object::GetComponentInChildren<MovementComponent>(object);
-			CheckPlayerHitPyramid(object);
-		}
-		if (get_key_num_ == 3)
-		{
-			auto& mesh_list = checking_maps_mesh_collider_list_[stage_clear_num_];
-			mesh_list.remove_if([](MeshColliderComponent* collider) {
-				return collider->mesh() && collider->mesh()->name() == "Cube";
-				});
-			++stage_clear_num_;
-			get_key_num_ = 0;
-		}
-		break;
-	case 7:
-		// TODO: 게임클리어!
-		if (catch_monster_num_ < 1)
-			return;
-		break;
-	default:
-		break;
-	}
+	//switch (stage_clear_num_)
+	//{
+	//case 0:
+	//	if (catch_monster_num_ <= 0)
+	//		return;
+	//	break;
+	//case 1:
+	//	if (catch_monster_num_ < 11)
+	//		return;
+	//	break;
+	//case 2:
+	//	if (catch_monster_num_ < 14)
+	//		return;
+	//	break;
+	//case 3:		
+	//	if (catch_monster_num_ < 1)
+	//		return;
+	//	//TODO: 스테이지 3번은 투명발판을 밟아 다음 스테이지로 진행해야 클리어
+	//case 4:
+	//	if (catch_monster_num_ < 1)
+	//		return;
+	//	break;
+	//case 5:
+	//	if (catch_monster_num_ < 10)
+	//		return;
+	//	break;
+	//case 6:
+	//	for (auto& object : ground_check_object_list_)
+	//	{
+	//		auto movement = Object::GetComponentInChildren<MovementComponent>(object);
+	//		CheckPlayerHitPyramid(object);
+	//	}
+	//	if (get_key_num_ == 3)
+	//	{
+	//		auto& mesh_list = checking_maps_mesh_collider_list_[stage_clear_num_];
+	//		mesh_list.remove_if([](MeshColliderComponent* collider) {
+	//			return collider->mesh() && collider->mesh()->name() == "Cube";
+	//			});
+	//		++stage_clear_num_;
+	//		get_key_num_ = 0;
+	//	}
+	//	break;
+	//case 7:
+	//	// TODO: 게임클리어!
+	//	if (catch_monster_num_ < 1)
+	//		return;
+	//	break;
+	//default:
+	//	break;
+	//}
 	// 현재 스테이지에서 "Cube" 메쉬 제거
 	auto& mesh_list = checking_maps_mesh_collider_list_[stage_clear_num_];
 	mesh_list.remove_if([](MeshColliderComponent* collider) {
@@ -1030,7 +1033,7 @@ void BaseScene::UpdateStageClear()
 		});
 
 	// 스테이지 넘버 증가
-	++stage_clear_num_;
+	//++stage_clear_num_;
 	catch_monster_num_ = 0;
 
 	is_activate_spawner_ = false;
@@ -1362,6 +1365,7 @@ void BaseScene::CheckPlayerHitPyramid(Object* object)
 
 void BaseScene::CheckSpawnBoxHitPlayer()
 {
+	return;
 	if (stage_clear_num_ < 1)
 		return;
 	const auto& const spawn_box = spawn_boxs_[stage_clear_num_ - 1];
