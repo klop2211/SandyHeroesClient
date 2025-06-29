@@ -132,6 +132,10 @@ void Material::Render(ID3D12GraphicsCommandList* command_list,
 		{
 			mesh_component->Render(this, command_list, curr_frame_resource);
 		}
+		if (bShadow)
+		{
+			mesh_component->Render(this, command_list, curr_frame_resource);
+		}
 	}
 }
 

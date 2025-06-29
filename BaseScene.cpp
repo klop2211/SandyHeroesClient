@@ -801,7 +801,7 @@ bool BaseScene::ProcessInput(UINT id, WPARAM w_param, LPARAM l_param, float time
 		{
 			catch_monster_num_ = 1;
 			//++stage_clear_num_;
-			++stage_clear_num_;
+			//++stage_clear_num_;
 			return true;
 		}
 		if (w_param == 'N')
@@ -976,56 +976,56 @@ void BaseScene::UpdateStageClear()
 	{
 		PrepareGroundChecking();
 	}
-	//switch (stage_clear_num_)
-	//{
-	//case 0:
-	//	if (catch_monster_num_ <= 0)
-	//		return;
-	//	break;
-	//case 1:
-	//	if (catch_monster_num_ < 11)
-	//		return;
-	//	break;
-	//case 2:
-	//	if (catch_monster_num_ < 14)
-	//		return;
-	//	break;
-	//case 3:		
-	//	if (catch_monster_num_ < 1)
-	//		return;
-	//	//TODO: 스테이지 3번은 투명발판을 밟아 다음 스테이지로 진행해야 클리어
-	//case 4:
-	//	if (catch_monster_num_ < 1)
-	//		return;
-	//	break;
-	//case 5:
-	//	if (catch_monster_num_ < 10)
-	//		return;
-	//	break;
-	//case 6:
-	//	for (auto& object : ground_check_object_list_)
-	//	{
-	//		auto movement = Object::GetComponentInChildren<MovementComponent>(object);
-	//		CheckPlayerHitPyramid(object);
-	//	}
-	//	if (get_key_num_ == 3)
-	//	{
-	//		auto& mesh_list = checking_maps_mesh_collider_list_[stage_clear_num_];
-	//		mesh_list.remove_if([](MeshColliderComponent* collider) {
-	//			return collider->mesh() && collider->mesh()->name() == "Cube";
-	//			});
-	//		++stage_clear_num_;
-	//		get_key_num_ = 0;
-	//	}
-	//	break;
-	//case 7:
-	//	// TODO: 게임클리어!
-	//	if (catch_monster_num_ < 1)
-	//		return;
-	//	break;
-	//default:
-	//	break;
-	//}
+	switch (stage_clear_num_)
+	{
+	case 0:
+		if (catch_monster_num_ <= 0)
+			return;
+		break;
+	case 1:
+		if (catch_monster_num_ < 11)
+			return;
+		break;
+	case 2:
+		if (catch_monster_num_ < 14)
+			return;
+		break;
+	case 3:		
+		if (catch_monster_num_ < 1)
+			return;
+		//TODO: 스테이지 3번은 투명발판을 밟아 다음 스테이지로 진행해야 클리어
+	case 4:
+		if (catch_monster_num_ < 1)
+			return;
+		break;
+	case 5:
+		if (catch_monster_num_ < 10)
+			return;
+		break;
+	case 6:
+		for (auto& object : ground_check_object_list_)
+		{
+			auto movement = Object::GetComponentInChildren<MovementComponent>(object);
+			CheckPlayerHitPyramid(object);
+		}
+		if (get_key_num_ == 3)
+		{
+			auto& mesh_list = checking_maps_mesh_collider_list_[stage_clear_num_];
+			mesh_list.remove_if([](MeshColliderComponent* collider) {
+				return collider->mesh() && collider->mesh()->name() == "Cube";
+				});
+			++stage_clear_num_;
+			get_key_num_ = 0;
+		}
+		break;
+	case 7:
+		// TODO: 게임클리어!
+		if (catch_monster_num_ < 1)
+			return;
+		break;
+	default:
+		break;
+	}
 	// 현재 스테이지에서 "Cube" 메쉬 제거
 	auto& mesh_list = checking_maps_mesh_collider_list_[stage_clear_num_];
 	mesh_list.remove_if([](MeshColliderComponent* collider) {
@@ -1033,7 +1033,7 @@ void BaseScene::UpdateStageClear()
 		});
 
 	// 스테이지 넘버 증가
-	//++stage_clear_num_;
+	++stage_clear_num_;
 	catch_monster_num_ = 0;
 
 	is_activate_spawner_ = false;
@@ -1229,60 +1229,60 @@ void BaseScene::CheckObjectHitObject(Object* object)
 			}
 		}
 	}
-	else
-	{
-		auto box1 = Object::GetComponentInChildren<BoxColliderComponent>(object);
-		if (!box1) return;
+	//else
+	//{
+	//	auto box1 = Object::GetComponentInChildren<BoxColliderComponent>(object);
+	//	if (!box1) return;
 
-		BoundingOrientedBox obb1 = box1->animated_box();
+	//	BoundingOrientedBox obb1 = box1->animated_box();
 
-		for (auto& other : ground_check_object_list_)
-		{
-			if (!other || other == object || other->is_dead()) continue;
+	//	for (auto& other : ground_check_object_list_)
+	//	{
+	//		if (!other || other == object || other->is_dead()) continue;
 
-			auto box2 = Object::GetComponentInChildren<BoxColliderComponent>(other);
-			if (!box2) continue;
+	//		auto box2 = Object::GetComponentInChildren<BoxColliderComponent>(other);
+	//		if (!box2) continue;
 
-			if (obb1.Intersects(box2->animated_box()))
-			{
-				XMFLOAT3 position = object->world_position_vector();
-				constexpr float kGroundYOffset = 0.75f;
-				position.y += kGroundYOffset;
-				XMVECTOR ray_origin = XMLoadFloat3(&position);
-				position.y -= kGroundYOffset;
+	//		if (obb1.Intersects(box2->animated_box()))
+	//		{
+	//			XMFLOAT3 position = object->world_position_vector();
+	//			constexpr float kGroundYOffset = 0.75f;
+	//			position.y += kGroundYOffset;
+	//			XMVECTOR ray_origin = XMLoadFloat3(&position);
+	//			position.y -= kGroundYOffset;
 
-				XMFLOAT3 other_pos = other->world_position_vector();
-				XMFLOAT3 dir = xmath_util_float3::Normalize(object_pos - other_pos);
-				XMVECTOR ray_direction = XMLoadFloat3(&dir);
-				ray_direction = XMVectorSetY(ray_direction, 0);
-				ray_direction = XMVector3Normalize(ray_direction);
+	//			XMFLOAT3 other_pos = other->world_position_vector();
+	//			XMFLOAT3 dir = xmath_util_float3::Normalize(object_pos - other_pos);
+	//			XMVECTOR ray_direction = XMLoadFloat3(&dir);
+	//			ray_direction = XMVectorSetY(ray_direction, 0);
+	//			ray_direction = XMVector3Normalize(ray_direction);
 
-				if (0 == XMVectorGetX(XMVector3Length(ray_direction)))
-					return;
+	//			if (0 == XMVectorGetX(XMVector3Length(ray_direction)))
+	//				return;
 
-				bool is_collide = false;
-				float distance{ std::numeric_limits<float>::max() };
-				for (auto& mesh_collider : checking_maps_mesh_collider_list_[stage_clear_num_])
-				{
-					float t{};
-					if (mesh_collider->CollisionCheckByRay(ray_origin, ray_direction, t))
-					{
-						if (t < distance)
-						{
-							distance = t;
-						}
-					}
-				}
+	//			bool is_collide = false;
+	//			float distance{ std::numeric_limits<float>::max() };
+	//			for (auto& mesh_collider : checking_maps_mesh_collider_list_[stage_clear_num_])
+	//			{
+	//				float t{};
+	//				if (mesh_collider->CollisionCheckByRay(ray_origin, ray_direction, t))
+	//				{
+	//					if (t < distance)
+	//					{
+	//						distance = t;
+	//					}
+	//				}
+	//			}
 
-				constexpr float kMinSafeDistance = 1.5f; // 살짝 밀려도 충돌 안나도록 여유
-				if (distance > kMinSafeDistance) // 벽에 안 부딪힌다면 밀기
-				{
-					object->set_position_vector(object_pos + dir * 0.1f);
-				}
-				return;
-			}
-		}
-	}
+	//			constexpr float kMinSafeDistance = 1.5f; // 살짝 밀려도 충돌 안나도록 여유
+	//			if (distance > kMinSafeDistance) // 벽에 안 부딪힌다면 밀기
+	//			{
+	//				object->set_position_vector(object_pos + dir * 0.1f);
+	//			}
+	//			return;
+	//		}
+	//	}
+	//}
 }
 
 void BaseScene::CheckObjectHitBullet(Object* object)
@@ -1365,7 +1365,6 @@ void BaseScene::CheckPlayerHitPyramid(Object* object)
 
 void BaseScene::CheckSpawnBoxHitPlayer()
 {
-	return;
 	if (stage_clear_num_ < 1)
 		return;
 	const auto& const spawn_box = spawn_boxs_[stage_clear_num_ - 1];
