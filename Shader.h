@@ -7,7 +7,7 @@ struct FrameResource;
 
 enum class ShaderType
 {
-	kNone = 0, kColor, kSkinnedMesh, kStandardMesh, kStandardSkinnedMesh, kSkybox, kDebug, kUI, kTransparent, kBreathing, kShadow, kSkinnedShadow
+	kNone = 0, kColor, kSkinnedMesh, kStandardMesh, kStandardSkinnedMesh, kSkybox, kDebug, kUI, kTransparent, kBreathing, kShadow
 };
 
 class Shader
@@ -36,7 +36,7 @@ public:
 	void AddMaterial(Material* material);
 
 	void Render(ID3D12GraphicsCommandList* command_list, 
-		FrameResource* curr_frame_resource, DescriptorManager* descriptor_manager, CameraComponent* camera, bool bShadow = false);
+		FrameResource* curr_frame_resource, DescriptorManager* descriptor_manager, CameraComponent* camera);
 
 protected:
 	ComPtr<ID3D12PipelineState> d3d_pipeline_state_;

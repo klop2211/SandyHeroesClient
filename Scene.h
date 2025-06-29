@@ -119,7 +119,6 @@ protected:
 	bool is_prepare_ground_checking_ = false;
 	//맵 바닥체크를 위한 메쉬 콜라이더 리스트 배열
 	std::array<std::list<MeshColliderComponent*>, 8> checking_maps_mesh_collider_list_;
-	std::list<Object*> ground_check_object_list_;	//지면 체크가 필요한 객체들의 리스트(플레이어, monster, NPC)
 
 	// 플레이어의 스테이지 진행도
 	int stage_clear_num_{ 0 };

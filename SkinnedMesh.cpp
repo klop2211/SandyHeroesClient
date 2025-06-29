@@ -80,23 +80,6 @@ void SkinnedMesh::UpdateConstantBuffer(FrameResource* curr_frame_resource, int& 
 	}
 }
 
-void SkinnedMesh::UpdateConstantBufferForShadow(FrameResource* curr_frame_resource, int& cb_index)
-{
-	//메쉬 컴포넌트를 활용하여 오브젝트 CB를 업데이트한다.
-	for (MeshComponent* mesh_component : mesh_component_list_)
-	{
-
-		//스킨메쉬의 컴포넌트가 bone frame과 연결되었는지 체크 및 연결
-		SkinnedMeshComponent* skinned_mesh_component =
-			static_cast<SkinnedMeshComponent*>(mesh_component);
-		skinned_mesh_component->AttachBoneFrames(bone_names_);
-
-		mesh_component->UpdateConstantBuffer(curr_frame_resource, cb_index);
-
-		++cb_index;
-	}
-}
-
 void SkinnedMesh::Render(ID3D12GraphicsCommandList* command_list, int material_index)
 {
 	command_list->SetGraphicsRootConstantBufferView(

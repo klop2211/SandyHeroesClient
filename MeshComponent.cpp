@@ -71,19 +71,6 @@ void MeshComponent::UpdateConstantBuffer(FrameResource* current_frame_resource, 
 	object_cb->CopyData(cb_index, object_buffer);
 }
 
-void MeshComponent::UpdateConstantBufferForShadow(FrameResource* current_frame_resource, int cb_index)
-{
-	if (cb_index == -1) cb_index = constant_buffer_index_;
-	constant_buffer_index_ = cb_index;
-
-	CBObject object_buffer{};
-	XMStoreFloat4x4(&object_buffer.world_matrix,
-		XMMatrixTranspose(XMLoadFloat4x4(&owner_->world_matrix())));
-
-	UploadBuffer<CBObject>* object_cb = current_frame_resource->cb_object.get();
-	object_cb->CopyData(cb_index, object_buffer);
-}
-
 void MeshComponent::AddMaterial(Material* material)
 {
 	materials_.push_back(material);

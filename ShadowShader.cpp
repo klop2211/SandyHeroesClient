@@ -37,7 +37,7 @@ D3D12_RASTERIZER_DESC ShadowShader::CreateRasterizerState()
     rasterizer_desc.FillMode = D3D12_FILL_MODE_SOLID;
     rasterizer_desc.CullMode = D3D12_CULL_MODE_BACK;
     rasterizer_desc.FrontCounterClockwise = FALSE;
-    rasterizer_desc.DepthBias = 10000;
+    rasterizer_desc.DepthBias = 1000;
     rasterizer_desc.DepthBiasClamp = 0.0f;
     rasterizer_desc.SlopeScaledDepthBias = 1.0f;
     rasterizer_desc.DepthClipEnable = TRUE;

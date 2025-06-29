@@ -339,9 +339,6 @@
     <ClInclude Include="BreathingShader.h">
       <Filter>3.Shader\Breathing</Filter>
     </ClInclude>
-    <ClInclude Include="SkinnedShadowShader.h">
-      <Filter>3.Shader\ShadowShader</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="SandyHeroesClient.cpp">
@@ -521,9 +518,6 @@
     <ClCompile Include="BreathingShader.cpp">
       <Filter>3.Shader\Breathing</Filter>
     </ClCompile>
-    <ClCompile Include="SkinnedShadowShader.cpp">
-      <Filter>3.Shader\ShadowShader</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="SandyHeroesClient.rc">
@@ -549,6 +543,5 @@
     <FxCompile Include="Transparent.hlsl" />
     <FxCompile Include="Breathing.hlsl" />
     <FxCompile Include="Shadow.hlsl" />
-    <FxCompile Include="SkinnedShadow.hlsl" />
   </ItemGroup>
 </Project>

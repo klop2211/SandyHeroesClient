@@ -140,18 +140,17 @@ void Shader::AddMaterial(Material* material)
 }
 
 void Shader::Render(ID3D12GraphicsCommandList* command_list, 
-	FrameResource* curr_frame_resource, DescriptorManager* descriptor_manager, CameraComponent* camera, bool bShadow)
+	FrameResource* curr_frame_resource, DescriptorManager* descriptor_manager, CameraComponent* camera)
 {
-	if(!bShadow)
-		command_list->SetPipelineState(d3d_pipeline_state_.Get());
+	command_list->SetPipelineState(d3d_pipeline_state_.Get());
 
 	for (const auto& const material : materials_)
 	{
 		if(is_frustum_culling_)
-			material->Render(command_list, curr_frame_resource, descriptor_manager, camera, bShadow);
+			material->Render(command_list, curr_frame_resource, descriptor_manager, camera);
 		else
 		{
-			material->Render(command_list, curr_frame_resource, descriptor_manager, nullptr, bShadow);
+			material->Render(command_list, curr_frame_resource, descriptor_manager, nullptr);
 		}
 	}
 }
