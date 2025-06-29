@@ -41,6 +41,7 @@ bool CameraComponent::CollisionCheckByMeshComponent(MeshComponent* mesh_componen
 	auto aabb = mesh_component->GetMesh()->bounds();
 	BoundingOrientedBox::CreateFromBoundingBox(obb, aabb);
 	obb.Transform(obb, XMLoadFloat4x4(& mesh_component->owner()->world_matrix()));
+
 	auto view = XMLoadFloat4x4(&view_matrix_);
 	auto inv_view = XMMatrixInverse(&XMMatrixDeterminant(view), view);
 	BoundingFrustum world_frustum;
@@ -79,4 +80,9 @@ XMFLOAT4X4 CameraComponent::projection_matrix() const
 XMFLOAT3 CameraComponent::world_position() const
 {
 	return world_position_;
+}
+
+BoundingFrustum CameraComponent::view_frustum() const
+{
+	return view_frustum_;
 }

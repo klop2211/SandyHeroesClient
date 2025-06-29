@@ -18,7 +18,7 @@ void BombDragonAnimationState::Enter(int animation_track, Object* object, Animat
 	}
 }
 
-int BombDragonAnimationState::Run(Object* object, bool is_end, AnimatorComponent* animator)
+int BombDragonAnimationState::Run(float elapsed_time, Object* object, bool is_end, AnimatorComponent* animator)
 {
 	auto movement = Object::GetComponentInChildren<MovementComponent>(object);
 	auto velocity_xz = movement->velocity();

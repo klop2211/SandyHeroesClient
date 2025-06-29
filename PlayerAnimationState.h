@@ -10,9 +10,8 @@ public:
 	virtual ~PlayerAnimationState() {}
 
 	//애니메이션 트랙 변경시 해당 트랙에 1번만 필요한 설정을 하는 함수
-	//TODO: Enter함수를 가상함수로 만들어 클래스 함수 재사용성 높이기
 	virtual void Enter(int animation_track, Object* object, AnimatorComponent* animator) override;
-	virtual int Run(Object* object, bool is_end, AnimatorComponent* animator) override;
+	virtual int Run(float elapsed_time, Object* object, bool is_end, AnimatorComponent* animator) override;
 	virtual void Exit(int animation_track, Object* object, AnimatorComponent* animator) override;
 
 	virtual AnimationState* GetCopy() override;

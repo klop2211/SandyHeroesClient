@@ -88,7 +88,7 @@ bool FPSControllerComponent::ProcessInput(UINT message_id, WPARAM w_param, LPARA
 			XMFLOAT3 bullet_dir{};
 			XMStoreFloat3(&bullet_dir, XMVector3Normalize(picking_point_w - XMLoadFloat3(&gun_shoting_point)));
 			auto bullet_mesh = scene_->FindModelInfo("SM_Bullet_01")->GetInstance();
-			gun->FireBullet(bullet_dir, bullet_mesh);
+			gun->FireBullet(bullet_dir, bullet_mesh, scene_);
 		}
 		break;
 	case WM_LBUTTONUP:
@@ -289,7 +289,7 @@ void FPSControllerComponent::Update(float elapsed_time)
 			XMFLOAT3 bullet_dir{};
 			XMStoreFloat3(&bullet_dir, XMVector3Normalize(picking_point_w - XMLoadFloat3(&gun_shoting_point)));
 			auto bullet_mesh = scene_->FindModelInfo("SM_Bullet_01")->GetInstance();
-			gun->FireBullet(bullet_dir, bullet_mesh);
+			gun->FireBullet(bullet_dir, bullet_mesh, scene_);
 		}
 	}
 }

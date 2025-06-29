@@ -18,7 +18,7 @@ void PlayerAnimationState::Enter(int animation_track, Object* object, AnimatorCo
 	}
 }
 
-int PlayerAnimationState::Run(Object* object, bool is_end, AnimatorComponent* animator)
+int PlayerAnimationState::Run(float elapsed_time, Object* object, bool is_end, AnimatorComponent* animator)
 {
 	animator->set_speed_scale(1.f);
 	constexpr float kPlayerDashSpeed = 70.f;

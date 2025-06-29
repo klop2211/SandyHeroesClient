@@ -30,19 +30,33 @@ void AnimationSet::LoadAnimationSetFromFile(std::ifstream& file, int frame_count
 
 }
 
-void AnimationSet::AnimateBoneFrame(const std::vector<Object*>& bone_frames, float animation_time)
+void AnimationSet::AnimateBoneFrame(std::vector<XMFLOAT4X4>& animated_transforms, float animation_time, float weight)
 {
 	for (int i = 0; i < key_frame_times_.size(); ++i)
 	{
-		if (animation_time > key_frame_times_[i])
+		if (animation_time > key_frame_times_[i] && i != key_frame_times_.size() - 1)
 			continue;
 
 		float t = (animation_time - key_frame_times_[i - 1]) / (key_frame_times_[i] - key_frame_times_[i - 1]);
-		for (int k = 0; k < bone_frames.size(); ++k)
+		for (int k = 0; k < animated_transforms.size(); ++k)
 		{
+			if (i == 0)
+			{
+				animated_transforms[k] = xmath_util_float4x4::Add(animated_transforms[k], key_frame_transforms_[i][k]);
+				continue;
+			}
+			XMVECTOR s1, r1, t1;
+			XMVECTOR s2, r2, t2;
+			XMMatrixDecompose(&s1, &r1, &t1, XMLoadFloat4x4(&key_frame_transforms_[i - 1][k]));
+			XMMatrixDecompose(&s2, &r2, &t2, XMLoadFloat4x4(&key_frame_transforms_[i][k]));
+			XMVECTOR S = XMVectorLerp(s1, s2, t);
+			XMVECTOR R = XMQuaternionSlerp(r1, r2, t);
+			XMVECTOR T = XMVectorLerp(t1, t2, t);
+
 			XMFLOAT4X4 animated_transform;
-			animated_transform = xmath_util_float4x4::Interpolate(key_frame_transforms_[i - 1][k], key_frame_transforms_[i][k], t);
-			bone_frames[k]->set_transform_matrix(animated_transform);
+			XMStoreFloat4x4(&animated_transform, XMMatrixAffineTransformation(S, XMVectorZero(), R, T) * weight);
+
+			animated_transforms[k] = xmath_util_float4x4::Add(animated_transforms[k], animated_transform);
 		}
 		return;
 	}

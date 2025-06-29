@@ -13,7 +13,7 @@ public:
 	//frame_count: 이 애니메이션을 사용하는 모델의 root 노드를 제외한 프레임 개수
 	void LoadAnimationSetFromFile(std::ifstream& file, int frame_count); 
 
-	void AnimateBoneFrame(const std::vector<Object*>& bone_frames, float animation_time);
+	void AnimateBoneFrame(std::vector<XMFLOAT4X4>& animated_transforms, float animation_time, float weight);
 
 private:
 	std::string name_;

@@ -37,6 +37,7 @@
 #include "UiMeshComponent.h"
 #include "BombDragonAnimationState.h"
 #include "StrongDragonAnimationState.h"
+#include "TestAnimationState.h"
 
 void BaseScene::Initialize(ID3D12Device* device, ID3D12GraphicsCommandList* command_list, ID3D12RootSignature* root_signature, GameFramework* game_framework)
 {
@@ -137,20 +138,51 @@ void BaseScene::BuildMesh(ID3D12Device* device, ID3D12GraphicsCommandList* comma
 		ReadStringFromFile(scene_file, load_token);
 		if (load_token[0] == '@')
 		{
-			load_token.erase(0, 1);
+			load_token.erase(0, 1);			
+			std::string object_name = load_token;
 			object_list_.emplace_back();
-			object_list_.back().reset(FindModelInfo(load_token)->GetInstance());
+			object_list_.back().reset(FindModelInfo(object_name)->GetInstance());
 
-			ReadStringFromFile(scene_file, load_token);
-			XMFLOAT4X4 transfrom = ReadFromFile<XMFLOAT4X4>(scene_file);
+			ReadStringFromFile(scene_file, load_token); 
+			XMFLOAT4X4 transfrom;
+			if (load_token == "<SectorBounds>:")
+			{
+				auto bounds_center = ReadFromFile<XMFLOAT3>(scene_file);
+				auto bounds_extents = ReadFromFile<XMFLOAT3>(scene_file);
+				BoundingBox bounds{ bounds_center, bounds_extents };
+				sectors_.emplace_back(object_name, bounds);
+				ReadStringFromFile(scene_file, load_token); //<Transform>
+				transfrom = ReadFromFile<XMFLOAT4X4>(scene_file);
+				bounds.Transform(bounds, XMLoadFloat4x4(&transfrom));
+				sectors_.emplace_back(object_name, bounds);
+			}
+			else
+			{
+				transfrom = ReadFromFile<XMFLOAT4X4>(scene_file);
+			}
 			object_list_.back()->set_transform_matrix(transfrom);
 		}
 		else
 		{
 			std::string object_name = load_token;
-
-			ReadStringFromFile(scene_file, load_token); // <Transfrom>
-			XMFLOAT4X4 transfrom = ReadFromFile<XMFLOAT4X4>(scene_file);
+			XMFLOAT4X4 transfrom;
+			ReadStringFromFile(scene_file, load_token);
+			bool is_sector = false;
+			if (load_token == "<SectorBounds>:")
+			{
+				is_sector = true;
+				auto bounds_center = ReadFromFile<XMFLOAT3>(scene_file);
+				auto bounds_extents = ReadFromFile<XMFLOAT3>(scene_file);
+				BoundingBox bounds{ bounds_center, bounds_extents };
+				ReadStringFromFile(scene_file, load_token); //<Transform>
+				transfrom = ReadFromFile<XMFLOAT4X4>(scene_file);
+				bounds.Transform(bounds, XMLoadFloat4x4(&transfrom));
+				sectors_.emplace_back(object_name, bounds);
+			}
+			else
+			{
+				transfrom = ReadFromFile<XMFLOAT4X4>(scene_file);
+			}
 
 			model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/World/" + object_name + ".bin", meshes_, materials_, textures_));
 
@@ -158,7 +190,10 @@ void BaseScene::BuildMesh(ID3D12Device* device, ID3D12GraphicsCommandList* comma
 			object_list_.back().reset(model_infos_.back()->GetInstance());
 
 			object_list_.back()->set_transform_matrix(transfrom);
-
+			if (is_sector)
+			{
+				sectors_.back().object_list().push_back(object_list_.back().get());
+			}
 		}
 	}
 
@@ -249,10 +284,21 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 	player->set_name("Player");
 	player->set_position_vector(XMFLOAT3{ -15, 6, 0 });
 	player->set_collide_type(true, true);
+	player->set_is_movable(true);
 	player->AddComponent(new MovementComponent(player));
 	AnimatorComponent* animator = Object::GetComponent<AnimatorComponent>(player);
 	animator->set_animation_state(new PlayerAnimationState);
 	player_ = player;
+
+	//animation lerp test
+	//Object* test_object = FindModelInfo("Hit_Dragon")->GetInstance();
+	//test_object->set_position_vector(XMFLOAT3{ 0, 1.5, 0 });
+	//test_object->set_name("test_object");
+	//test_object->set_collide_type(true, false);
+	//test_object->set_is_movable(true);
+	//animator = Object::GetComponent<AnimatorComponent>(test_object);
+	//animator->set_animation_state(new TestAnimationState);
+	//AddObject(test_object);
 
 	//player's mesh is invisible
 	auto& mesh_list = Object::GetComponentsInChildren<SkinnedMeshComponent>(player_);
@@ -290,7 +336,7 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 	camera_object->set_position_vector(0, 0.3f, 0); // 플레이어 캐릭터의 키가 150인것을 고려하여 머리위치에 배치
 	camera_object->set_name("CAMERA_1");
 	CameraComponent* camera_component =
-		new CameraComponent(camera_object, 0.01, 120,
+		new CameraComponent(camera_object, 0.01, 70,
 			(float)kDefaultFrameBufferWidth / (float)kDefaultFrameBufferHeight, 58);
 	camera_object->AddComponent(camera_component);
 	main_camera_ = camera_component;
@@ -395,6 +441,9 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 	}
 
 	Scene::UpdateObjectWorldMatrix();
+
+	
+
 }
 
 void BaseScene::CreateMonsterSpawner()
@@ -406,6 +455,7 @@ void BaseScene::CreateMonsterSpawner()
 	//hit dragon
 	ModelInfo* hit_dragon = FindModelInfo("Hit_Dragon");
 	hit_dragon->hierarchy_root()->set_collide_type(true, true);
+	hit_dragon->hierarchy_root()->set_is_movable(true);
 	hit_dragon->hierarchy_root()->set_tag("Hit_Dragon");
 	auto ui_head_socket = hit_dragon->hierarchy_root()->FindFrame("Ui_Head");
 
@@ -429,6 +479,7 @@ void BaseScene::CreateMonsterSpawner()
 	//shot dragon
 	ModelInfo* shot_dragon = FindModelInfo("Shot_Dragon");
 	shot_dragon->hierarchy_root()->set_collide_type(true, true);
+	shot_dragon->hierarchy_root()->set_is_movable(true);
 	shot_dragon->hierarchy_root()->set_tag("Shot_Dragon");
 	ui_head_socket = shot_dragon->hierarchy_root()->FindFrame("Ui_Head");
 
@@ -451,6 +502,7 @@ void BaseScene::CreateMonsterSpawner()
 	//bomb dragon
 	ModelInfo* bomb_dragon = FindModelInfo("Bomb_Dragon");
 	bomb_dragon->hierarchy_root()->set_collide_type(true, true);
+	bomb_dragon->hierarchy_root()->set_is_movable(true);
 	bomb_dragon->hierarchy_root()->set_tag("Bomb_Dragon");
 	ui_head_socket = bomb_dragon->hierarchy_root()->FindFrame("Ui_Head");
 
@@ -473,6 +525,7 @@ void BaseScene::CreateMonsterSpawner()
 	//strong dragon
 	ModelInfo* strong_dragon = FindModelInfo("Strong_Dragon");
 	strong_dragon->hierarchy_root()->set_collide_type(true, true);
+	strong_dragon->hierarchy_root()->set_is_movable(true);
 	strong_dragon->hierarchy_root()->set_tag("Strong_Dragon");
 
 	//TODO: 보스 전용 HP바 구현

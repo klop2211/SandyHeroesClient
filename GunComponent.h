@@ -2,6 +2,7 @@
 #include "Component.h"
 
 class Mesh;
+class Scene;
 
 enum class GunFireType { kAuto, kSemiAuto, kBoltAction, kBurst };
 enum class BulletType { kNormal, kBig, kSpecial };
@@ -36,7 +37,7 @@ public:
 
     void ReloadBullets();
 
-    bool FireBullet(XMFLOAT3 direction, Object* bullet_mesh);
+    bool FireBullet(XMFLOAT3 direction, Object* bullet_mesh, Scene* scene);
 
     void LoadGunInfo(const std::string& gun_name);
 

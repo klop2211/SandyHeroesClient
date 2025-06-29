@@ -29,7 +29,8 @@ Object::Object(const Object& other) :
 	name_(other.name_),
 	is_ground_(other.is_ground_),
 	collide_type_(other.collide_type_),
-	tag_(other.tag_)
+	tag_(other.tag_),
+	is_movable_(other.is_movable_)
 {
 	id_ = kObjectNextId;
 	++kObjectNextId;
@@ -246,6 +247,11 @@ void Object::set_local_position(const XMFLOAT3& value)
 	set_position_vector(value);
 }
 
+void Object::set_is_movable(bool value)
+{
+	is_movable_ = value;
+}
+
 void Object::ResetSRTFromTransformMatrix()
 {
 	XMVECTOR s, r, t;
@@ -401,6 +407,19 @@ void Object::EnableFuncInHeirachy(std::function<void(Object*, void*)> func, void
 	if (sibling_)
 	{
 		sibling_->EnableFuncInHeirachy(func, value);
+	}
+}
+
+void Object::OnDestroy(std::function<void(Object*)> func)
+{
+	on_destroy_func_ = func;
+}
+
+void Object::Destroy()
+{
+	if (on_destroy_func_)
+	{
+		on_destroy_func_(this);
 	}
 }
 

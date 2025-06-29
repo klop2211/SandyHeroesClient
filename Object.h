@@ -49,6 +49,8 @@ public:
 	XMFLOAT3 local_rotation() const { return local_rotation_; }
 	XMFLOAT3 local_position() const { return local_position_; }	//로컬 좌표계
 
+	bool is_movable() const { return is_movable_; }
+
 	//setter
 	void set_transform_matrix(const XMFLOAT4X4& value);
 	void set_position_vector(const XMFLOAT3& value);
@@ -69,6 +71,8 @@ public:
 	void set_local_rotation(const XMFLOAT3& value); 
 	void set_local_position(const XMFLOAT3& value); 
 
+	void set_is_movable(bool value); 
+
 	//SRT 정보를 transform_matrix_로 초기화한다.
 	void ResetSRTFromTransformMatrix();
 
@@ -88,6 +92,9 @@ public:
 
 	// Applies the func to the object and all its descendants in the hierarchy.
 	void EnableFuncInHeirachy(std::function<void(Object*, void*)> func, void* value);
+
+	void OnDestroy(std::function<void(Object*)> func);
+	void Destroy();
 
 	static Object* DeepCopy(Object* value, Object* parent = nullptr);
 
@@ -189,6 +196,10 @@ protected:
 
 	//충돌 체크 관련 변수
 	CollideType collide_type_ = { false, false };	//지면 체크, 벽 체크
+
+	bool is_movable_ = false;	//이동 가능한가? 
+
+	std::function<void(Object*)> on_destroy_func_ = nullptr;	//오브젝트가 파괴될 때 호출되는 함수
 
 private:
 	XMFLOAT4X4 world_matrix_ = xmath_util_float4x4::Identity();		

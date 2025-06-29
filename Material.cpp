@@ -122,8 +122,11 @@ void Material::Render(ID3D12GraphicsCommandList* command_list,
 	{
 		if (camera)
 		{
-			if (camera->CollisionCheckByMeshComponent(mesh_component))
+			if (mesh_component->is_in_view_frustum())
+			{
 				mesh_component->Render(this, command_list, curr_frame_resource);
+				mesh_component->set_is_in_view_frustum(false); // 렌더링 후 뷰 프러스텀 체크 초기화
+			}
 		}
 		else
 		{

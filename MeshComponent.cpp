@@ -138,6 +138,16 @@ void MeshComponent::set_is_visible(bool value)
 	is_visible_ = value;
 }
 
+void MeshComponent::set_is_in_view_frustum(bool value)
+{
+	is_in_view_frustum_ = value;
+}
+
+bool MeshComponent::is_in_view_frustum() const
+{
+	return is_in_view_frustum_;
+}
+
 Mesh* MeshComponent::GetMesh() const
 {
 	return mesh_;
