@@ -179,6 +179,7 @@
     <ClInclude Include="ShotDragonAnimationState.h" />
     <ClInclude Include="SpawnerComponent.h" />
     <ClInclude Include="StrongDragonAnimationState.h" />
+    <ClInclude Include="TestAnimationState.h" />
     <ClInclude Include="TransparentShader.h" />
     <ClInclude Include="UIMesh.h" />
     <ClInclude Include="Resource.h" />
@@ -244,6 +245,7 @@
     <ClCompile Include="ShotDragonAnimationState.cpp" />
     <ClCompile Include="SpawnerComponent.cpp" />
     <ClCompile Include="StrongDragonAnimationState.cpp" />
+    <ClCompile Include="TestAnimationState.cpp" />
     <ClCompile Include="TransparentShader.cpp" />
     <ClCompile Include="UIMesh.cpp" />
     <ClCompile Include="SandyHeroesClient.cpp" />

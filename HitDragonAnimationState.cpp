@@ -12,7 +12,7 @@ void HitDragonAnimationState::Enter(int animation_track, Object* object, Animato
 {
 }
 
-int HitDragonAnimationState::Run(Object* object, bool is_end, AnimatorComponent* animator)
+int HitDragonAnimationState::Run(float elapsed_time, Object* object, bool is_end, AnimatorComponent* animator)
 {
 	auto movement = Object::GetComponentInChildren<MovementComponent>(object);
 	auto velocity_xz = movement->velocity();

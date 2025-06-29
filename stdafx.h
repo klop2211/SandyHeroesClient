@@ -29,6 +29,8 @@
 #include <numeric>
 #include <functional>
 #include <random>
+#include <algorithm>
+#include <ranges>
 
 // DirectX 관련 헤더 파일 및 선언문
 #include <wrl.h>
@@ -185,6 +187,13 @@ namespace xmath_util_float4x4
 		XMFLOAT4X4 r_value;
 		XMStoreFloat4x4(&r_value, XMMatrixIdentity());
 		return r_value;
+	}
+
+	inline XMFLOAT4X4 Add(const XMFLOAT4X4& matrix1, const XMFLOAT4X4& matrix2)
+	{
+		XMFLOAT4X4 r_value;
+		XMStoreFloat4x4(&r_value, XMLoadFloat4x4(&matrix1) + XMLoadFloat4x4(&matrix2));
+		return(r_value);
 	}
 
 	inline XMFLOAT4X4 PerspectiveFovLH(float fov_angle_y, float aspect_ratio, float near_z, float far_z)

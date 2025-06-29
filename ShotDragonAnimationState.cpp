@@ -7,7 +7,7 @@ void ShotDragonAnimationState::Enter(int animation_track, Object* object, Animat
 {
 }
 
-int ShotDragonAnimationState::Run(Object* object, bool is_end, AnimatorComponent* animator)
+int ShotDragonAnimationState::Run(float elapsed_time, Object* object, bool is_end, AnimatorComponent* animator)
 {
 	auto movement = Object::GetComponentInChildren<MovementComponent>(object);
 	auto velocity_xz = movement->velocity();

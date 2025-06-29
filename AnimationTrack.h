@@ -17,7 +17,7 @@ public:
 	void Pause();
 	void Stop();
 
-	void PlayTrack(float elapsed_time, const std::vector<Object*>& bone_frames);
+	void PlayTrack(float elapsed_time, std::vector<XMFLOAT4X4>& animated_transforms, float weight);
 
 private:
 	//트랙이 재생하는 애니메이션 셋

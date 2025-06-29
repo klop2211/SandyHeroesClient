@@ -36,7 +36,7 @@ void AnimationTrack::Stop()
 	is_pause_ = true;
 }
 
-void AnimationTrack::PlayTrack(float elapsed_time, const std::vector<Object*>& bone_frames)
+void AnimationTrack::PlayTrack(float elapsed_time, std::vector<XMFLOAT4X4>& animated_transforms, float weight)
 {
 	if (is_pause_ || is_end_)
 		return;
@@ -46,7 +46,7 @@ void AnimationTrack::PlayTrack(float elapsed_time, const std::vector<Object*>& b
 	switch (loop_type_)
 	{
 	case AnimationLoopType::kLoop:
-		if (animation_time_ > animation_set_->total_time())
+		while (animation_time_ > animation_set_->total_time())
 			animation_time_ -= animation_set_->total_time();
 		break;
 	case AnimationLoopType::kOnce:
@@ -74,6 +74,6 @@ void AnimationTrack::PlayTrack(float elapsed_time, const std::vector<Object*>& b
 		break;
 	}
 
-	animation_set_->AnimateBoneFrame(bone_frames, animation_time_);
+	animation_set_->AnimateBoneFrame(animated_transforms, animation_time_, weight);
 
 }

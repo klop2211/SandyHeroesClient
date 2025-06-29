@@ -148,6 +148,12 @@
     <Filter Include="Sector">
       <UniqueIdentifier>{e86a4eb6-b862-48cb-8595-9d6ea71951a5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Animation\State\StrongDragon">
+      <UniqueIdentifier>{1d0f0d12-2ecc-48b8-98f0-f76431c201b2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Animation\State\Test">
+      <UniqueIdentifier>{19a456bf-1368-442a-ae9d-57dc1292a5c3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="targetver.h">
@@ -327,9 +333,6 @@
     <ClInclude Include="UiMeshComponent.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="StrongDragonAnimationState.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
     <ClInclude Include="HitDragonAnimationState.h">
       <Filter>Animation\State\HitDragon</Filter>
     </ClInclude>
@@ -344,6 +347,12 @@
     </ClInclude>
     <ClInclude Include="Sector.h">
       <Filter>Sector</Filter>
+    </ClInclude>
+    <ClInclude Include="StrongDragonAnimationState.h">
+      <Filter>Animation\State\StrongDragon</Filter>
+    </ClInclude>
+    <ClInclude Include="TestAnimationState.h">
+      <Filter>Animation\State\Test</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -509,9 +518,6 @@
     <ClCompile Include="UiMeshComponent.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="StrongDragonAnimationState.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
     <ClCompile Include="HitDragonAnimationState.cpp">
       <Filter>Animation\State\HitDragon</Filter>
     </ClCompile>
@@ -526,6 +532,12 @@
     </ClCompile>
     <ClCompile Include="Sector.cpp">
       <Filter>Sector</Filter>
+    </ClCompile>
+    <ClCompile Include="StrongDragonAnimationState.cpp">
+      <Filter>Animation\State\StrongDragon</Filter>
+    </ClCompile>
+    <ClCompile Include="TestAnimationState.cpp">
+      <Filter>Animation\State\Test</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -36,6 +36,7 @@
 #include "UiMeshComponent.h"
 #include "BombDragonAnimationState.h"
 #include "StrongDragonAnimationState.h"
+#include "TestAnimationState.h"
 
 void BaseScene::Initialize(ID3D12Device* device, ID3D12GraphicsCommandList* command_list, ID3D12RootSignature* root_signature, GameFramework* game_framework)
 {
@@ -286,6 +287,16 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 	AnimatorComponent* animator = Object::GetComponent<AnimatorComponent>(player);
 	animator->set_animation_state(new PlayerAnimationState);
 	player_ = player;
+
+	//animation lerp test
+	//Object* test_object = FindModelInfo("Hit_Dragon")->GetInstance();
+	//test_object->set_position_vector(XMFLOAT3{ 0, 1.5, 0 });
+	//test_object->set_name("test_object");
+	//test_object->set_collide_type(true, false);
+	//test_object->set_is_movable(true);
+	//animator = Object::GetComponent<AnimatorComponent>(test_object);
+	//animator->set_animation_state(new TestAnimationState);
+	//AddObject(test_object);
 
 	//player's mesh is invisible
 	auto& mesh_list = Object::GetComponentsInChildren<SkinnedMeshComponent>(player_);

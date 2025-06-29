@@ -38,17 +38,39 @@ void AnimatorComponent::Update(float elapsed_time)
 	if (!is_attached_bone_frames_)
 		AttachBoneFrames();
 
-	int track_state = animation_state_->Run(owner_, animation_tracks_[track_index_].is_end(), this); 
+	// 0행렬 초기화
+	std::fill(animated_tramsforms_.begin(), animated_tramsforms_.end(), XMFLOAT4X4{});
+
+	int track_state = animation_state_->Run(elapsed_time, owner_, animation_tracks_[track_index_].is_end(), this);
 
 	if (track_state != track_index_)
 	{
+		change_time_ = 0.f;
+		before_track_index_ = track_index_;
 		track_index_ = track_state;
+		if (before_track_index_ == -1)
+		{
+			before_track_index_ = track_index_;
+		}
 		animation_tracks_[track_index_].Start((AnimationLoopType)animation_state_->animation_loop_type());
 	}
 
 	XMFLOAT3 before_root_bone_position = root_bone_frame_->position_vector();
 
-	animation_tracks_[track_index_].PlayTrack(elapsed_time * speed_scale_, bone_frames_);
+	change_time_ += elapsed_time;
+	change_time_ = std::min(change_time_, max_change_time_);
+	float position = (max_change_time_ - change_time_) / max_change_time_;
+
+	if (change_time_ < max_change_time_)
+	{
+		animation_tracks_[before_track_index_].PlayTrack(elapsed_time * speed_scale_, animated_tramsforms_, position);
+	}
+	animation_tracks_[track_index_].PlayTrack(elapsed_time * speed_scale_, animated_tramsforms_, 1.f - position);
+
+	for (int i = 0; i < bone_frames_.size(); ++i)
+	{
+		bone_frames_[i]->set_transform_matrix(animated_tramsforms_[i]);
+	}
 
 	if (is_root_motion_animation_)
 	{
@@ -66,6 +88,7 @@ void AnimatorComponent::Update(float elapsed_time)
 void AnimatorComponent::AttachBoneFrames()
 {
 	bone_frames_.resize(frame_names_.size());
+	animated_tramsforms_.resize(frame_names_.size());
 	for (int i = 0; i < frame_names_.size(); ++i)
 	{
 		bone_frames_[i] = owner_->FindFrame(frame_names_[i]);

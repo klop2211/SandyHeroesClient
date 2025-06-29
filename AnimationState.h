@@ -10,7 +10,7 @@ public:
 	virtual ~AnimationState() {}
 
 	virtual void Enter(int animation_track, Object* object, AnimatorComponent* animator) = 0;
-	virtual int Run(Object* object, bool is_end, AnimatorComponent* animator) = 0;
+	virtual int Run(float elapsed_time, Object* object, bool is_end, AnimatorComponent* animator) = 0;
 	virtual void Exit(int animation_track, Object* object, AnimatorComponent* animator) = 0;
 
 
