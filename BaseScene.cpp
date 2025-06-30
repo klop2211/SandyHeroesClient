@@ -96,11 +96,11 @@ void BaseScene::BuildMesh(ID3D12Device* device, ID3D12GraphicsCommandList* comma
 	constexpr float hp_bar_height = 15.f;
 	ui_width = hp_bar_width;
 	ui_height = hp_bar_height;
-	meshes_.push_back(std::make_unique<UIMesh>(ui_width, ui_height));
+	meshes_.push_back(std::make_unique<UIMesh>(ui_width, ui_height, 0.01));
 	meshes_.back().get()->set_name("ProgressBarBackground");
 	ui_width = hp_bar_width - 5;
 	ui_height = hp_bar_height - 5;
-	meshes_.push_back(std::make_unique<UIMesh>(ui_width, ui_height, 0.01));
+	meshes_.push_back(std::make_unique<UIMesh>(ui_width, ui_height));
 	meshes_.back().get()->set_name("ProgressBar");
 
 	//Main Skill Star Icon
