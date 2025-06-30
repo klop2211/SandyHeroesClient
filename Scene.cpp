@@ -195,9 +195,9 @@ void Scene::RunViewFrustumCulling()
 
 		}
 	}
-	std::string str = "View Frustum Culling: " + std::to_string(i) + " objects checked.\n" + std::to_string(j) + " Sectors checked.\n";
-	std::wstring wstr(str.begin(), str.end());
-	OutputDebugString(wstr.c_str());
+	//std::string str = "View Frustum Culling: " + std::to_string(i) + " objects checked.\n" + std::to_string(j) + " Sectors checked.\n";
+	//std::wstring wstr(str.begin(), str.end());
+	//OutputDebugString(wstr.c_str());
 }
 
 Object* Scene::FindObject(const std::string& object_name)

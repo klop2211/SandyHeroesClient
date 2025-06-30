@@ -37,6 +37,7 @@
 #include "BombDragonAnimationState.h"
 #include "StrongDragonAnimationState.h"
 #include "TestAnimationState.h"
+#include "ProgressBarComponent.h"
 
 void BaseScene::Initialize(ID3D12Device* device, ID3D12GraphicsCommandList* command_list, ID3D12RootSignature* root_signature, GameFramework* game_framework)
 {
@@ -84,8 +85,9 @@ void BaseScene::BuildMesh(ID3D12Device* device, ID3D12GraphicsCommandList* comma
 	constexpr float cross_hair_size = 64.f;
 	float ui_width = cross_hair_size;
 	float ui_height = cross_hair_size;
-	float ui_x = game_framework_->client_size().x / 2.f - ui_width / 2.f;
-	float ui_y = game_framework_->client_size().y / 2.f - ui_height / 2.f;
+	XMFLOAT2 client_size = game_framework_->client_size();
+	float ui_x = client_size.x / 2.f - ui_width / 2.f;
+	float ui_y = client_size.y / 2.f - ui_height / 2.f;
 	meshes_.push_back(std::make_unique<UIMesh>(ui_x, ui_y, ui_width, ui_height));
 	meshes_.back().get()->set_name("CrossHair");
 
@@ -94,12 +96,20 @@ void BaseScene::BuildMesh(ID3D12Device* device, ID3D12GraphicsCommandList* comma
 	constexpr float hp_bar_height = 15.f;
 	ui_width = hp_bar_width;
 	ui_height = hp_bar_height;
-	meshes_.push_back(std::make_unique<UIMesh>(ui_width, ui_height, 0.01));
+	meshes_.push_back(std::make_unique<UIMesh>(ui_width, ui_height));
 	meshes_.back().get()->set_name("ProgressBarBackground");
 	ui_width = hp_bar_width - 5;
 	ui_height = hp_bar_height - 5;
-	meshes_.push_back(std::make_unique<UIMesh>(ui_width, ui_height));
+	meshes_.push_back(std::make_unique<UIMesh>(ui_width, ui_height, 0.01));
 	meshes_.back().get()->set_name("ProgressBar");
+
+	//Main Skill Star Icon
+	ui_width =  client_size.x / 16.f;
+	ui_height = client_size.y / 9.f;
+	ui_x = client_size.x / 2.f - ui_width / 2.f;
+	ui_y = client_size.y - (client_size.y / 9.f) - ui_height / 2.f;
+	meshes_.push_back(std::make_unique<UIMesh>(ui_x, ui_y, ui_width, ui_height));
+	meshes_.back().get()->set_name("Star");
 
 	//skybox
 	meshes_.push_back(std::make_unique<SkyboxMesh>(meshes_[0].get()));
@@ -231,6 +241,22 @@ void BaseScene::BuildMaterial(ID3D12Device* device, ID3D12GraphicsCommandList* c
 	materials_.emplace_back();
 	materials_.back().reset(material);
 
+	material = new Material{ "Star_Dark", (int)ShaderType::kUI };
+	textures_.push_back(std::make_unique<Texture>());
+	textures_.back()->name = "Star_Dark";
+	textures_.back()->type = TextureType::kAlbedoMap;
+	material->AddTexture(textures_.back().get());
+	materials_.emplace_back();
+	materials_.back().reset(material);
+
+	material = new Material{ "Star", (int)ShaderType::kUI };
+	textures_.push_back(std::make_unique<Texture>());
+	textures_.back()->name = "Star";
+	textures_.back()->type = TextureType::kAlbedoMap;
+	material->AddTexture(textures_.back().get());
+	materials_.emplace_back();
+	materials_.back().reset(material);
+
 	material = new Material{ "Skybox_Cube2", (int)ShaderType::kSkybox };
 	textures_.push_back(std::make_unique<Texture>());
 	textures_.back()->name = "Skybox_Cube2";
@@ -271,8 +297,8 @@ void BaseScene::BuildMaterial(ID3D12Device* device, ID3D12GraphicsCommandList* c
 void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* command_list)
 {
 	//TODO: 각 메쉬의 컴포넌트 연결 개수를 파악하면 아래 수치를 디테일하게 설정할 수 있을것 같다..
-	cb_object_capacity_ = 15000;
-	cb_skinned_mesh_object_capacity_ = 10000;
+	cb_object_capacity_ = 10000;
+	cb_skinned_mesh_object_capacity_ = 1000;
 	cb_ui_mesh_capacity_ = 100;
 
 	ShowCursor(false);
@@ -289,6 +315,7 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 	player_ = player;
 
 	//animation lerp test
+	// 06.30 회의 후 삭제
 	//Object* test_object = FindModelInfo("Hit_Dragon")->GetInstance();
 	//test_object->set_position_vector(XMFLOAT3{ 0, 1.5, 0 });
 	//test_object->set_name("test_object");
@@ -362,6 +389,34 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 	ui_mesh_component->set_is_static(true);
 	ui->AddComponent(ui_mesh_component);
 	AddObject(ui);
+
+	//Create Main Skill Star Icon
+	Object* star_icon = new Object();
+	Object* star_icon_background = new Object();
+	star_icon->AddChild(star_icon_background);
+
+	star_icon_background->set_name("Star_Icon_Background");
+	ui_mesh_component = new UiMeshComponent(star_icon_background,
+		Scene::FindMesh("Star", meshes_), Scene::FindMaterial("Star_Dark", materials_), this);
+	ui_mesh_component->set_is_static(true);
+	ui_mesh_component->set_ui_layer(UiLayer::kOne);
+	star_icon_background->AddComponent(ui_mesh_component);
+
+	star_icon->set_name("Star_Icon");
+	ui_mesh_component = new UiMeshComponent(star_icon,
+		Scene::FindMesh("Star", meshes_), Scene::FindMaterial("Star", materials_), this);
+	ui_mesh_component->set_is_static(true);
+	star_icon->AddComponent(ui_mesh_component);
+	ProgressBarComponent* progress_bar = new ProgressBarComponent(star_icon);
+	progress_bar->set_max_value(10.f);
+	progress_bar->set_type(UiType::kProgressBarY);
+	progress_bar->set_view(player);
+	progress_bar->set_get_current_value_func([](Object* owner) -> float
+		{
+			return owner->position_vector().y;
+		});
+	star_icon->AddComponent(progress_bar);
+	AddObject(star_icon);
 
 	//Create Skybox
 	Object* skybox = new Object();

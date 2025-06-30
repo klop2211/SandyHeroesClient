@@ -1,6 +1,8 @@
 #pragma once
 #include "MeshComponent.h"
 
+enum class UiLayer{ kZero, kOne, kTwo };
+
 class UiMeshComponent :
     public MeshComponent
 {
@@ -23,6 +25,9 @@ public:
     void set_name(const std::string& value);
     void set_is_static(bool value);
     void set_ui_ratio(XMFLOAT2 value);
+	void set_ui_layer(UiLayer value) { ui_layer_ = value; }
+	void set_texture_offset(XMFLOAT2 value) { texture_offset_ = value; }
+	void set_gage_value(XMFLOAT2 value) { gage_value_ = value; }
 
 private:
     std::string name_{ "UiMeshComponent" };
@@ -32,7 +37,9 @@ private:
     XMFLOAT2 ui_ratio_{ 1.f, 1.f }; //Ui width, height ratio
     bool is_static_{ false }; //static ui use UiMesh screen_position at screen_offset
     bool is_in_screen_{ true };
-
+	XMFLOAT2 texture_offset_{ 0.f, 0.f }; //texture offset for ui texture
+	UiLayer ui_layer_{ UiLayer::kZero }; //ui layer
+	XMFLOAT2 gage_value_{ 1.f, 1.f }; //ui gage value (0.0 ~ 1.0)
 };
 
 

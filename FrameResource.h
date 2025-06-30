@@ -66,6 +66,10 @@ struct CBUi
 	XMFLOAT2 screen_offset;	// 좌상단 스크린 좌표 (픽셀)
 	float width_ratio;		// ui 크기 배율 0.0 ~ 1.0
 	float height_ratio;
+	XMFLOAT2 texture_offset; // ui 텍스쳐 오프셋 (0.0 ~ 1.0)
+	float ui_layer;			// ui 레이어 
+	float padding;	// padding to make it 16 bytes aligned
+	XMFLOAT2 gage_value; // ui 가젯 값 (0.0 ~ 1.0)
 };
 
 // 게임에서 한 프레임에 사용하는 리소스에 대한 구조체

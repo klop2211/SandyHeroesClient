@@ -154,6 +154,18 @@
     <Filter Include="Animation\State\Test">
       <UniqueIdentifier>{19a456bf-1368-442a-ae9d-57dc1292a5c3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="CutScene">
+      <UniqueIdentifier>{a1490ab9-d345-41c1-9832-3ce8cb50dfdb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="7.Component\Mesh\UiMesh">
+      <UniqueIdentifier>{0ec5c7ab-43de-41b3-a569-bac31fbf62aa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="7.Component\Spawner">
+      <UniqueIdentifier>{ac562318-7e4e-43ab-a5c8-e942c2fd9215}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="7.Component\UI">
+      <UniqueIdentifier>{8c9a054e-4462-4175-bad3-ba26694f768b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="targetver.h">
@@ -285,9 +297,6 @@
     <ClInclude Include="MeshColliderComponent.h">
       <Filter>7.Component\Collider</Filter>
     </ClInclude>
-    <ClInclude Include="CutSceneRecorder.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
     <ClInclude Include="MonsterComponent.h">
       <Filter>7.Component\Monster</Filter>
     </ClInclude>
@@ -302,9 +311,6 @@
     </ClInclude>
     <ClInclude Include="BoxColliderComponent.h">
       <Filter>7.Component\Collider</Filter>
-    </ClInclude>
-    <ClInclude Include="SpawnerComponent.h">
-      <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="AnimationState.h">
       <Filter>Animation\State</Filter>
@@ -321,17 +327,11 @@
     <ClInclude Include="RecorderScene.h">
       <Filter>2.Scene\Recorder</Filter>
     </ClInclude>
-    <ClInclude Include="CutSceneTrack.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
     <ClInclude Include="TransparentShader.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="ShadowShader.h">
       <Filter>3.Shader\ShadowShader</Filter>
-    </ClInclude>
-    <ClInclude Include="UiMeshComponent.h">
-      <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="HitDragonAnimationState.h">
       <Filter>Animation\State\HitDragon</Filter>
@@ -353,6 +353,24 @@
     </ClInclude>
     <ClInclude Include="TestAnimationState.h">
       <Filter>Animation\State\Test</Filter>
+    </ClInclude>
+    <ClInclude Include="CutSceneRecorder.h">
+      <Filter>CutScene</Filter>
+    </ClInclude>
+    <ClInclude Include="CutSceneTrack.h">
+      <Filter>CutScene</Filter>
+    </ClInclude>
+    <ClInclude Include="UiMeshComponent.h">
+      <Filter>7.Component\Mesh\UiMesh</Filter>
+    </ClInclude>
+    <ClInclude Include="SpawnerComponent.h">
+      <Filter>7.Component\Spawner</Filter>
+    </ClInclude>
+    <ClInclude Include="UiComponent.h">
+      <Filter>7.Component\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="ProgressBarComponent.h">
+      <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -470,9 +488,6 @@
     <ClCompile Include="MeshColliderComponent.cpp">
       <Filter>7.Component\Collider</Filter>
     </ClCompile>
-    <ClCompile Include="CutSceneRecorder.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
     <ClCompile Include="MonsterComponent.cpp">
       <Filter>7.Component\Monster</Filter>
     </ClCompile>
@@ -487,9 +502,6 @@
     </ClCompile>
     <ClCompile Include="BoxColliderComponent.cpp">
       <Filter>7.Component\Collider</Filter>
-    </ClCompile>
-    <ClCompile Include="SpawnerComponent.cpp">
-      <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="AnimationState.cpp">
       <Filter>Animation\State</Filter>
@@ -506,17 +518,11 @@
     <ClCompile Include="RecorderScene.cpp">
       <Filter>2.Scene\Recorder</Filter>
     </ClCompile>
-    <ClCompile Include="CutSceneTrack.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
     <ClCompile Include="TransparentShader.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="ShadowShader.cpp">
       <Filter>3.Shader\ShadowShader</Filter>
-    </ClCompile>
-    <ClCompile Include="UiMeshComponent.cpp">
-      <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="HitDragonAnimationState.cpp">
       <Filter>Animation\State\HitDragon</Filter>
@@ -538,6 +544,24 @@
     </ClCompile>
     <ClCompile Include="TestAnimationState.cpp">
       <Filter>Animation\State\Test</Filter>
+    </ClCompile>
+    <ClCompile Include="CutSceneTrack.cpp">
+      <Filter>CutScene</Filter>
+    </ClCompile>
+    <ClCompile Include="CutSceneRecorder.cpp">
+      <Filter>CutScene</Filter>
+    </ClCompile>
+    <ClCompile Include="UiMeshComponent.cpp">
+      <Filter>7.Component\Mesh\UiMesh</Filter>
+    </ClCompile>
+    <ClCompile Include="SpawnerComponent.cpp">
+      <Filter>7.Component\Spawner</Filter>
+    </ClCompile>
+    <ClCompile Include="UiComponent.cpp">
+      <Filter>7.Component\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="ProgressBarComponent.cpp">
+      <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

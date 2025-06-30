@@ -23,6 +23,10 @@ cbuffer UiInfo : register(b3)
     float2 g_screen_offset; // 좌상단 스크린 좌표 (픽셀)
     float g_width_ratio;    // ui 크기 배율 0.0 ~ 1.0
     float g_height_ratio; 
+    float2 g_ui_texture_offset;
+    float g_ui_layer; // ui 레이어 
+    float padding; // padding to make it 16 bytes aligned
+    float2 g_ui_gage_value; // 0.0 ~ 1.0
 }
 
 // 프레임 당 1번 갱신되는 상수 버퍼
