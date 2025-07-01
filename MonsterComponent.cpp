@@ -28,6 +28,18 @@ void MonsterComponent::Update(float elapsed_time)
         return;
     }
 
+    // 밀려나는 중이면 이동 금지
+    if (is_pushed_)
+    {
+        push_timer_ -= elapsed_time;
+        if (push_timer_ < 0.0f)
+        {
+            is_pushed_ = false;
+            push_timer_ = 0.0f;
+        }
+        return; // AI 이동 금지
+    }
+
     auto head_socket = owner_->FindFrame("Ui_Head");
     if (head_socket)
     {
@@ -134,6 +146,16 @@ void MonsterComponent::set_attack_force(float value)
 void MonsterComponent::set_target(Object* target)
 {
 	target_ = target;
+}
+
+void MonsterComponent::set_is_pushed(bool is_pushed)
+{
+    is_pushed_ = is_pushed;
+}
+
+void MonsterComponent::set_push_timer(float value)
+{
+    push_timer_ = value;
 }
 
 float MonsterComponent::shield() const

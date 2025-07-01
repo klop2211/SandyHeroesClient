@@ -801,7 +801,6 @@ bool BaseScene::ProcessInput(UINT id, WPARAM w_param, LPARAM l_param, float time
 		{
 			catch_monster_num_ = 1;
 			//++stage_clear_num_;
-			//++stage_clear_num_;
 			return true;
 		}
 		if (w_param == 'N')
@@ -1224,6 +1223,13 @@ void BaseScene::CheckObjectHitObject(Object* object)
 				if (distance > kMinSafeDistance) // 벽에 안 부딪힌다면 밀기
 				{
 					object->set_position_vector(object_pos + dir * 0.1f);
+
+					/*auto monster = Object::GetComponent<MonsterComponent>(object);
+					if (monster)
+					{
+						monster->set_is_pushed(true);
+						monster->set_push_timer(5.0f);
+					}*/
 				}
 				return;
 			}
