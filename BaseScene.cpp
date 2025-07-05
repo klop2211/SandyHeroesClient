@@ -38,6 +38,7 @@
 #include "StrongDragonAnimationState.h"
 #include "TestAnimationState.h"
 #include "ProgressBarComponent.h"
+#include "PlayerComponent.h"
 
 void BaseScene::Initialize(ID3D12Device* device, ID3D12GraphicsCommandList* command_list, ID3D12RootSignature* root_signature, GameFramework* game_framework)
 {
@@ -110,6 +111,14 @@ void BaseScene::BuildMesh(ID3D12Device* device, ID3D12GraphicsCommandList* comma
 	ui_y = client_size.y - (client_size.y / 9.f) - ui_height / 2.f;
 	meshes_.push_back(std::make_unique<UIMesh>(ui_x, ui_y, ui_width, ui_height));
 	meshes_.back().get()->set_name("Star");
+
+	//Player Hp, Shield Bar
+	ui_width = client_size.x / 16.f * 3.f;
+	ui_height = client_size.y / 9.f * 0.8f;
+	ui_x = client_size.x / 16.f;
+	ui_y = client_size.y - (client_size.y / 9.f * 1.5f);
+	meshes_.push_back(std::make_unique<UIMesh>(ui_x, ui_y, ui_width, ui_height));
+	meshes_.back().get()->set_name("PlayerHpBar");
 
 	//skybox
 	meshes_.push_back(std::make_unique<SkyboxMesh>(meshes_[0].get()));
@@ -320,6 +329,8 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 	player->AddComponent(new MovementComponent(player));
 	AnimatorComponent* animator = Object::GetComponent<AnimatorComponent>(player);
 	animator->set_animation_state(new PlayerAnimationState);
+	auto player_component = new PlayerComponent(player);
+	player->AddComponent(player_component);
 	player_ = player;
 
 	//animation lerp test
@@ -379,8 +390,9 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 
 	BuildModelInfo();
 
-	//Create Monster spawner
 	CreateMonsterSpawner();
+
+	CreatePlayerUI();
 
 	//Set Spawn Boxs
 	constexpr int kSpawnBoxCount = 5;
@@ -391,42 +403,6 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 		const auto& box = Object::GetComponent<BoxColliderComponent>(box_object);
 		spawn_boxs_.push_back(box);
 	}
-
-	//Create CroosHair
-	Object* ui = new Object();
-	auto ui_mesh_component = new UiMeshComponent(ui,
-		Scene::FindMesh("CrossHair", meshes_), Scene::FindMaterial("CrossHair", materials_), this);
-	ui_mesh_component->set_is_static(true);
-	ui->AddComponent(ui_mesh_component);
-	AddObject(ui);
-
-	//Create Main Skill Star Icon
-	Object* star_icon = new Object();
-	Object* star_icon_background = new Object();
-	star_icon->AddChild(star_icon_background);
-
-	star_icon_background->set_name("Star_Icon_Background");
-	ui_mesh_component = new UiMeshComponent(star_icon_background,
-		Scene::FindMesh("Star", meshes_), Scene::FindMaterial("Star_Dark", materials_), this);
-	ui_mesh_component->set_is_static(true);
-	ui_mesh_component->set_ui_layer(UiLayer::kOne);
-	star_icon_background->AddComponent(ui_mesh_component);
-
-	star_icon->set_name("Star_Icon");
-	ui_mesh_component = new UiMeshComponent(star_icon,
-		Scene::FindMesh("Star", meshes_), Scene::FindMaterial("Star", materials_), this);
-	ui_mesh_component->set_is_static(true);
-	star_icon->AddComponent(ui_mesh_component);
-	ProgressBarComponent* progress_bar = new ProgressBarComponent(star_icon);
-	progress_bar->set_max_value(10.f);
-	progress_bar->set_type(UiType::kProgressBarY);
-	progress_bar->set_view(player);
-	progress_bar->set_get_current_value_func([](Object* object) -> float
-		{
-			return object->position_vector().y;
-		});
-	star_icon->AddComponent(progress_bar);
-	AddObject(star_icon);
 
 	//Create Skybox
 	Object* skybox = new Object();
@@ -677,6 +653,111 @@ void BaseScene::BuildModelInfo()
 
 }
 
+void BaseScene::CreatePlayerUI()
+{
+	UiMeshComponent* ui_mesh_component;
+	//Create CroosHair
+	{
+		Object* ui = new Object();
+		ui_mesh_component = new UiMeshComponent(ui,
+			Scene::FindMesh("CrossHair", meshes_), Scene::FindMaterial("CrossHair", materials_), this);
+		ui_mesh_component->set_is_static(true);
+		ui->AddComponent(ui_mesh_component);
+		AddObject(ui);
+	}
+
+	//Create Main Skill Star Icon
+	{
+		Object* star_icon = new Object();
+		Object* star_icon_background = new Object();
+		star_icon->AddChild(star_icon_background);
+
+		star_icon_background->set_name("Star_Icon_Background");
+		ui_mesh_component = new UiMeshComponent(star_icon_background,
+			Scene::FindMesh("Star", meshes_), Scene::FindMaterial("Star_Dark", materials_), this);
+		ui_mesh_component->set_is_static(true);
+		ui_mesh_component->set_ui_layer(UiLayer::kOne);
+		star_icon_background->AddComponent(ui_mesh_component);
+
+		star_icon->set_name("Star_Icon");
+		ui_mesh_component = new UiMeshComponent(star_icon,
+			Scene::FindMesh("Star", meshes_), Scene::FindMaterial("Star", materials_), this);
+		ui_mesh_component->set_is_static(true);
+		star_icon->AddComponent(ui_mesh_component);
+		ProgressBarComponent* progress_bar = new ProgressBarComponent(star_icon);
+		progress_bar->set_max_value(10.f);
+		progress_bar->set_type(UiType::kProgressBarY);
+		progress_bar->set_view(player_);
+		progress_bar->set_get_current_value_func([](Object* object) -> float
+			{
+				return object->position_vector().y;
+			});
+		star_icon->AddComponent(progress_bar);
+		AddObject(star_icon);
+	}
+
+	//Create Player Hp, Shield Bar
+	{
+		Object* player_shield_bar = new Object();
+		Object* player_hp_bar = new Object();
+		Object* player_hp_bar_background = new Object();
+		player_shield_bar->set_name("PlayerShieldBar");
+		player_hp_bar->set_name("PlayerHpBar");
+		player_hp_bar_background->set_name("PlayerHpBarBackground");
+		player_hp_bar_background->AddChild(player_hp_bar);
+		player_hp_bar_background->AddChild(player_shield_bar);
+
+		auto ui_mesh = Scene::FindMesh("PlayerHpBar", meshes_);
+		auto ui_size = static_cast<UIMesh*>(ui_mesh)->ui_size();
+
+		auto ui_background_material = Scene::FindMaterial("ProgressBarBackground", materials_);
+		auto ui_hpbar_material = Scene::FindMaterial("HpBar", materials_);
+		auto ui_shieldbar_material = Scene::FindMaterial("ShieldBar", materials_);
+
+		auto ui_background_component = new UiMeshComponent(player_hp_bar_background,
+			ui_mesh, ui_background_material, this);
+		player_hp_bar_background->AddComponent(ui_background_component);
+		ui_background_component->set_ui_layer(UiLayer::kOne);
+		ui_background_component->set_is_static(true);
+
+		auto player_component = Object::GetComponent<PlayerComponent>(player_);
+
+		auto ui_hpbar_component = new UiMeshComponent(player_hp_bar,
+			ui_mesh, ui_hpbar_material, this);
+		player_hp_bar->AddComponent(ui_hpbar_component);
+		ui_hpbar_component->set_is_static(true);
+		ui_hpbar_component->set_ui_ratio({0.9f, 0.4f});
+		ui_hpbar_component->set_position_offset({ ui_size.x * 0.05f, ui_size.y * 0.5f });
+		auto hp_progress_bar = new ProgressBarComponent(player_hp_bar);
+		hp_progress_bar->set_view(player_);
+		hp_progress_bar->set_max_value(player_component->max_hp());
+		hp_progress_bar->set_get_current_value_func([](Object* object) -> float
+			{
+				auto player_component = Object::GetComponent<PlayerComponent>(object->GetHierarchyRoot());
+				return player_component->hp();
+			});
+		player_hp_bar->AddComponent(hp_progress_bar);
+
+		auto ui_shieldbar_component = new UiMeshComponent(player_shield_bar,
+			ui_mesh, ui_shieldbar_material, this);
+		player_shield_bar->AddComponent(ui_shieldbar_component);
+		ui_shieldbar_component->set_is_static(true);
+		ui_shieldbar_component->set_ui_ratio({ 0.9f, 0.4f });
+		ui_shieldbar_component->set_position_offset({ ui_size.x * 0.05f, ui_size.y * 0.1f });
+		auto shield_progress_bar = new ProgressBarComponent(player_shield_bar);
+		shield_progress_bar->set_view(player_);
+		shield_progress_bar->set_max_value(player_component->max_shield());
+		shield_progress_bar->set_get_current_value_func([](Object* object) -> float
+			{
+				auto player_component = Object::GetComponent<PlayerComponent>(object->GetHierarchyRoot());
+				return player_component->shield();
+			});
+		player_shield_bar->AddComponent(shield_progress_bar);
+
+		AddObject(player_hp_bar_background);
+	}
+}
+
 void BaseScene::CreateMonsterSpawner()
 {
 	std::function<Object* (ModelInfo*, int&, XMFLOAT3, int, float, float)> create_spawner =
@@ -898,6 +979,25 @@ bool BaseScene::ProcessInput(UINT id, WPARAM w_param, LPARAM l_param, float time
 			player_->set_position_vector(pos.x, pos.y + 10.f, pos.z);
 			return true;
 		}
+		if (w_param == VK_OEM_COMMA) // ,
+		{
+			auto player_component = Object::GetComponent<PlayerComponent>(player_);
+			if (player_component)
+			{
+				player_component->HitDamage(10.f);
+			}
+			return true;
+		}
+		if (w_param == VK_OEM_PERIOD) // .
+		{
+			auto player_component = Object::GetComponent<PlayerComponent>(player_);
+			if (player_component)
+			{
+				player_component->Heal(10.f);
+			}
+			return true;
+		}
+
 		break;
 	default:
 		return false;

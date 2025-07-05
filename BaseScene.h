@@ -22,6 +22,8 @@ public:
 
 	void BuildModelInfo(); // 오브젝트 재사용을 위해 모델 정보를 새로 만들거나 기존 모델 정보를 수정하는 함수
 
+	void CreatePlayerUI();	//플레이어 UI 생성
+
 	//Create spawner each stage
 	void CreateMonsterSpawner();
 

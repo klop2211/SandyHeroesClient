@@ -172,6 +172,7 @@
     <ClInclude Include="MovementComponent.h" />
     <ClInclude Include="ParticleSystem.h" />
     <ClInclude Include="PlayerAnimationState.h" />
+    <ClInclude Include="PlayerComponent.h" />
     <ClInclude Include="ProgressBarComponent.h" />
     <ClInclude Include="RecorderScene.h" />
     <ClInclude Include="RecordingScene.h" />
@@ -240,6 +241,7 @@
     <ClCompile Include="MovementComponent.cpp" />
     <ClCompile Include="ParticleSystem.cpp" />
     <ClCompile Include="PlayerAnimationState.cpp" />
+    <ClCompile Include="PlayerComponent.cpp" />
     <ClCompile Include="ProgressBarComponent.cpp" />
     <ClCompile Include="RecorderScene.cpp" />
     <ClCompile Include="RecordingScene.cpp" />
