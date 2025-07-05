@@ -28,19 +28,6 @@ void MonsterComponent::Update(float elapsed_time)
         return;
     }
 
-    auto head_socket = owner_->FindFrame("Ui_Head");
-    if (head_socket)
-    {
-        auto ui_meshes = Object::GetComponents<UiMeshComponent>(head_socket);
-        for (const auto& ui_mesh : ui_meshes)
-        {
-            if (ui_mesh->name() == "ProgressBar")
-            {
-                ui_mesh->set_ui_ratio({ hp_ / max_hp_, 1.f });
-            }
-        }
-    }
-
     if (hp_ <= 0)
     {
         auto animator = Object::GetComponentInChildren<AnimatorComponent>(owner_);
@@ -116,6 +103,27 @@ void MonsterComponent::Update(float elapsed_time)
 
 }
 
+void MonsterComponent::HitDamage(float damage)
+{
+	if (shield_ > 0)
+	{
+		shield_ -= damage;
+		if (shield_ < 0)
+		{
+			hp_ += shield_; // shield가 음수면 hp에 더해줌
+			shield_ = 0;
+		}
+	}
+	else
+	{
+		hp_ -= damage;
+	}
+	if (hp_ < 0)
+	{
+		hp_ = 0;
+	}
+}
+
 void MonsterComponent::set_shield(float value)
 {
     shield_ = value;
@@ -144,6 +152,16 @@ float MonsterComponent::shield() const
 float MonsterComponent::hp() const
 {
     return hp_;
+}
+
+float MonsterComponent::max_hp() const
+{
+    return max_hp_;
+}
+
+float MonsterComponent::max_shield() const
+{
+    return max_shield_;
 }
 
 float MonsterComponent::attack_force() const

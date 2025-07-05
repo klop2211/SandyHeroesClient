@@ -28,11 +28,14 @@ public:
 	void set_ui_layer(UiLayer value) { ui_layer_ = value; }
 	void set_texture_offset(XMFLOAT2 value) { texture_offset_ = value; }
 	void set_gage_value(XMFLOAT2 value) { gage_value_ = value; }
+	void set_position_offset(XMFLOAT2 value) { position_offset_ = value; }
 
 private:
     std::string name_{ "UiMeshComponent" };
 
     Scene* scene_{};
+
+	XMFLOAT2 position_offset_{ 0.f, 0.f }; //Ui position offset from pivot in pixel
 
     XMFLOAT2 ui_ratio_{ 1.f, 1.f }; //Ui width, height ratio
     bool is_static_{ false }; //static ui use UiMesh screen_position at screen_offset

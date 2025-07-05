@@ -28,6 +28,9 @@ public:
 
 	Object* hierarchy_root() const;
 
+	void set_hierarchy_root(Object* root);
+	void set_model_name(const std::string& value) { model_name_ = value; }
+
 private:
 	std::string model_name_ = "None";
 

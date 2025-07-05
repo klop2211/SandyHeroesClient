@@ -11,13 +11,26 @@ SpawnerComponent::SpawnerComponent(Object* owner, Scene* scene, ModelInfo* model
 }
 
 SpawnerComponent::SpawnerComponent(const SpawnerComponent& other) : Component(other),
-spawn_count_(other.spawn_count_), spawn_time_(other.spawn_time_), spawn_cool_time_(other.spawn_cool_time_), scene_(other.scene_)
+spawn_count_(other.spawn_count_), spawn_time_(other.spawn_time_), spawn_cool_time_(other.spawn_cool_time_), 
+scene_(other.scene_), model_info_(other.model_info_)
 {
+	for (auto& component : other.component_list_)
+	{
+		component_list_.emplace_back();
+		component_list_.back().reset(component->GetCopy());
+	}
 }
 
 SpawnerComponent::SpawnerComponent(const SpawnerComponent&& other) : Component(other), 
-spawn_count_(other.spawn_count_), spawn_time_(other.spawn_time_), spawn_cool_time_(other.spawn_cool_time_), scene_(other.scene_)
+spawn_count_(other.spawn_count_), spawn_time_(other.spawn_time_), spawn_cool_time_(other.spawn_cool_time_), 
+scene_(other.scene_), model_info_(other.model_info_)
 {
+	for (auto& component : other.component_list_)
+	{
+		component_list_.emplace_back();
+		component_list_.back().reset(component->GetCopy());
+	}
+
 }
 
 Component* SpawnerComponent::GetCopy()

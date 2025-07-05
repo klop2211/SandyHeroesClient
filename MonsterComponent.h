@@ -17,6 +17,8 @@ public:
 
 	virtual void Update(float elapsed_time) override;
 
+	void HitDamage(float damage); //몬스터에 데미지를 입힘
+
 	//setter
 	void set_shield(float value);
 	void set_hp(float value);
@@ -26,6 +28,8 @@ public:
 	//getter
 	float shield() const;
 	float hp()const;
+	float max_hp()const;
+	float max_shield()const;
 	float attack_force()const;
 
 	void set_scene(Scene* value);
@@ -35,7 +39,8 @@ public:
 private:
 	float max_hp_{ 90.f };
 
-	float shield_{};
+	float shield_{ 50.f };
+	float max_shield_{ 50.f };	
 	float hp_{ 90.f };
 	float attack_force_{};
 

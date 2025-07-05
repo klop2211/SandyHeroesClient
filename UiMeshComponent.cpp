@@ -19,10 +19,11 @@ UiMeshComponent::UiMeshComponent(Object* owner, Mesh* mesh, Material* material, 
 }
 
 UiMeshComponent::UiMeshComponent(const UiMeshComponent& other)
-    : MeshComponent(other), scene_(other.scene_)
+    : MeshComponent(other), scene_(other.scene_), ui_layer_(other.ui_layer_), ui_ratio_(other.ui_ratio_), 
+	is_static_(other.is_static_), is_in_screen_(other.is_in_screen_), 
+	texture_offset_(other.texture_offset_), gage_value_(other.gage_value_), position_offset_(other.position_offset_)
 {
 	name_ = other.mesh_->name();
-
 }
 
 UiMeshComponent& UiMeshComponent::operator=(const UiMeshComponent& rhs)
@@ -47,6 +48,8 @@ void UiMeshComponent::UpdateConstantBuffer(FrameResource* current_frame_resource
 	const auto& ui_mesh = static_cast<UIMesh*>(mesh_);
 	XMFLOAT2 screen_pos{};
 	CBUi ui_info{};
+	ui_info.ui_layer = (static_cast<float>(static_cast<int>(ui_layer_)) / 10000.f);
+
 	if (!is_static_)
 	{
 		XMVECTOR world_pos = XMLoadFloat3(&owner_->world_position_vector());
@@ -70,16 +73,19 @@ void UiMeshComponent::UpdateConstantBuffer(FrameResource* current_frame_resource
 			(1.0f - clip_pos.m128_f32[1]) * 0.5f * scene_->screen_size().y };
 		screen_pos.x -= ui_mesh->ui_size().x / 2.f; //pivot is left-top
 		screen_pos.y -= ui_mesh->ui_size().y / 2.f;
+		ui_info.ui_layer += clip_pos.m128_f32[2];
 	}
 	else
 	{
 		screen_pos = ui_mesh->screen_position();
 		is_in_screen_ = true;
-	}
+	}		
+	screen_pos.x += position_offset_.x;
+	screen_pos.y += position_offset_.y;
+
 	ui_info.screen_offset = screen_pos;
 	ui_info.width_ratio = ui_ratio_.x;
 	ui_info.height_ratio = ui_ratio_.y;
-	ui_info.ui_layer = static_cast<float>(ui_layer_) / 100.f;
 	ui_info.texture_offset = texture_offset_;
 	ui_info.gage_value = gage_value_;
 

@@ -20,6 +20,8 @@ public:
 	virtual void BuildMaterial(ID3D12Device* device, ID3D12GraphicsCommandList* command_list) override;
 	virtual void BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* command_list) override;
 
+	void BuildModelInfo(); // 오브젝트 재사용을 위해 모델 정보를 새로 만들거나 기존 모델 정보를 수정하는 함수
+
 	//Create spawner each stage
 	void CreateMonsterSpawner();
 

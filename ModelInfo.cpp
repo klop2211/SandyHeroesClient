@@ -316,3 +316,12 @@ Object* ModelInfo::hierarchy_root() const
 {
 	return hierarchy_root_;
 }
+
+void ModelInfo::set_hierarchy_root(Object* root)
+{
+	if (hierarchy_root_)
+	{
+		delete hierarchy_root_;
+	}
+	hierarchy_root_ = root;
+}
