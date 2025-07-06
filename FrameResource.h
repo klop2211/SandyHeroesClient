@@ -27,6 +27,7 @@ struct CBPass
 	LightInfo lights[kMaxLights];    
 	XMFLOAT2 screen_size;
 	XMFLOAT2 pad_2;
+	XMFLOAT3 camera_up_axis;
 };
 
 struct CBShadow

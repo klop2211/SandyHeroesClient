@@ -58,6 +58,7 @@ void CameraComponent::UpdateCameraInfo()
 	XMFLOAT3 up_vector = CrossProduct(look_vector, right_vector);
 	XMFLOAT3 position = owner_->world_position_vector();
 	world_position_ = position;
+	up_vector_ = up_vector;
 
 	view_matrix_._11 = right_vector.x; view_matrix_._12 = up_vector.x; view_matrix_._13 = look_vector.x;
 	view_matrix_._21 = right_vector.y; view_matrix_._22 = up_vector.y; view_matrix_._23 = look_vector.y;
@@ -80,6 +81,11 @@ XMFLOAT4X4 CameraComponent::projection_matrix() const
 XMFLOAT3 CameraComponent::world_position() const
 {
 	return world_position_;
+}
+
+XMFLOAT3 CameraComponent::up_vector() const
+{
+	return up_vector_;
 }
 
 BoundingFrustum CameraComponent::view_frustum() const

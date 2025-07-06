@@ -21,6 +21,9 @@ public:
     void set_camera_object(Object* value);
     void set_scene(Scene* value);
 
+    //getter
+    bool is_firekey_down() const;
+
 private:
     Scene* scene_ = nullptr;
     Object* camera_object_ = nullptr;

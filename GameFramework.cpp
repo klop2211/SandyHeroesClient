@@ -601,6 +601,7 @@ void GameFramework::FrameAdvance()
         true, &DepthStencilView());
 
     scene_->Render(d3d_command_list_.Get());
+    scene_->ParticleRender(d3d_command_list_.Get());
 
     d3d_command_list_->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(
         d3d_swap_chain_buffers_[current_back_buffer_].Get(),

@@ -313,3 +313,8 @@ void FPSControllerComponent::set_scene(Scene* value)
 	scene_ = value;
 }
 
+bool FPSControllerComponent::is_firekey_down() const
+{
+	return is_firekey_down_;
+}
+

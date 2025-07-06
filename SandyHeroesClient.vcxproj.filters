@@ -145,6 +145,12 @@
     <Filter Include="3.Shader\Breathing">
       <UniqueIdentifier>{08f0a973-8afc-4d07-b343-52e80bc743f2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="7.Component\Particle">
+      <UniqueIdentifier>{c20b71ff-5abf-468e-8039-440834f1ccda}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="3.Shader\Particle">
+      <UniqueIdentifier>{bcefbfe5-c64a-49dd-99af-3d6d8e636ee9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="targetver.h">
@@ -164,9 +170,6 @@
     </ClInclude>
     <ClInclude Include="GameFramework.h">
       <Filter>0.GameFramework</Filter>
-    </ClInclude>
-    <ClInclude Include="Object.h">
-      <Filter>6.Object</Filter>
     </ClInclude>
     <ClInclude Include="Timer.h">
       <Filter>0.GameFramework\Timer</Filter>
@@ -306,9 +309,6 @@
     <ClInclude Include="RecordingScene.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="ParticleSystem.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
     <ClInclude Include="RecorderScene.h">
       <Filter>2.Scene\Recorder</Filter>
     </ClInclude>
@@ -341,6 +341,24 @@
     </ClInclude>
     <ClInclude Include="SkinnedShadowShader.h">
       <Filter>3.Shader\ShadowShader</Filter>
+    </ClInclude>
+    <ClInclude Include="Sector.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="TestAnimationState.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="ParticleSystem.h">
+      <Filter>7.Component\Particle</Filter>
+    </ClInclude>
+    <ClInclude Include="ParticleComponent.h">
+      <Filter>7.Component\Particle</Filter>
+    </ClInclude>
+    <ClInclude Include="ParticleShader.h">
+      <Filter>3.Shader\Particle</Filter>
+    </ClInclude>
+    <ClInclude Include="Object.h">
+      <Filter>6.Object</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -488,9 +506,6 @@
     <ClCompile Include="RecordingScene.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="ParticleSystem.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
     <ClCompile Include="RecorderScene.cpp">
       <Filter>2.Scene\Recorder</Filter>
     </ClCompile>
@@ -524,6 +539,21 @@
     <ClCompile Include="SkinnedShadowShader.cpp">
       <Filter>3.Shader\ShadowShader</Filter>
     </ClCompile>
+    <ClCompile Include="Sector.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="TestAnimationState.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="ParticleComponent.cpp">
+      <Filter>7.Component\Particle</Filter>
+    </ClCompile>
+    <ClCompile Include="ParticleSystem.cpp">
+      <Filter>7.Component\Particle</Filter>
+    </ClCompile>
+    <ClCompile Include="ParticleShader.cpp">
+      <Filter>3.Shader\Particle</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="SandyHeroesClient.rc">
@@ -550,5 +580,6 @@
     <FxCompile Include="Breathing.hlsl" />
     <FxCompile Include="Shadow.hlsl" />
     <FxCompile Include="SkinnedShadow.hlsl" />
+    <FxCompile Include="ParticleShader.hlsl" />
   </ItemGroup>
 </Project>

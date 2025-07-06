@@ -14,6 +14,7 @@ class InputControllerComponent;
 class GameFramework;
 class ColliderComponent;
 class MeshColliderComponent;
+class ParticleComponent;
 
 class Scene
 {
@@ -52,6 +53,7 @@ public:
 
 	virtual void Render(ID3D12GraphicsCommandList* command_list);
 	virtual void ShadowRender(ID3D12GraphicsCommandList* command_list);
+	virtual void ParticleRender(ID3D12GraphicsCommandList* command_list);
 
 	virtual bool ProcessInput(UINT id, WPARAM w_param, LPARAM l_param, float time) = 0;
 
@@ -82,6 +84,7 @@ public:
 	CameraComponent* main_camera() const;
 	XMFLOAT2 screen_size() const;
 	bool is_play_cutscene() const;
+	Object* player() const;
 
 	//setter
 	void set_main_camera(CameraComponent* value);
@@ -127,6 +130,8 @@ protected:
 	//TODO: Player °´Ã¼ ±¸Çö
 	Object* player_ = nullptr;
 
+	//For ParticleRender
+	std::vector<ParticleComponent*> particle_renderers{};
 
 };
 

@@ -9,6 +9,7 @@
 #include "MeshComponent.h"
 #include "SkinnedMeshComponent.h"
 #include "MeshColliderComponent.h"
+#include "ParticleComponent.h"
 #include "SkinnedMesh.h"
 #include "DDSTextureLoader.h"
 #include "UIMesh.h"
@@ -290,6 +291,11 @@ bool Scene::is_play_cutscene() const
 	return is_play_cutscene_;
 }
 
+Object* Scene::player() const
+{
+	return player_;
+}
+
 void Scene::set_main_camera(CameraComponent* value)
 {
 	main_camera_ = value;
@@ -334,6 +340,7 @@ void Scene::UpdateRenderPassConstantBuffer(ID3D12GraphicsCommandList* command_li
 	cb_pass.view_matrix = xmath_util_float4x4::TransPose(main_camera_->view_matrix());
 	cb_pass.proj_matrix = xmath_util_float4x4::TransPose(main_camera_->projection_matrix());
 	cb_pass.camera_position = main_camera_->world_position();
+	cb_pass.camera_up_axis = main_camera_->up_vector();
 
 	//TODO: 조명 관련 클래스를 생성후 그것을 사용하여 아래 정보 업데이트(현재는 테스트용 하드코딩)
 	cb_pass.ambient_light = XMFLOAT4{ 0.01,0.01,0.01, 1 };
@@ -557,6 +564,22 @@ void Scene::ShadowRender(ID3D12GraphicsCommandList* command_list)
 		//	}
 
 		//}
+	}
+}
+
+void Scene::ParticleRender(ID3D12GraphicsCommandList* command_list)
+{
+	auto& particleShader = shaders_[(int)ShaderType::kParticle];
+	FrameResourceManager* frame_resource_manager = game_framework_->frame_resource_manager();
+	auto curr_frame_resource = frame_resource_manager->curr_frame_resource();
+
+	
+	particleShader->Render(command_list, curr_frame_resource, game_framework_->descriptor_manager(), main_camera_);
+
+	for (ParticleComponent* particleComponent : particle_renderers)
+	{
+		particleComponent->material()->Render(command_list, curr_frame_resource, game_framework_->descriptor_manager(), main_camera_);
+		particleComponent->Render(command_list, curr_frame_resource);
 	}
 }
 

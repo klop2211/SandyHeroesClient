@@ -38,6 +38,8 @@
 #include "BombDragonAnimationState.h"
 #include "StrongDragonAnimationState.h"
 #include "TestAnimationState.h"
+#include "ParticleComponent.h"
+#include "ParticleShader.h"
 
 void BaseScene::Initialize(ID3D12Device* device, ID3D12GraphicsCommandList* command_list, ID3D12RootSignature* root_signature, GameFramework* game_framework)
 {
@@ -64,6 +66,7 @@ void BaseScene::BuildShader(ID3D12Device* device, ID3D12RootSignature* root_sign
 	shaders_[(int)ShaderType::kBreathing] = std::make_unique<BreathingShader>();
 	shaders_[(int)ShaderType::kShadow] = std::make_unique<ShadowShader>();
 	shaders_[(int)ShaderType::kSkinnedShadow] = std::make_unique<SkinnedShadowShader>();
+	shaders_[(int)ShaderType::kParticle] = std::make_unique<ParticleShader>();
 
 	//TODO: ���̴��� �����Ǵ� ���׸��� ���� Reserve
 
@@ -253,6 +256,17 @@ void BaseScene::BuildMaterial(ID3D12Device* device, ID3D12GraphicsCommandList* c
 	materials_.emplace_back();
 	materials_.back().reset(material);
 
+	//Create Particle Material
+	{
+		material = new Material{ "Trail_1", (int)ShaderType::kParticle };
+		textures_.push_back(std::make_unique<Texture>());
+		textures_.back()->name = "Trail_1";
+		textures_.back()->type = TextureType::kAlbedoMap;
+		material->AddTexture(textures_.back().get());
+		materials_.emplace_back();
+		materials_.back().reset(material);
+	}
+
 	//Create Breathing Material
 	{
 		material = new Material{ "Breathing", (int)ShaderType::kBreathing };
@@ -329,6 +343,20 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 	player_gun_frame->AddComponent(player_gun);
 	player_gun_frame->Rotate(0, 170, -17);
 
+	Object* player_gun_particle_pivot = new Object("gun_particle_pivot");
+	player_gun_frame->AddChild(player_gun_particle_pivot);
+	player_gun_particle_pivot->set_local_position(XMFLOAT3(0.0f, 0.2f, 0.3f));
+
+	// 총 발사 파티클 생성
+	//particle_ = new Object();
+	Material* particleMaterial = std::find_if(materials_.begin(), materials_.end(), [&](const auto& material) {
+		return material->name() == "Trail_1";
+		})->get();
+	ParticleComponent* particleComponent = new ParticleComponent(player_gun_particle_pivot, device, 50, ParticleComponent::Cone, particleMaterial);
+	particleComponent->set_scene(this);
+	player_gun_particle_pivot->AddComponent(particleComponent);
+	particle_renderers.push_back(particleComponent);
+
 	//Set player's camera
 	Object* camera_object = new Object();
 	player->AddChild(camera_object);
@@ -370,6 +398,7 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 	skybox->AddComponent(new MeshComponent(skybox, 
 		Scene::FindMesh("Skybox", meshes_), Scene::FindMaterial("Skybox_Cube2", materials_)));
 	AddObject(skybox);
+
 
 	//Create sub camera (free view)
 	camera_object = new Object;
@@ -852,6 +881,7 @@ void BaseScene::Update(float elapsed_time)
 	Scene::Update(elapsed_time);
 
 	particle_system_->Update(elapsed_time);
+	//particle_->Update(elapsed_time);
 
 	UpdateObjectHitWall();
 	
@@ -869,7 +899,7 @@ void BaseScene::Update(float elapsed_time)
 
 	CheckSpawnBoxHitPlayer();
 
-
+	
 }
 
 void BaseScene::AddObject(Object* object)
@@ -1223,6 +1253,8 @@ void BaseScene::CheckObjectHitObject(Object* object)
 				if (distance > kMinSafeDistance) // 벽에 안 부딪힌다면 밀기
 				{
 					object->set_position_vector(object_pos + dir * 0.1f);
+
+					// TODO : 몬스터 AI완성 이후 충돌시에 밀리는 기능 추가
 
 					/*auto monster = Object::GetComponent<MonsterComponent>(object);
 					if (monster)

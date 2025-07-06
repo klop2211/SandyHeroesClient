@@ -7,7 +7,19 @@ struct FrameResource;
 
 enum class ShaderType
 {
-	kNone = 0, kColor, kSkinnedMesh, kStandardMesh, kStandardSkinnedMesh, kSkybox, kDebug, kUI, kTransparent, kBreathing, kShadow, kSkinnedShadow
+	kNone = 0,
+	kColor,
+	kSkinnedMesh,
+	kStandardMesh,
+	kStandardSkinnedMesh,
+	kSkybox, 
+	kDebug,
+	kUI, 
+	kTransparent,
+	kBreathing, 
+	kShadow, 
+	kSkinnedShadow,
+	kParticle
 };
 
 class Shader
@@ -26,7 +38,7 @@ public:
 	D3D12_SHADER_BYTECODE CompileShaderFromFile(WCHAR* file_name, LPCSTR shader_name,
 		LPCSTR shader_profile, ID3DBlob** shader_blob);
 
-	void CreateShader(ID3D12Device* device, ID3D12RootSignature* root_signature);
+	virtual void CreateShader(ID3D12Device* device, ID3D12RootSignature* root_signature);
 
 	ID3D12PipelineState* GetPipelineState() const;
 
