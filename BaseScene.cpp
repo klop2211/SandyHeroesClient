@@ -121,12 +121,16 @@ void BaseScene::BuildMesh(ID3D12Device* device, ID3D12GraphicsCommandList* comma
 	constexpr UINT kModelInfoCount{ 40 };
 	model_infos_.reserve(kModelInfoCount);
 	model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/Dog00.bin", meshes_, materials_, textures_));
-	model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/Gun/classic.bin", meshes_, materials_, textures_));
+	model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/Gun/classic.bin", meshes_, materials_, textures_)); //1
 	model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/Gun/SM_Bullet_01.bin", meshes_, materials_, textures_));
 	model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/Monster/Hit_Dragon.bin", meshes_, materials_, textures_));
 	model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/Monster/Shot_Dragon.bin", meshes_, materials_, textures_));
 	model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/Monster/Bomb_Dragon.bin", meshes_, materials_, textures_));
 	model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/Monster/Strong_Dragon.bin", meshes_, materials_, textures_));
+	
+	model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/Gun/vandal.bin", meshes_, materials_, textures_));	//7 밴달
+	model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/Gun/Odin.bin", meshes_, materials_, textures_));	//8 오딘
+	model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/Gun/Flamethrower.bin", meshes_, materials_, textures_));	//9 화염방사기
 
 	//BuildScene("Base");
 
@@ -336,7 +340,7 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 	//Set player's gun
 	//TODO: 총기 메쉬 장착 구현
 	Object* player_gun_frame = player->FindFrame("WeaponR_locator");
-	player_gun_frame->AddChild(model_infos_[1]->GetInstance());
+	player_gun_frame->AddChild(model_infos_[1]->GetInstance());	//1 권총, 7 밴달, 8 오딘, 9 화염방사기
 	player_gun_frame = player_gun_frame->child();
 	GunComponent* player_gun = new GunComponent(player_gun_frame);
 	player_gun->LoadGunInfo("specter");
@@ -345,17 +349,40 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 
 	Object* player_gun_particle_pivot = new Object("gun_particle_pivot");
 	player_gun_frame->AddChild(player_gun_particle_pivot);
-	player_gun_particle_pivot->set_local_position(XMFLOAT3(0.0f, 0.2f, 0.3f));
+	player_gun_particle_pivot->set_local_position(XMFLOAT3(0.0f, 0.2f, 0.3f));	//1
+	//player_gun_particle_pivot->set_local_position(XMFLOAT3(-0.018f, 0.2f, 0.78f));	//7
+	//player_gun_particle_pivot->set_local_position(XMFLOAT3(0.013f, 0.123f, 0.81f));	//8
+	//player_gun_particle_pivot->set_local_position(XMFLOAT3(0.0f, 0.143f, 1.24f));	//8
+
+	// 몬스터 HIT 파티클 생성
+	{
+		monster_hit_particles_.emplace_back(new Object("monster_hit_particle"));
+		Object* monster_particle = monster_hit_particles_.back();
+		object_list_.emplace_back(monster_particle);
+		monster_particle->set_local_position({ 0, 1, 0 });
+		Material* monster_particle_material = std::find_if(materials_.begin(), materials_.end(), [&](const auto& material) {
+			return material->name() == "Trail_1";
+			})->get();
+		ParticleComponent* monster_particle_component = new ParticleComponent(monster_particle, device, 1000, ParticleComponent::Sphere, monster_particle_material);
+		monster_particle_component->set_scene(this);
+		monster_particle->AddComponent(monster_particle_component);
+		particle_renderers.push_back(monster_particle_component);
+	}
 
 	// 총 발사 파티클 생성
-	//particle_ = new Object();
-	Material* particleMaterial = std::find_if(materials_.begin(), materials_.end(), [&](const auto& material) {
-		return material->name() == "Trail_1";
-		})->get();
-	ParticleComponent* particleComponent = new ParticleComponent(player_gun_particle_pivot, device, 50, ParticleComponent::Cone, particleMaterial);
-	particleComponent->set_scene(this);
-	player_gun_particle_pivot->AddComponent(particleComponent);
-	particle_renderers.push_back(particleComponent);
+	{
+		//particle_ = new Object();
+		Material* particleMaterial = std::find_if(materials_.begin(), materials_.end(), [&](const auto& material) {
+			return material->name() == "Trail_1";
+			})->get();
+		ParticleComponent* particleComponent = new ParticleComponent(player_gun_particle_pivot, device, 50, ParticleComponent::Cone, particleMaterial);
+		particleComponent->set_scene(this);
+		particleComponent->set_loop(true);
+		player_gun_particle_pivot->AddComponent(particleComponent);
+		particle_renderers.push_back(particleComponent);
+	}
+
+
 
 	//Set player's camera
 	Object* camera_object = new Object();
@@ -470,8 +497,6 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 	}
 
 	Scene::UpdateObjectWorldMatrix();
-
-	
 
 }
 
@@ -880,7 +905,7 @@ void BaseScene::Update(float elapsed_time)
 
 	Scene::Update(elapsed_time);
 
-	particle_system_->Update(elapsed_time);
+	//particle_system_->Update(elapsed_time);
 	//particle_->Update(elapsed_time);
 
 	UpdateObjectHitWall();
@@ -1252,7 +1277,7 @@ void BaseScene::CheckObjectHitObject(Object* object)
 				constexpr float kMinSafeDistance = 1.5f; // 살짝 밀려도 충돌 안나도록 여유
 				if (distance > kMinSafeDistance) // 벽에 안 부딪힌다면 밀기
 				{
-					object->set_position_vector(object_pos + dir * 0.1f);
+					//object->set_position_vector(object_pos + dir * 0.1f);
 
 					// TODO : 몬스터 AI완성 이후 충돌시에 밀리는 기능 추가
 
@@ -1351,6 +1376,10 @@ void BaseScene::CheckObjectHitBullet(Object* object)
 				bullet->set_is_dead(true);
 				if (monster && !monster->IsDead())
 				{
+					// 몬스터 HIT 파티클 출력
+					ParticleComponent* particle_component = Object::GetComponent<ParticleComponent>(monster_hit_particles_.front());
+					particle_component->set_hit_position(monster->owner()->world_position_vector());
+					particle_component->Play(50);
 					monster->set_hp(monster->hp() - gun->damage());
 
 					if(monster->IsDead())

@@ -26,8 +26,12 @@ ParticleComponent::ParticleComponent(Object* owner, ID3D12Device* device, UINT p
 
 		if (shape_ == Sphere)
 		{
-			position = XMFLOAT3(0.0f, 5.0f, 0.0f);
+			//position = XMFLOAT3(0.0f, 5.0f, 0.0f);
+			position = hit_position_;
 			direction = RANDOM::InsideUnitSphere();
+
+			particles_.emplace_back(Particle(position, XMFLOAT2(0.15f, 0.15f))); // sphere 텍스쳐 사이즈
+			particle_data_.emplace_back(ParticleData(direction, 2.0f, 0.1f, 0.1f));
 		}
 		else if (shape_ == Cone)
 		{
@@ -41,23 +45,23 @@ ParticleComponent::ParticleComponent(Object* owner, ID3D12Device* device, UINT p
 			XMVECTOR randomPos = direction * radius;
 			randomPos += XMVectorSet(position.x, position.y, position.z, 0);
 			XMStoreFloat3(&position, randomPos);
+
+			particles_.emplace_back(Particle(position, XMFLOAT2(0.05f, 0.05f))); // cone 텍스쳐 사이즈
+			particle_data_.emplace_back(ParticleData(direction, 2.0f, 0.1f, 0.1f));	//cone
 		}
 		else if (shape_ == Circle)
 		{
 			XMVECTOR axis = XMVectorSet(1, 0, 0, 0); // 기준 방향
 			XMStoreFloat3(&position, RANDOM::CircleEdgePoint(axis, 5.0f, &direction) + XMVectorSet(0, 10, 0, 0));
+
+			particles_.emplace_back(Particle(position, XMFLOAT2(1.0f, 1.0f))); // 텍스쳐 사이즈
+			particle_data_.emplace_back(ParticleData(direction, 10.0f, 0.1f, 0.1f));
 		}
 		else
 		{
 			assert(false);
 		}
-
-		//particles_.emplace_back(Particle(position, XMFLOAT2(1.0f, 1.0f))); // 텍스쳐 사이즈
-		particles_.emplace_back(Particle(position, XMFLOAT2(0.05f, 0.05f))); // cone 텍스쳐 사이즈
-		//particles_.emplace_back(Particle(position, XMFLOAT2(0.5f, 0.5f))); // sphere 텍스쳐 사이즈
-
-		//particle_data_.emplace_back(ParticleData(direction, 10.0f, 0.1f, 0.1f));
-		particle_data_.emplace_back(ParticleData(direction, 2.0f, 0.1f, 0.1f));	//cone
+		
 	}
 
 	vertex_buffer_view_.BufferLocation = particle_buffer_->Resource()->GetGPUVirtualAddress();
@@ -98,23 +102,34 @@ void ParticleComponent::Update(float elapsed_time)
 		//Alive인 Particle만 담아야함.
 		if (particle_data_[i].IsActive())
 		{
-			if (!(shape_ == Cone && controller->is_firekey_down()))
-				continue;
+			/*if (!(shape_ == Cone && controller->is_firekey_down()))
+				continue;*/
 			particle_buffer_->CopyData(particleIndex++, particles_[i]);
 		}
 		else
 		{
+			if (!loop_) continue;
+
 			XMFLOAT3 position = {};
 			XMVECTOR direction = {};
 
-			if (shape_ == Sphere)
+			if (shape_ == Sphere)	//몬스터 HIT 파티클
 			{
 				//position = XMFLOAT3(0.0f, 15.0f, 0.0f);
-				position = XMFLOAT3(0.0f, 5.0f, 0.0f);
+				position = hit_position_;
 				direction = RANDOM::InsideUnitSphere();
+
+				particle_data_[i].max_life_time_ = RANDOM::GetRandomValue(0.6, 0.6f);
+				particle_data_[i].life_time_ = particle_data_[i].max_life_time_;
+				particle_data_[i].velocity_ = direction;
+				XMFLOAT3 pivot_position = owner_->world_position_vector();
+				XMVECTOR rPosition = XMLoadFloat3(&pivot_position) + XMLoadFloat3(&position);
+				XMStoreFloat3(&particles_[i].position_, rPosition);
 			}
-			else if (shape_ == Cone && controller->is_firekey_down())
+			else if (shape_ == Cone)	// 총 발사 파티클
 			{
+				if (!controller->is_firekey_down()) break;
+
 				position = owner_->world_position_vector();
 				XMFLOAT3 owner_forward = owner_->world_look_vector();
 				XMVECTOR forward = XMLoadFloat3(&owner_forward); // 기준 방향
@@ -124,30 +139,30 @@ void ParticleComponent::Update(float elapsed_time)
 				XMVECTOR randomPos = direction * radius;
 				//randomPos += XMVectorSet(position.x, position.y, position.z, 0);
 				XMStoreFloat3(&position, randomPos);
+
+				particle_data_[i].max_life_time_ = RANDOM::GetRandomValue(0.01f, 0.1f);	// cone
+				particle_data_[i].life_time_ = particle_data_[i].max_life_time_;
+				particle_data_[i].velocity_ = direction;
+				XMFLOAT3 pivot_position = owner_->world_position_vector();
+				XMVECTOR rPosition = XMLoadFloat3(&pivot_position) + XMLoadFloat3(&position);
+				XMStoreFloat3(&particles_[i].position_, rPosition);
 			}
 			else if (shape_ == Circle)
 			{
 				XMVECTOR axis = XMVectorSet(1, 0, 0, 0); // 기준 방향
 				XMStoreFloat3(&position, RANDOM::CircleEdgePoint(axis, 5.0f, &direction) + XMVectorSet(0, 15, 0, 0));
+
+				particle_data_[i].max_life_time_ = RANDOM::GetRandomValue(1.5f, 1.5f); // 기본
+				particle_data_[i].life_time_ = particle_data_[i].max_life_time_;
+				particle_data_[i].velocity_ = direction;
+				XMFLOAT3 pivot_position = owner_->world_position_vector();
+				XMVECTOR rPosition = XMLoadFloat3(&pivot_position) + XMLoadFloat3(&position);
+				XMStoreFloat3(&particles_[i].position_, rPosition);
 			}
 			else
 			{
 				assert(false);
 			}
-
-			particle_data_[i].max_life_time_ = RANDOM::GetRandomValue(0.01f, 0.1f);	// cone
-			//particle_data_[i].max_life_time_ = RANDOM::GetRandomValue(0.75, 0.75f);	//sphere
-			//particle_data_[i].max_life_time_ = RANDOM::GetRandomValue(1.5f, 1.5f); // 기본
-			particle_data_[i].life_time_ = particle_data_[i].max_life_time_;
-			particle_data_[i].velocity_ = direction;
-
-			XMFLOAT3 pivot_position = owner_->world_position_vector();
-
-			XMVECTOR rPosition = XMLoadFloat3(&pivot_position) + XMLoadFloat3(&position);
-
-			//particles_[i].position_ = position;
-			
-			XMStoreFloat3(&particles_[i].position_, rPosition);
 		}
 	}
 
@@ -186,4 +201,76 @@ Material* ParticleComponent::material() const
 void ParticleComponent::set_scene(Scene* value)
 {
 	scene_ = value;
+}
+
+void ParticleComponent::set_hit_position(XMFLOAT3 value)
+{
+	hit_position_ = value;
+}
+
+void ParticleComponent::set_loop(bool value)
+{
+	loop_ = value;
+}
+
+void ParticleComponent::Play(int particle_count)
+{
+	for (int i = 0; i < capacity_; ++i)
+	{
+		if (particle_count == 0) return;
+		if (particle_data_[i].IsActive()) continue;
+		particle_count--;
+
+		XMFLOAT3 position = {};
+		XMVECTOR direction = {};
+
+		if (shape_ == Sphere)
+		{
+			//position = XMFLOAT3(0.0f, 15.0f, 0.0f);
+			position = hit_position_;
+			direction = RANDOM::InsideUnitSphere();
+
+			particle_data_[i].max_life_time_ = RANDOM::GetRandomValue(0.6, 0.6f);
+			particle_data_[i].life_time_ = particle_data_[i].max_life_time_;
+			particle_data_[i].velocity_ = direction;
+			XMFLOAT3 pivot_position = owner_->world_position_vector();
+			XMVECTOR rPosition = XMLoadFloat3(&pivot_position) + XMLoadFloat3(&position);
+			XMStoreFloat3(&particles_[i].position_, rPosition);
+		}
+		else if (shape_ == Cone)
+		{
+			position = owner_->world_position_vector();
+			XMFLOAT3 owner_forward = owner_->world_look_vector();
+			XMVECTOR forward = XMLoadFloat3(&owner_forward); // 기준 방향
+			constexpr float coneAngle = XMConvertToRadians(18.0f); // 콘의 반각도 (23 기본)
+			constexpr float radius = 0.2f; // (기본 5)
+			direction = RANDOM::DirectionInCone(forward, coneAngle);
+			XMVECTOR randomPos = direction * radius;
+			//randomPos += XMVectorSet(position.x, position.y, position.z, 0);
+			XMStoreFloat3(&position, randomPos);
+
+			particle_data_[i].max_life_time_ = RANDOM::GetRandomValue(0.01f, 0.1f);	// cone
+			particle_data_[i].life_time_ = particle_data_[i].max_life_time_;
+			particle_data_[i].velocity_ = direction;
+			XMFLOAT3 pivot_position = owner_->world_position_vector();
+			XMVECTOR rPosition = XMLoadFloat3(&pivot_position) + XMLoadFloat3(&position);
+			XMStoreFloat3(&particles_[i].position_, rPosition);
+		}
+		else if (shape_ == Circle)
+		{
+			XMVECTOR axis = XMVectorSet(1, 0, 0, 0); // 기준 방향
+			XMStoreFloat3(&position, RANDOM::CircleEdgePoint(axis, 5.0f, &direction) + XMVectorSet(0, 15, 0, 0));
+
+			particle_data_[i].max_life_time_ = RANDOM::GetRandomValue(1.5f, 1.5f); // 기본
+			particle_data_[i].life_time_ = particle_data_[i].max_life_time_;
+			particle_data_[i].velocity_ = direction;
+			XMFLOAT3 pivot_position = owner_->world_position_vector();
+			XMVECTOR rPosition = XMLoadFloat3(&pivot_position) + XMLoadFloat3(&position);
+			XMStoreFloat3(&particles_[i].position_, rPosition);
+		}
+		else
+		{
+			assert(false);
+		}
+	}
 }

@@ -29,16 +29,16 @@ void MonsterComponent::Update(float elapsed_time)
     }
 
     // 밀려나는 중이면 이동 금지
-    if (is_pushed_)
-    {
-        push_timer_ -= elapsed_time;
-        if (push_timer_ < 0.0f)
-        {
-            is_pushed_ = false;
-            push_timer_ = 0.0f;
-        }
-        return; // AI 이동 금지
-    }
+    //if (is_pushed_)
+    //{
+    //    push_timer_ -= elapsed_time;
+    //    if (push_timer_ < 0.0f)
+    //    {
+    //        is_pushed_ = false;
+    //        push_timer_ = 0.0f;
+    //    }
+    //    return; // AI 이동 금지
+    //}
 
     auto head_socket = owner_->FindFrame("Ui_Head");
     if (head_socket)

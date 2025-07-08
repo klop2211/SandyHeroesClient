@@ -17,7 +17,7 @@ private:
 		float speed_;
 		float life_time_;
 		float max_life_time_;
-
+		
 		bool IsActive() const { return life_time_ > 0.0f; }
 	};
 public:
@@ -49,7 +49,12 @@ public:
 	UINT capacity() const;
 	Material* material() const;
 
+	//setter
 	void set_scene(Scene* value);
+	void set_hit_position(XMFLOAT3 value);
+	void set_loop(bool value);
+
+	void Play(int particle_count);
 
 private:
 	Scene* scene_ = nullptr;
@@ -65,4 +70,7 @@ private:
 	Material* material_ = nullptr;
 
 	eShape shape_ = eShape::Sphere;
+
+	XMFLOAT3 hit_position_ = {};
+	bool loop_ {false};
 };

@@ -72,7 +72,7 @@ private:
 
 	std::unique_ptr<ParticleSystem> particle_system_{ nullptr };	//파티클 시스템
 
-	Object* particle_;
+	std::vector<Object*> monster_hit_particles_;
 
 	std::vector<BoxColliderComponent*> spawn_boxs_{}; // 스테이지 몬스터 생성 체크를 위한 박스들
 
