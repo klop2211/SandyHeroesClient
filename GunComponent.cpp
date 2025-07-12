@@ -132,7 +132,6 @@ void GunComponent::LoadGunInfo(const std::string& gun_name)
     bullet_speed_ = gun_info.bullet_speed;
 
     loaded_bullets_ = magazine_cacity_;
-
 }
 
 void GunComponent::set_gun_name(std::string& value)

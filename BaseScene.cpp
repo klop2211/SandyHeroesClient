@@ -404,9 +404,6 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 		fps_controller->set_particle(particleComponent);
 	}
 
-
-
-
 	//Add player to scene
 	AddObject(player);
 
@@ -837,6 +834,10 @@ bool BaseScene::ProcessInput(UINT id, WPARAM w_param, LPARAM l_param, float time
 		if (w_param == '3')
 		{
 			particle_renderers.back()->set_color({ 0.9f,0.9f,0.1f,0.5f });
+		}
+		if (w_param == '4')
+		{
+			// 총기 변경
 		}
 		// 카메라 전환 테스트
 		if (w_param == 'K')
@@ -1400,9 +1401,18 @@ void BaseScene::CheckObjectHitBullet(Object* object)
 				bullet->set_is_dead(true);
 				if (monster && !monster->IsDead())
 				{
+					ParticleComponent* gun_particle = nullptr;
+					{
+						Object* flame_tip = player_->FindFrame("gun_particle_pivot");
+						if (flame_tip)
+							gun_particle = Object::GetComponent<ParticleComponent>(flame_tip);
+					}
+
+
 					// 몬스터 HIT 파티클 출력
 					ParticleComponent* particle_component = Object::GetComponent<ParticleComponent>(monster_hit_particles_.front());
 					particle_component->set_hit_position(monster->owner()->world_position_vector());
+					particle_component->set_color(gun_particle->color());
 					particle_component->Play(50);
 					monster->set_hp(monster->hp() - gun->damage());
 
@@ -1438,10 +1448,30 @@ void BaseScene::CheckObjectHitFlamethrow(Object* object)
 		{
 			if (flame_collider->animated_box().Intersects(monster_box->animated_box()))
 			{
+				ParticleComponent* gun_particle = nullptr;
+				{
+					Object* flame_tip = player_->FindFrame("gun_particle_pivot");
+					if (flame_tip)
+						gun_particle = Object::GetComponent<ParticleComponent>(flame_tip);
+				}
+
 				// 데미지 적용
 				MonsterComponent* monster = Object::GetComponent<MonsterComponent>(object);
 				if (monster && !monster->IsDead())
 				{
+					ParticleComponent* gun_particle = nullptr;
+					{
+						Object* flame_tip = player_->FindFrame("gun_particle_pivot");
+						if (flame_tip)
+							gun_particle = Object::GetComponent<ParticleComponent>(flame_tip);
+					}
+
+					// 몬스터 HIT 파티클 출력
+					ParticleComponent* particle_component = Object::GetComponent<ParticleComponent>(monster_hit_particles_.front());
+					particle_component->set_hit_position(monster->owner()->world_position_vector());
+					particle_component->set_color(gun_particle->color());
+					particle_component->Play(50);
+
 					//monster->set_hp(monster->hp() - gun->damage());
 					monster->set_hp(monster->hp() - 0.5f);
 					if (monster->IsDead())

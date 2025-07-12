@@ -245,6 +245,11 @@ Material* ParticleComponent::material() const
 	return material_;
 }
 
+XMFLOAT4 ParticleComponent::color() const
+{
+	return color_;
+}
+
 void ParticleComponent::set_scene(Scene* value)
 {
 	scene_ = value;

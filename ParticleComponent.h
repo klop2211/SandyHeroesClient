@@ -51,6 +51,9 @@ public:
 	UINT capacity() const;
 	Material* material() const;
 
+	//getter
+	XMFLOAT4 color() const;
+
 	//setter
 	void set_scene(Scene* value);
 	void set_hit_position(XMFLOAT3 value);
