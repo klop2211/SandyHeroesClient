@@ -46,6 +46,7 @@ public:
 	void CheckPlayerHitWall(Object* object, const XMFLOAT3& velocity);
 	void CheckObjectHitObject(Object* object);
 	void CheckObjectHitBullet(Object* object);
+	void CheckObjectHitFlamethrow(Object* object);
 	void CheckPlayerHitPyramid(Object* object);
 	void CheckSpawnBoxHitPlayer();
 

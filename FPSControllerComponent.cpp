@@ -68,7 +68,9 @@ bool FPSControllerComponent::ProcessInput(UINT message_id, WPARAM w_param, LPARA
 		mouse_xy_.y = HIWORD(l_param);
 		{		
 			GunComponent* gun = Object::GetComponentInChildren<GunComponent>(owner_);
-		if (!gun)
+		//if (!gun) // ¿øº»
+		//if (!gun || gun->bullet_type() == BulletType::kSpecial)
+		if (!gun || gun->gun_name() == "flamethrower")
 		{
 			break;
 		}

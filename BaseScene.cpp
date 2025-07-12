@@ -130,7 +130,7 @@ void BaseScene::BuildMesh(ID3D12Device* device, ID3D12GraphicsCommandList* comma
 	
 	model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/Gun/vandal.bin", meshes_, materials_, textures_));	//7 밴달
 	model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/Gun/Odin.bin", meshes_, materials_, textures_));	//8 오딘
-	model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/Gun/Flamethrower.bin", meshes_, materials_, textures_));	//9 화염방사기
+	model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/Gun/flamethrower.bin", meshes_, materials_, textures_));	//9 화염방사기
 
 	//BuildScene("Base");
 
@@ -344,6 +344,7 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 	player_gun_frame = player_gun_frame->child();
 	GunComponent* player_gun = new GunComponent(player_gun_frame);
 	player_gun->LoadGunInfo("specter");
+	player_gun->set_gun_name(std::string("flamethrower"));
 	player_gun_frame->AddComponent(player_gun);
 	player_gun_frame->Rotate(0, 170, -17);
 
@@ -353,6 +354,12 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 	//player_gun_particle_pivot->set_local_position(XMFLOAT3(-0.018f, 0.2f, 0.58f));	//7
 	//player_gun_particle_pivot->set_local_position(XMFLOAT3(0.013f, 0.123f, 0.81f));	//8
 	player_gun_particle_pivot->set_local_position(XMFLOAT3(0.0f, 0.143f, 1.24f));		//9
+
+	// 화염방사기에 충돌 박스 달기
+	Object* flamethrower_tip = player->FindFrame("gun_particle_pivot");
+	GunComponent* gun = Object::GetComponentInChildren<GunComponent>(player);
+	auto flamethrow_box_component = new BoxColliderComponent(flamethrower_tip, gun->flamethrow_box());
+	flamethrower_tip->AddComponent(flamethrow_box_component);
 
 	//Set player's camera
 	Object* camera_object = new Object();
@@ -819,6 +826,18 @@ bool BaseScene::ProcessInput(UINT id, WPARAM w_param, LPARAM l_param, float time
 	switch (id)
 	{
 	case WM_KEYDOWN:
+		if (w_param == '1')
+		{
+			particle_renderers.back()->set_color({0.9f,0.1f,0.1f,0.5f});
+		}
+		if (w_param == '2')
+		{
+			particle_renderers.back()->set_color({ 0.1f,0.9f,0.1f,0.5f });
+		}
+		if (w_param == '3')
+		{
+			particle_renderers.back()->set_color({ 0.9f,0.9f,0.1f,0.5f });
+		}
 		// 카메라 전환 테스트
 		if (w_param == 'K')
 		{
@@ -1012,6 +1031,7 @@ void BaseScene::UpdateObjectHitBullet()
 		if (object == player_)
 			continue;
 		CheckObjectHitBullet(object);
+		CheckObjectHitFlamethrow(object);
 	}
 }
 
@@ -1393,6 +1413,44 @@ void BaseScene::CheckObjectHitBullet(Object* object)
 		}
 	}
 
+}
+
+void BaseScene::CheckObjectHitFlamethrow(Object* object)
+{
+	FPSControllerComponent* controller = Object::GetComponent<FPSControllerComponent>(player_);
+	if (!controller || !controller->is_firekey_down())
+		return;
+
+	GunComponent* gun = Object::GetComponentInChildren<GunComponent>(player_);
+	auto& bullet_list = gun->fired_bullet_list();
+
+	auto& box_collider_list = Object::GetComponentsInChildren<BoxColliderComponent>(object);
+	if (!box_collider_list.size())
+		return;
+
+	if (gun->gun_name() == "flamethrower") // 화염방사기 조건
+	{
+		Object* flame_tip = player_->FindFrame("gun_particle_pivot");
+		auto flame_collider = Object::GetComponent<BoxColliderComponent>(flame_tip);
+		if (!flame_collider) return;
+
+		for (auto& monster_box : Object::GetComponentsInChildren<BoxColliderComponent>(object))
+		{
+			if (flame_collider->animated_box().Intersects(monster_box->animated_box()))
+			{
+				// 데미지 적용
+				MonsterComponent* monster = Object::GetComponent<MonsterComponent>(object);
+				if (monster && !monster->IsDead())
+				{
+					//monster->set_hp(monster->hp() - gun->damage());
+					monster->set_hp(monster->hp() - 0.5f);
+					if (monster->IsDead())
+						catch_monster_num_++;
+				}
+			}
+		}
+		return;
+	}
 }
 
 void BaseScene::CheckPlayerHitPyramid(Object* object)

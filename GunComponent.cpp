@@ -70,6 +70,11 @@ void GunComponent::ReloadBullets()
 
 bool GunComponent::FireBullet(XMFLOAT3 direction, Object* bullet_model, Scene* scene)
 {
+   /* if (bullet_type_ == BulletType::kSpecial)
+        return false;*/
+    if (gun_name_ == "flamethrower")
+        return true;
+
     if (loaded_bullets_ > 0)
     {
         const float rps = rpm_ / 60.f;
@@ -130,9 +135,19 @@ void GunComponent::LoadGunInfo(const std::string& gun_name)
 
 }
 
+void GunComponent::set_gun_name(std::string& value)
+{
+    gun_name_ = value;
+}
+
 GunFireType GunComponent::fire_type() const
 {
     return fire_type_;
+}
+
+BulletType GunComponent::bullet_type() const
+{
+    return bullet_type_;
 }
 
 std::list<Object*> GunComponent::fired_bullet_list() const
@@ -148,6 +163,11 @@ int GunComponent::damage() const
 float GunComponent::critical_damage_rate() const
 {
     return critical_damage_rate_;
+}
+
+BoundingBox GunComponent::flamethrow_box() const
+{
+    return flamethrow_box_;
 }
 
 void GunComponent::LoadGunInfosFromFile(const std::string& file_name)
