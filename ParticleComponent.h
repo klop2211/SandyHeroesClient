@@ -22,6 +22,7 @@ private:
 	};
 public:
 	struct Particle {
+		XMFLOAT4 color_;
 		XMFLOAT3 position_;
 		//float life_factor_;
 		XMFLOAT2 size_;
@@ -31,6 +32,7 @@ public:
 		Sphere,
 		Cone,
 		Circle,
+		BigCone,
 		Count
 	};
 
@@ -53,11 +55,15 @@ public:
 	void set_scene(Scene* value);
 	void set_hit_position(XMFLOAT3 value);
 	void set_loop(bool value);
+	void set_direction_pivot_object(Object* value);
+	void set_color(const XMFLOAT4& color);
 
 	void Play(int particle_count);
 
 private:
 	Scene* scene_ = nullptr;
+
+	Object* direction_pivot_object_ = nullptr;
 
 	UINT capacity_ = 50;
 	UINT alive_count_ = 0;
@@ -73,4 +79,5 @@ private:
 
 	XMFLOAT3 hit_position_ = {};
 	bool loop_ {false};
+	XMFLOAT4 color_ = { 1.0f, 1.0f, 1.0f, 1.0f };
 };

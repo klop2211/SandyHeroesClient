@@ -2,12 +2,14 @@
 
 struct VertexIn
 {
+    float4 Color : COLOR;
     float3 PosW : POSITION;
     float2 Size : SIZE;
 };
 
 struct GeoOut
 {
+    float4 Color : Color;
     float4 PosH : SV_POSITION;
     float3 PosW : POSITION;
     float3 NormalW : NORMAL;
@@ -59,6 +61,7 @@ void GS(point VertexIn gin[1], uint primID : SV_PrimitiveID, inout TriangleStrea
         gout.NormalW = look;
         gout.TexC = texC[i];
         gout.PrimID = primID;
+        gout.Color = gin[0].Color;
 
         triStream.Append(gout);
     }
@@ -67,13 +70,8 @@ void GS(point VertexIn gin[1], uint primID : SV_PrimitiveID, inout TriangleStrea
 PixelOut PS(GeoOut pin)
 {
     PixelOut pOut;
-    
-    float4 color = float4(1.0f, 1.0f, 1.0f, 1.0f);
-    
-    color.a = 1.0f;
-    
-    pOut.Color = color;
-    pOut.Color = g_albedo_map.Sample(g_linear_warp, pin.TexC) * color;
+
+    pOut.Color = g_albedo_map.Sample(g_linear_warp, pin.TexC) * pin.Color;
    // pOut.Color.a = pOut.Color.r;
     //pOut.Mask = float4(1, 1, 1, 1);
 

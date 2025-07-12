@@ -290,6 +290,7 @@ void FPSControllerComponent::Update(float elapsed_time)
 			XMStoreFloat3(&bullet_dir, XMVector3Normalize(picking_point_w - XMLoadFloat3(&gun_shoting_point)));
 			auto bullet_mesh = scene_->FindModelInfo("SM_Bullet_01")->GetInstance();
 			gun->FireBullet(bullet_dir, bullet_mesh, scene_);
+			particle_->Play(10);
 		}
 	}
 }
@@ -311,6 +312,11 @@ void FPSControllerComponent::set_camera_object(Object* value)
 void FPSControllerComponent::set_scene(Scene* value)
 {
 	scene_ = value;
+}
+
+void FPSControllerComponent::set_particle(ParticleComponent* value)
+{
+	particle_ = value;
 }
 
 bool FPSControllerComponent::is_firekey_down() const

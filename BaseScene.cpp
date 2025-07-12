@@ -340,7 +340,7 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 	//Set player's gun
 	//TODO: 총기 메쉬 장착 구현
 	Object* player_gun_frame = player->FindFrame("WeaponR_locator");
-	player_gun_frame->AddChild(model_infos_[1]->GetInstance());	//1 권총, 7 밴달, 8 오딘, 9 화염방사기
+	player_gun_frame->AddChild(model_infos_[9]->GetInstance());	//1 권총, 7 밴달, 8 오딘, 9 화염방사기
 	player_gun_frame = player_gun_frame->child();
 	GunComponent* player_gun = new GunComponent(player_gun_frame);
 	player_gun->LoadGunInfo("specter");
@@ -349,10 +349,22 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 
 	Object* player_gun_particle_pivot = new Object("gun_particle_pivot");
 	player_gun_frame->AddChild(player_gun_particle_pivot);
-	player_gun_particle_pivot->set_local_position(XMFLOAT3(0.0f, 0.2f, 0.3f));	//1
-	//player_gun_particle_pivot->set_local_position(XMFLOAT3(-0.018f, 0.2f, 0.78f));	//7
+	//player_gun_particle_pivot->set_local_position(XMFLOAT3(0.0f, 0.2f, 0.3f));		//1
+	//player_gun_particle_pivot->set_local_position(XMFLOAT3(-0.018f, 0.2f, 0.58f));	//7
 	//player_gun_particle_pivot->set_local_position(XMFLOAT3(0.013f, 0.123f, 0.81f));	//8
-	//player_gun_particle_pivot->set_local_position(XMFLOAT3(0.0f, 0.143f, 1.24f));	//8
+	player_gun_particle_pivot->set_local_position(XMFLOAT3(0.0f, 0.143f, 1.24f));		//9
+
+	//Set player's camera
+	Object* camera_object = new Object();
+	player->AddChild(camera_object);
+	fps_controller->set_camera_object(camera_object);
+	camera_object->set_position_vector(0, 0.3f, 0); // 플레이어 캐릭터의 키가 150인것을 고려하여 머리위치에 배치
+	camera_object->set_name("CAMERA_1");
+	CameraComponent* camera_component =
+		new CameraComponent(camera_object, 0.01, 70,
+			(float)kDefaultFrameBufferWidth / (float)kDefaultFrameBufferHeight, 58);
+	camera_object->AddComponent(camera_component);
+	main_camera_ = camera_component;
 
 	// 몬스터 HIT 파티클 생성
 	{
@@ -375,26 +387,18 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 		Material* particleMaterial = std::find_if(materials_.begin(), materials_.end(), [&](const auto& material) {
 			return material->name() == "Trail_1";
 			})->get();
-		ParticleComponent* particleComponent = new ParticleComponent(player_gun_particle_pivot, device, 50, ParticleComponent::Cone, particleMaterial);
+		//ParticleComponent* particleComponent = new ParticleComponent(player_gun_particle_pivot, device, 50, ParticleComponent::Cone, particleMaterial);
+		ParticleComponent* particleComponent = new ParticleComponent(player_gun_particle_pivot, device, 1000, ParticleComponent::BigCone, particleMaterial);
 		particleComponent->set_scene(this);
-		particleComponent->set_loop(true);
+		particleComponent->set_color({ 0.9f,0.1f,0.1f,0.5f });
+		particleComponent->set_direction_pivot_object(camera_object);
 		player_gun_particle_pivot->AddComponent(particleComponent);
 		particle_renderers.push_back(particleComponent);
+		fps_controller->set_particle(particleComponent);
 	}
 
 
 
-	//Set player's camera
-	Object* camera_object = new Object();
-	player->AddChild(camera_object);
-	fps_controller->set_camera_object(camera_object);
-	camera_object->set_position_vector(0, 0.3f, 0); // 플레이어 캐릭터의 키가 150인것을 고려하여 머리위치에 배치
-	camera_object->set_name("CAMERA_1");
-	CameraComponent* camera_component =
-		new CameraComponent(camera_object, 0.01, 70,
-			(float)kDefaultFrameBufferWidth / (float)kDefaultFrameBufferHeight, 58);
-	camera_object->AddComponent(camera_component);
-	main_camera_ = camera_component;
 
 	//Add player to scene
 	AddObject(player);
