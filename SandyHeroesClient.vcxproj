@@ -182,6 +182,9 @@
     <ClInclude Include="SpawnerComponent.h" />
     <ClInclude Include="StrongDragonAnimationState.h" />
     <ClInclude Include="TestAnimationState.h" />
+    <ClInclude Include="TextComponent.h" />
+    <ClInclude Include="TextFormat.h" />
+    <ClInclude Include="TextRenderer.h" />
     <ClInclude Include="TransparentShader.h" />
     <ClInclude Include="UiComponent.h" />
     <ClInclude Include="UIMesh.h" />
@@ -251,6 +254,9 @@
     <ClCompile Include="SpawnerComponent.cpp" />
     <ClCompile Include="StrongDragonAnimationState.cpp" />
     <ClCompile Include="TestAnimationState.cpp" />
+    <ClCompile Include="TextComponent.cpp" />
+    <ClCompile Include="TextFormat.cpp" />
+    <ClCompile Include="TextRenderer.cpp" />
     <ClCompile Include="TransparentShader.cpp" />
     <ClCompile Include="UiComponent.cpp" />
     <ClCompile Include="UIMesh.cpp" />

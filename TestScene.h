@@ -10,7 +10,8 @@ public:
 	TestScene() {}
 
 	virtual void Initialize(ID3D12Device* device, ID3D12GraphicsCommandList* command_list,
-		ID3D12RootSignature* root_signature, GameFramework* game_framework) override;
+		ID3D12RootSignature* root_signature, GameFramework* game_framework, 
+		ID2D1DeviceContext* device_context, IDWriteFactory* dwrite_factory) override;
 	virtual void BuildShader(ID3D12Device* device, ID3D12RootSignature* root_signature) override;
 	virtual void BuildMesh(ID3D12Device* device, ID3D12GraphicsCommandList* command_list) override;
 	virtual void BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* command_list) override;

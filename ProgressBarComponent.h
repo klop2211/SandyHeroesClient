@@ -18,7 +18,6 @@ public:
 
 	void set_max_value(float value) { max_value_ = value; is_correct_max_ = true; }
 	void set_current_value(float value) { current_value_ = value; }
-	void set_view(Object* view) { view_ = view; }
 	void set_get_current_value_func(const std::function<float(Object*)>& func)
 	{
 		get_current_value_func_ = func;
@@ -33,6 +32,5 @@ private:
 	bool is_correct_max_{ false };
 	std::function<float(Object*)> get_max_value_func_{ nullptr }; // 최대값을 가져오는 함수
 	std::function<float(Object*)> get_current_value_func_{ nullptr }; // 현재값을 가져오는 함수
-	Object* view_{ nullptr }; // 현재값을 가져오는 함수가 사용하는 오브젝트
 };
 

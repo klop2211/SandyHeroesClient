@@ -80,6 +80,15 @@ private:
 
 	ComPtr<ID3D12RootSignature> d3d_root_signature_;
 
+	ComPtr<ID3D11On12Device> d3d11on12_device_;				//d2d를 사용하여 텍스트를 렌더링 하기 위한 d11 디바이스
+	ComPtr<ID3D11DeviceContext> d3d11_device_context_;	//d2d를 사용하여 텍스트를 렌더링 하기 위한 d11 디바이스 컨텍스트
+	ComPtr<ID2D1Factory3> d2d_factory_;
+	ComPtr<ID2D1Device2> d2d_device_;
+	ComPtr<ID2D1DeviceContext2> d2d_device_context_;
+	ComPtr<IDWriteFactory> dwrite_factory_;
+	std::array<ComPtr<ID3D11Resource>, kSwapChainBufferCount> d3d11_wrapped_swap_chain_buffers_; // d3d11on12 디바이스에서 사용할 스왑체인 버퍼들
+	std::array<ComPtr<ID2D1Bitmap1>, kSwapChainBufferCount> d2d_render_targets_;
+
 	UINT rtv_descriptor_size_;
 	UINT dsv_descriptor_size_;
 	UINT cbv_srv_uav_descriptor_size_;

@@ -519,6 +519,26 @@ void Scene::ShadowRender(ID3D12GraphicsCommandList* command_list)
 	}
 }
 
+void Scene::RenderText(ID2D1Bitmap1* d2d_render_target, ID2D1DeviceContext2* d2d_device_context)
+{
+	D2D1_SIZE_F rtSize = d2d_render_target->GetSize();
+	D2D1_RECT_F textRect = D2D1::RectF(0, 0, rtSize.width, rtSize.height);
+	static const WCHAR text[] = L"Default Scene Text Render";
+
+	d2d_device_context->SetTarget(d2d_render_target);
+	d2d_device_context->BeginDraw();
+	d2d_device_context->SetTransform(D2D1::Matrix3x2F::Identity());
+	d2d_device_context->DrawText(
+		text,
+		_countof(text) - 1,
+		d2d_text_format_.Get(),
+		&textRect,
+		d2d_text_brush_.Get()
+	);
+	d2d_device_context->EndDraw();
+
+}
+
 Scene::~Scene()
 {
 	object_list_.clear();
@@ -529,10 +549,11 @@ Scene::~Scene()
 }
 
 void Scene::Initialize(ID3D12Device* device, ID3D12GraphicsCommandList* command_list,
-	ID3D12RootSignature* root_signature, GameFramework* game_framework)
+	ID3D12RootSignature* root_signature, GameFramework* game_framework, ID2D1DeviceContext* device_context, IDWriteFactory* dwrite_factory)
 {
 	game_framework_ = game_framework;
 
+	BuildTextBrushAndFormat(device_context, dwrite_factory);
 	BuildShader(device, root_signature);
 	BuildMesh(device, command_list);
 	BuildMaterial(device, command_list);
@@ -608,6 +629,23 @@ void Scene::BuildShaderResourceViews(ID3D12Device* device)
 		texture->heap_index = i;
 		++i;
 	}
+}
+
+void Scene::BuildTextBrushAndFormat(ID2D1DeviceContext* device_context, IDWriteFactory* dwrite_factory)
+{
+	device_context->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::Blue), &d2d_text_brush_);
+	dwrite_factory->CreateTextFormat(
+		L"¸¼Àº °íµñ",
+		NULL,
+		DWRITE_FONT_WEIGHT_NORMAL,
+		DWRITE_FONT_STYLE_NORMAL,
+		DWRITE_FONT_STRETCH_NORMAL,
+		20,
+		L"en-us",
+		&d2d_text_format_
+	);
+	d2d_text_format_->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_CENTER);
+	d2d_text_format_->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
 }
 
 using namespace file_load_util;

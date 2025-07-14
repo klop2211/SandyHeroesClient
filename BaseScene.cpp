@@ -39,14 +39,20 @@
 #include "TestAnimationState.h"
 #include "ProgressBarComponent.h"
 #include "PlayerComponent.h"
+#include "TextComponent.h"
 
-void BaseScene::Initialize(ID3D12Device* device, ID3D12GraphicsCommandList* command_list, ID3D12RootSignature* root_signature, GameFramework* game_framework)
+void BaseScene::Initialize(ID3D12Device* device, ID3D12GraphicsCommandList* command_list, 
+	ID3D12RootSignature* root_signature, GameFramework* game_framework, 
+	ID2D1DeviceContext* device_context, IDWriteFactory* dwrite_factory)
 {
 	constexpr int kCutSceneTrackCount = 1;
 	cut_scene_tracks_.reserve(kCutSceneTrackCount);
 	cut_scene_tracks_.emplace_back("CutScene");
 
-	Scene::Initialize(device, command_list, root_signature, game_framework);
+	text_renderer_ = std::make_unique<TextRenderer>();
+	TextComponent::kTextRenderer = text_renderer_.get();
+
+	Scene::Initialize(device, command_list, root_signature, game_framework, device_context, dwrite_factory);
 
 	particle_system_ = std::make_unique<ParticleSystem>(Scene::FindMesh("green_cube", meshes_), 
 		Scene::FindMaterial("green", materials_));
@@ -486,6 +492,25 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 
 }
 
+void BaseScene::BuildTextBrushAndFormat(ID2D1DeviceContext* device_context, IDWriteFactory* dwrite_factory)
+{
+	device_context->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::Blue), &d2d_text_brush_);
+
+	text_formats_["Default"] = std::make_unique<TextFormat>(dwrite_factory, L"Arial", 50.f);
+	text_formats_["BulletCount"] = std::make_unique<TextFormat>(dwrite_factory, 
+		L"Bahnschrift", 
+		40.f,
+		DWRITE_TEXT_ALIGNMENT_CENTER,
+		DWRITE_PARAGRAPH_ALIGNMENT_CENTER,
+		DWRITE_FONT_WEIGHT_NORMAL,
+		DWRITE_FONT_STYLE_ITALIC);
+	text_formats_["HpCount"] = std::make_unique<TextFormat>(dwrite_factory,
+		L"Bahnschrift",
+		40.f,
+		DWRITE_TEXT_ALIGNMENT_LEADING,
+		DWRITE_PARAGRAPH_ALIGNMENT_NEAR);
+}
+
 void BaseScene::BuildModelInfo()
 {
 	//Create Monster Hp, Shield UI
@@ -755,6 +780,87 @@ void BaseScene::CreatePlayerUI()
 		player_shield_bar->AddComponent(shield_progress_bar);
 
 		AddObject(player_hp_bar_background);
+	}
+
+	//Create Player's Bullet Count Text
+	{
+		Object* bullet_count_text = new Object();
+		bullet_count_text->set_name("BulletCountText");
+		const auto client_size = game_framework_->client_size();
+		const float l = client_size.x - (client_size.x / 16.f * 2.f);
+		const float t = client_size.y - (client_size.y / 9.f * 1.5f);
+		const float r = client_size.x;
+		const float b = client_size.y - (client_size.y / 9.f);
+		auto d2d1_rect = D2D1::RectF(l, t, r, b);
+		std::function<std::wstring (Object*)> get_bullet_count_func =
+			[](Object* object)
+			{
+				auto player_component = Object::GetComponentInChildren<GunComponent>(object);
+				return std::to_wstring(player_component->loaded_bullets());
+			};
+		auto text_component = new TextComponent(
+			bullet_count_text,
+			text_formats_["BulletCount"].get(),
+			d2d1_rect,
+			get_bullet_count_func
+		);
+		text_component->set_view(player_);
+		text_component->set_color(D2D1::ColorF(D2D1::ColorF::Green));
+		bullet_count_text->AddComponent(text_component);
+		player_->AddChild(bullet_count_text);
+	}
+
+	//Create Player's hp, shield text
+	{
+		Object* player_hp_text = new Object();
+		player_hp_text->set_name("PlayerHpText");
+		const auto client_size = game_framework_->client_size();
+		const float l = client_size.x / 16.f * 4.1f;
+		const float t = client_size.y - (client_size.y / 9.f * 1.15f);
+		const float r = client_size.x / 16.f * 6.f;
+		const float b = client_size.y - (client_size.y / 9.f * 0.5f);
+		auto d2d1_rect = D2D1::RectF(l, t, r, b);
+		std::function<std::wstring (Object*)> get_hp_func =
+			[](Object* object)
+			{
+				auto player_component = Object::GetComponentInChildren<PlayerComponent>(object);
+				return std::to_wstring((int)player_component->hp());
+			};
+		auto text_component = new TextComponent(
+			player_hp_text,
+			text_formats_["HpCount"].get(),
+			d2d1_rect,
+			get_hp_func
+		);
+		text_component->set_view(player_);
+		text_component->set_color(D2D1::ColorF(D2D1::ColorF::Red));
+		player_hp_text->AddComponent(text_component);
+		player_->AddChild(player_hp_text);
+
+		Object* player_shield_text = new Object();
+		player_shield_text->set_name("PlayerHpText");
+		const float l2 = client_size.x / 16.f * 4.1f;
+		const float t2 = client_size.y - (client_size.y / 9.f * 1.5f);
+		const float r2 = client_size.x / 16.f * 6.f;
+		const float b2 = client_size.y - (client_size.y / 9.f * 0.5f);
+		d2d1_rect = D2D1::RectF(l2, t2, r2, b2);
+		std::function<std::wstring(Object*)> get_shield_func =
+			[](Object* object)
+			{
+				auto player_component = Object::GetComponentInChildren<PlayerComponent>(object);
+				return std::to_wstring((int)player_component->shield());
+			};
+		text_component = new TextComponent(
+			player_shield_text,
+			text_formats_["HpCount"].get(),
+			d2d1_rect,
+			get_shield_func
+		);
+		text_component->set_view(player_);
+		text_component->set_color(D2D1::ColorF(D2D1::ColorF::SkyBlue));
+		player_shield_text->AddComponent(text_component);
+		player_->AddChild(player_shield_text);
+
 	}
 }
 
@@ -1033,6 +1139,11 @@ void BaseScene::Update(float elapsed_time)
 	CheckSpawnBoxHitPlayer();
 
 
+}
+
+void BaseScene::RenderText(ID2D1Bitmap1* d2d_render_target, ID2D1DeviceContext2* d2d_device_context)
+{
+	text_renderer_->Render(d2d_render_target, d2d_device_context, d2d_text_brush_.Get());
 }
 
 void BaseScene::AddObject(Object* object)

@@ -56,7 +56,7 @@ void GameFramework::Initialize(HINSTANCE hinstance, HWND hwnd)
     //�� ���� �� �ʱ�ȭ
     scene_ = std::make_unique<BaseScene>();
     scene_->Initialize(d3d_device_.Get(), d3d_command_list_.Get(), d3d_root_signature_.Get(), 
-        this);
+        this, d2d_device_context_.Get(), dwrite_factory_.Get());
 
     OnResize();
 
@@ -91,13 +91,11 @@ void GameFramework::InitDirect3D()
 
     CreateDXGIFactory2(dxgi_farctory_flags, IID_PPV_ARGS(&dxgi_factory_));
 
-    // �ϵ���� ����̽��� ������ �õ��մϴ�.
     HRESULT hardwareResult = D3D12CreateDevice(
         nullptr, // �⺻ ��� ����մϴ�.
         D3D_FEATURE_LEVEL_12_0,
         IID_PPV_ARGS(&d3d_device_));
 
-    // ������ ��� WRAP ����̽��� ����մϴ�.
     if (FAILED(hardwareResult))
     {
         ComPtr<IDXGIAdapter> pWrapAdapter;
@@ -116,8 +114,8 @@ void GameFramework::InitDirect3D()
         return;
     }
 
-    //�潺 ����
     d3d_device_->CreateFence(current_fence_value_, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&d3d_fence_));
+
 
     rtv_descriptor_size_ = d3d_device_->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
     dsv_descriptor_size_ = d3d_device_->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
@@ -142,6 +140,91 @@ void GameFramework::InitDirect3D()
     CreateSwapChain();
     CreateRtvAndDsvDescriptorHeaps();
 
+    // 11on12
+    UINT d3d11_device_flags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
+    D2D1_FACTORY_OPTIONS d2d_factory_options = {};
+
+    ComPtr<ID3D11Device> d3d11Device;
+    D3D11On12CreateDevice(
+        d3d_device_.Get(),
+        d3d11_device_flags,
+        nullptr,
+        0,
+        reinterpret_cast<IUnknown**>(d3d_command_queue_.GetAddressOf()),
+        1,
+        0,
+        &d3d11Device,
+        &d3d11_device_context_,
+        nullptr
+    );
+
+    d3d11Device.As(&d3d11on12_device_);
+
+    // Create D2D/DWrite components.
+    {
+        D2D1_DEVICE_CONTEXT_OPTIONS deviceOptions = D2D1_DEVICE_CONTEXT_OPTIONS_NONE;
+        D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, __uuidof(ID2D1Factory3), &d2d_factory_options, &d2d_factory_);
+        ComPtr<IDXGIDevice> dxgiDevice;
+        d3d11on12_device_.As(&dxgiDevice);
+        d2d_factory_->CreateDevice(dxgiDevice.Get(), &d2d_device_);
+        d2d_device_->CreateDeviceContext(deviceOptions, &d2d_device_context_);
+        DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), &dwrite_factory_);
+    }
+
+    // Query the desktop's dpi settings, which will be used to create
+// D2D's render targets.
+    float dpiX;
+    float dpiY;
+#pragma warning(push)
+#pragma warning(disable : 4996) // GetDesktopDpi is deprecated.
+    d2d_factory_->GetDesktopDpi(&dpiX, &dpiY);
+#pragma warning(pop)
+    D2D1_BITMAP_PROPERTIES1 bitmapProperties = D2D1::BitmapProperties1(
+        D2D1_BITMAP_OPTIONS_TARGET | D2D1_BITMAP_OPTIONS_CANNOT_DRAW,
+        D2D1::PixelFormat(DXGI_FORMAT_UNKNOWN, D2D1_ALPHA_MODE_PREMULTIPLIED),
+        dpiX,
+        dpiY
+    );
+
+    // Create frame resources.
+    {
+        CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(d3d_rtv_heap_->GetCPUDescriptorHandleForHeapStart());
+
+        // Create a RTV, D2D render target, and a command allocator for each frame.
+        for (UINT n = 0; n < kSwapChainBufferCount; n++)
+        {
+            dxgi_swap_chain_->GetBuffer(n, IID_PPV_ARGS(&d3d_swap_chain_buffers_[n]));
+            d3d_device_->CreateRenderTargetView(d3d_swap_chain_buffers_[n].Get(), nullptr, rtvHandle);
+
+            //NAME_D3D12_OBJECT_INDEXED(d3d_swap_chain_buffers_, n);
+
+            // Create a wrapped 11On12 resource of this back buffer. Since we are 
+            // rendering all D3D12 content first and then all D2D content, we specify 
+            // the In resource state as RENDER_TARGET - because D3D12 will have last 
+            // used it in this state - and the Out resource state as PRESENT. When 
+            // ReleaseWrappedResources() is called on the 11On12 device, the resource 
+            // will be transitioned to the PRESENT state.
+            D3D11_RESOURCE_FLAGS d3d11Flags = { D3D11_BIND_RENDER_TARGET };
+            d3d11on12_device_->CreateWrappedResource(
+                d3d_swap_chain_buffers_[n].Get(),
+                &d3d11Flags,
+                D3D12_RESOURCE_STATE_RENDER_TARGET,
+                D3D12_RESOURCE_STATE_PRESENT,
+                IID_PPV_ARGS(&d3d11_wrapped_swap_chain_buffers_[n])
+            );
+
+            // Create a render target for D2D to draw directly to this back buffer.
+            ComPtr<IDXGISurface> surface;
+            d3d11_wrapped_swap_chain_buffers_[n].As(&surface);
+            d2d_device_context_->CreateBitmapFromDxgiSurface(
+                surface.Get(),
+                &bitmapProperties,
+                &d2d_render_targets_[n]
+            );
+
+            rtvHandle.Offset(1, rtv_descriptor_size_);
+        }
+    }
 }
 
 void GameFramework::CreateCommandObject()
@@ -506,7 +589,7 @@ void GameFramework::ProcessInput(UINT id, WPARAM w_param, LPARAM l_param, float 
 
             scene_ = std::make_unique<BaseScene>();
             scene_->Initialize(d3d_device_.Get(), d3d_command_list_.Get(), d3d_root_signature_.Get(),
-                this);
+                this, d2d_device_context_.Get(), dwrite_factory_.Get());
 
             d3d_command_list_->Close();
             ID3D12CommandList* cmd_list[] = { d3d_command_list_.Get() };
@@ -534,7 +617,6 @@ void GameFramework::FrameAdvance()
     //��ǲ ó��
     ProcessInput();
 
-    //�浹ó��
     //scene_->CheckObjectByObjectCollisions();
 
     //������Ʈ
@@ -602,14 +684,22 @@ void GameFramework::FrameAdvance()
 
     scene_->Render(d3d_command_list_.Get());
 
-    d3d_command_list_->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(
-        d3d_swap_chain_buffers_[current_back_buffer_].Get(),
-        D3D12_RESOURCE_STATE_RENDER_TARGET,
-        D3D12_RESOURCE_STATE_PRESENT));
-
     d3d_command_list_->Close();
-    ID3D12CommandList* command_lists[] = {d3d_command_list_.Get()};
+    ID3D12CommandList* command_lists[] = { d3d_command_list_.Get() };
     d3d_command_queue_->ExecuteCommandLists(_countof(command_lists), command_lists);
+
+    // Acquire our wrapped render target resource for the current back buffer.
+    d3d11on12_device_->AcquireWrappedResources(d3d11_wrapped_swap_chain_buffers_[current_back_buffer_].GetAddressOf(), 1);
+
+    scene_->RenderText(d2d_render_targets_[current_back_buffer_].Get(), d2d_device_context_.Get());
+
+    // Release our wrapped render target resource. Releasing 
+    // transitions the back buffer resource to the state specified
+    // as the OutState when the wrapped resource was created.
+    d3d11on12_device_->ReleaseWrappedResources(d3d11_wrapped_swap_chain_buffers_[current_back_buffer_].GetAddressOf(), 1);
+
+    // Flush to submit the 11 command list to the shared command queue.
+    d3d11_device_context_->Flush();
 
     dxgi_swap_chain_->Present(0, 0);
     current_back_buffer_ = (current_back_buffer_ + 1) % kSwapChainBufferCount;

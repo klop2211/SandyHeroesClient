@@ -166,6 +166,12 @@
     <Filter Include="7.Component\UI">
       <UniqueIdentifier>{8c9a054e-4462-4175-bad3-ba26694f768b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="7.Component\UI\ProgressBar">
+      <UniqueIdentifier>{4d626f73-54f3-4672-9c00-aa0ec1b86fa2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="7.Component\UI\Text">
+      <UniqueIdentifier>{f2870744-75f6-4f5f-a5a9-550909440526}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="targetver.h">
@@ -369,10 +375,19 @@
     <ClInclude Include="UiComponent.h">
       <Filter>7.Component\UI</Filter>
     </ClInclude>
-    <ClInclude Include="ProgressBarComponent.h">
+    <ClInclude Include="PlayerComponent.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="PlayerComponent.h">
+    <ClInclude Include="ProgressBarComponent.h">
+      <Filter>7.Component\UI\ProgressBar</Filter>
+    </ClInclude>
+    <ClInclude Include="TextComponent.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="TextRenderer.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="TextFormat.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>
@@ -563,10 +578,19 @@
     <ClCompile Include="UiComponent.cpp">
       <Filter>7.Component\UI</Filter>
     </ClCompile>
-    <ClCompile Include="ProgressBarComponent.cpp">
+    <ClCompile Include="PlayerComponent.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="PlayerComponent.cpp">
+    <ClCompile Include="ProgressBarComponent.cpp">
+      <Filter>7.Component\UI\ProgressBar</Filter>
+    </ClCompile>
+    <ClCompile Include="TextComponent.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="TextRenderer.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="TextFormat.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>

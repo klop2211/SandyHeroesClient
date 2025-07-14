@@ -22,7 +22,7 @@ public:
 	virtual ~Scene();
 
 	virtual void Initialize(ID3D12Device* device, ID3D12GraphicsCommandList* command_list, 
-		ID3D12RootSignature* root_signature, GameFramework* game_framework);
+		ID3D12RootSignature* root_signature, GameFramework* game_framework, ID2D1DeviceContext* device_context, IDWriteFactory* dwrite_factory);
 	virtual void BuildShader(ID3D12Device* device, ID3D12RootSignature* root_signature) = 0;
 	virtual void BuildMesh(ID3D12Device* device, ID3D12GraphicsCommandList* command_list) = 0;
 	virtual void BuildMaterial(ID3D12Device* device, ID3D12GraphicsCommandList* command_list);
@@ -31,6 +31,7 @@ public:
 	virtual void BuildDescriptorHeap(ID3D12Device* device);
 	virtual void BuildConstantBufferViews(ID3D12Device* device) {};
 	virtual void BuildShaderResourceViews(ID3D12Device* device);
+	virtual void BuildTextBrushAndFormat(ID2D1DeviceContext* d2d_factory, IDWriteFactory* dwrite_factory);
 	
 	void BuildScene();
 	//섹터의 오브젝트 리스트를 초기화한다.
@@ -52,7 +53,7 @@ public:
 
 	virtual void Render(ID3D12GraphicsCommandList* command_list);
 	virtual void ShadowRender(ID3D12GraphicsCommandList* command_list);
-
+	virtual void RenderText(ID2D1Bitmap1* d2d_render_target, ID2D1DeviceContext2* d2d_device_context);
 	virtual bool ProcessInput(UINT id, WPARAM w_param, LPARAM l_param, float time) = 0;
 
 	//반환 값: 월드 좌표계에서 피킹된 지점
@@ -96,6 +97,8 @@ protected:
 	std::vector<std::unique_ptr<Texture>> textures_;
 	std::vector<Sector> sectors_;
 
+	ComPtr<ID2D1SolidColorBrush> d2d_text_brush_;
+	ComPtr<IDWriteTextFormat> d2d_text_format_;
 
 	GameFramework* game_framework_{ nullptr };
 

@@ -2,6 +2,8 @@
 #include "Scene.h"
 #include "ParticleSystem.h"
 #include "CutSceneTrack.h"
+#include "TextRenderer.h"
+#include "TextFormat.h"
 
 class MeshColliderComponent;
 class SpawnerComponent;
@@ -14,12 +16,12 @@ private:
 	static constexpr int kStageMaxCount{ 8 };	// 게임 스테이지 총 개수
 public:
 	virtual void Initialize(ID3D12Device* device, ID3D12GraphicsCommandList* command_list,
-		ID3D12RootSignature* root_signature, GameFramework* game_framework) override;
+		ID3D12RootSignature* root_signature, GameFramework* game_framework, ID2D1DeviceContext* device_context, IDWriteFactory* dwrite_factory) override;
 	virtual void BuildShader(ID3D12Device* device, ID3D12RootSignature* root_signature) override;
 	virtual void BuildMesh(ID3D12Device* device, ID3D12GraphicsCommandList* command_list) override;
 	virtual void BuildMaterial(ID3D12Device* device, ID3D12GraphicsCommandList* command_list) override;
 	virtual void BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* command_list) override;
-
+	virtual void BuildTextBrushAndFormat(ID2D1DeviceContext* device_context, IDWriteFactory* dwrite_factory) override;
 	void BuildModelInfo(); // 오브젝트 재사용을 위해 모델 정보를 새로 만들거나 기존 모델 정보를 수정하는 함수
 
 	void CreatePlayerUI();	//플레이어 UI 생성
@@ -32,6 +34,8 @@ public:
 	virtual bool ProcessInput(UINT id, WPARAM w_param, LPARAM l_param, float time) override;
 
 	virtual void Update(float elapsed_time) override;
+
+	virtual void RenderText(ID2D1Bitmap1* d2d_render_target, ID2D1DeviceContext2* d2d_device_context) override;
 
 	virtual void AddObject(Object* object) override;
 	virtual void DeleteObject(Object* object) override;
@@ -78,8 +82,10 @@ private:
 
 	std::vector<BoxColliderComponent*> spawn_boxs_{}; // 스테이지 몬스터 생성 체크를 위한 박스들
 
-
 	std::vector<CutSceneTrack> cut_scene_tracks_{};
 
+	std::unique_ptr<TextRenderer> text_renderer_{ nullptr }; // 텍스트 렌더러
+
+	std::unordered_map<std::string, std::unique_ptr<TextFormat>> text_formats_;
 };
 

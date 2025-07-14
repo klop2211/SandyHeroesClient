@@ -19,10 +19,6 @@ GunComponent::GunComponent(const GunComponent& other) : Component(other.owner_)
 {
 }
 
-GunComponent::~GunComponent()
-{
-}
-
 Component* GunComponent::GetCopy()
 {
     return new GunComponent(*this);
@@ -148,6 +144,11 @@ int GunComponent::damage() const
 float GunComponent::critical_damage_rate() const
 {
     return critical_damage_rate_;
+}
+
+int GunComponent::loaded_bullets() const
+{
+    return loaded_bullets_;
 }
 
 void GunComponent::LoadGunInfosFromFile(const std::string& file_name)

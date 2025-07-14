@@ -29,7 +29,6 @@ class GunComponent :
 public:
     GunComponent(Object* owner);
     GunComponent(const GunComponent& other);
-    ~GunComponent();
     
     virtual Component* GetCopy() override;
 
@@ -46,6 +45,7 @@ public:
     std::list<Object*> fired_bullet_list() const;
 	int damage() const;
 	float critical_damage_rate() const;
+	int loaded_bullets() const;
 
     //총기 정보를 로드하는 함수
     static void LoadGunInfosFromFile(const std::string& file_name); 
