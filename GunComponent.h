@@ -40,12 +40,18 @@ public:
 
     void LoadGunInfo(const std::string& gun_name);
 
+    //setter
+    void set_gun_name(std::string& value);
+
     //getter
     GunFireType fire_type() const;
+    BulletType bullet_type() const;
     std::list<Object*> fired_bullet_list() const;
 	int damage() const;
 	float critical_damage_rate() const;
 	int loaded_bullets() const;
+    BoundingBox flamethrow_box() const;
+    const std::string& gun_name() const { return gun_name_; }
 
     //총기 정보를 로드하는 함수
     static void LoadGunInfosFromFile(const std::string& file_name); 
@@ -58,6 +64,13 @@ private:
     float loading_time_{ 0.f }; //장전 중 시간
     bool is_reload_ = false;    //장전 중?
     float cooling_time_{ 0.f }; //마지막 발사로 부터 경과한 시간
+
+    BoundingBox flamethrow_box_{
+    { 0.0f, 0.0f, 0.0f },    // Center
+    { 1.5f, 2.0f, 2.5f }     // Extents
+    };
+
+    std::string gun_name_;
 
     // 총기 정보
     int damage_{ 0 };                   

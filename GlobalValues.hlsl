@@ -40,6 +40,7 @@ cbuffer RenderPass : register(b4)
     Light g_lights[MAX_LIGHTS];
     float2 g_screen_size;
     float2 pad_2;
+    float3 g_camera_up_axis;
 }
 
 #define TEXTURE_MASK_ALBEDO (1 << 0)

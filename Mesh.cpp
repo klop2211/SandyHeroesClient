@@ -174,6 +174,17 @@ void Mesh::UpdateConstantBuffer(FrameResource* curr_frame_resource, int& cb_inde
 	}
 }
 
+void Mesh::UpdateConstantBufferForShadow(FrameResource* curr_frame_resource, int& cb_index)
+{
+	//메쉬 컴포넌트를 활용하여 오브젝트 CB를 업데이트한다.
+	for (MeshComponent* mesh_component : mesh_component_list_)
+	{
+		mesh_component->UpdateConstantBuffer(curr_frame_resource, cb_index);
+
+		++cb_index;
+	}
+}
+
 void Mesh::Render(ID3D12GraphicsCommandList* command_list, int material_index)
 {
 	command_list->IASetPrimitiveTopology(primitive_topology_);

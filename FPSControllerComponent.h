@@ -1,5 +1,6 @@
 #pragma once
 #include "InputControllerComponent.h"
+#include "ParticleComponent.h"
 
 class Scene;
 
@@ -20,10 +21,16 @@ public:
 
     void set_camera_object(Object* value);
     void set_scene(Scene* value);
+    void set_particle(ParticleComponent* value);
+
+    //getter
+    bool is_firekey_down() const;
 
 private:
     Scene* scene_ = nullptr;
     Object* camera_object_ = nullptr;
+
+    ParticleComponent* particle_ = nullptr;
 
     bool is_firekey_down_ = false;
 

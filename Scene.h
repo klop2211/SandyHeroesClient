@@ -14,6 +14,7 @@ class InputControllerComponent;
 class GameFramework;
 class ColliderComponent;
 class MeshColliderComponent;
+class ParticleComponent;
 
 class Scene
 {
@@ -54,6 +55,8 @@ public:
 	virtual void Render(ID3D12GraphicsCommandList* command_list);
 	virtual void ShadowRender(ID3D12GraphicsCommandList* command_list);
 	virtual void RenderText(ID2D1Bitmap1* d2d_render_target, ID2D1DeviceContext2* d2d_device_context);
+	virtual void ParticleRender(ID3D12GraphicsCommandList* command_list);
+
 	virtual bool ProcessInput(UINT id, WPARAM w_param, LPARAM l_param, float time) = 0;
 
 	//반환 값: 월드 좌표계에서 피킹된 지점
@@ -83,6 +86,7 @@ public:
 	CameraComponent* main_camera() const;
 	XMFLOAT2 screen_size() const;
 	bool is_play_cutscene() const;
+	Object* player() const;
 
 	//setter
 	void set_main_camera(CameraComponent* value);
@@ -122,6 +126,7 @@ protected:
 	bool is_prepare_ground_checking_ = false;
 	//맵 바닥체크를 위한 메쉬 콜라이더 리스트 배열
 	std::array<std::list<MeshColliderComponent*>, 8> checking_maps_mesh_collider_list_;
+	std::list<Object*> ground_check_object_list_;	//지면 체크가 필요한 객체들의 리스트(플레이어, monster, NPC)
 
 	// 플레이어의 스테이지 진행도
 	int stage_clear_num_{ 0 };
@@ -129,6 +134,8 @@ protected:
 	//TODO: Player 객체 구현
 	Object* player_ = nullptr;
 
+	//For ParticleRender
+	std::vector<ParticleComponent*> particle_renderers{};
 
 };
 

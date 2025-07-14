@@ -144,6 +144,16 @@ void MonsterComponent::set_target(Object* target)
 	target_ = target;
 }
 
+void MonsterComponent::set_is_pushed(bool is_pushed)
+{
+    is_pushed_ = is_pushed;
+}
+
+void MonsterComponent::set_push_timer(float value)
+{
+    push_timer_ = value;
+}
+
 float MonsterComponent::shield() const
 {
     return shield_;

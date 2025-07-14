@@ -18,6 +18,7 @@
 #include "GunComponent.h"
 #include "SkyboxShader.h"
 #include "SkyboxMesh.h"
+#include "SkinnedShadowShader.h"
 #include "MeshColliderComponent.h"
 #include "DebugMeshComponent.h"
 #include "DebugShader.h"
@@ -37,6 +38,8 @@
 #include "BombDragonAnimationState.h"
 #include "StrongDragonAnimationState.h"
 #include "TestAnimationState.h"
+#include "ParticleComponent.h"
+#include "ParticleShader.h"
 #include "ProgressBarComponent.h"
 #include "PlayerComponent.h"
 #include "TextComponent.h"
@@ -70,6 +73,8 @@ void BaseScene::BuildShader(ID3D12Device* device, ID3D12RootSignature* root_sign
 	shaders_[(int)ShaderType::kUI] = std::make_unique<UIShader>();
 	shaders_[(int)ShaderType::kBreathing] = std::make_unique<BreathingShader>();
 	shaders_[(int)ShaderType::kShadow] = std::make_unique<ShadowShader>();
+	shaders_[(int)ShaderType::kSkinnedShadow] = std::make_unique<SkinnedShadowShader>();
+	shaders_[(int)ShaderType::kParticle] = std::make_unique<ParticleShader>();
 
 	//TODO: ���̴��� �����Ǵ� ���׸��� ���� Reserve
 
@@ -141,12 +146,16 @@ void BaseScene::BuildMesh(ID3D12Device* device, ID3D12GraphicsCommandList* comma
 	constexpr UINT kModelInfoCount{ 40 };
 	model_infos_.reserve(kModelInfoCount);
 	model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/Dog00.bin", meshes_, materials_, textures_));
-	model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/Gun/classic.bin", meshes_, materials_, textures_));
+	model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/Gun/classic.bin", meshes_, materials_, textures_)); //1
 	model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/Gun/SM_Bullet_01.bin", meshes_, materials_, textures_));
 	model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/Monster/Hit_Dragon.bin", meshes_, materials_, textures_));
 	model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/Monster/Shot_Dragon.bin", meshes_, materials_, textures_));
 	model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/Monster/Bomb_Dragon.bin", meshes_, materials_, textures_));
 	model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/Monster/Strong_Dragon.bin", meshes_, materials_, textures_));
+	
+	model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/Gun/vandal.bin", meshes_, materials_, textures_));	//7 밴달
+	model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/Gun/Odin.bin", meshes_, materials_, textures_));	//8 오딘
+	model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/Gun/flamethrower.bin", meshes_, materials_, textures_));	//9 화염방사기
 
 	//BuildScene("Base");
 
@@ -300,6 +309,17 @@ void BaseScene::BuildMaterial(ID3D12Device* device, ID3D12GraphicsCommandList* c
 	materials_.emplace_back();
 	materials_.back().reset(material);
 
+	//Create Particle Material
+	{
+		material = new Material{ "Trail_1", (int)ShaderType::kParticle };
+		textures_.push_back(std::make_unique<Texture>());
+		textures_.back()->name = "Trail_1";
+		textures_.back()->type = TextureType::kAlbedoMap;
+		material->AddTexture(textures_.back().get());
+		materials_.emplace_back();
+		materials_.back().reset(material);
+	}
+
 	//Create Breathing Material
 	{
 		material = new Material{ "Breathing", (int)ShaderType::kBreathing };
@@ -372,12 +392,26 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 	//Set player's gun
 	//TODO: 총기 메쉬 장착 구현
 	Object* player_gun_frame = player->FindFrame("WeaponR_locator");
-	player_gun_frame->AddChild(model_infos_[1]->GetInstance());
+	player_gun_frame->AddChild(model_infos_[9]->GetInstance());	//1 권총, 7 밴달, 8 오딘, 9 화염방사기
 	player_gun_frame = player_gun_frame->child();
 	GunComponent* player_gun = new GunComponent(player_gun_frame);
 	player_gun->LoadGunInfo("specter");
+	player_gun->set_gun_name(std::string("flamethrower"));
 	player_gun_frame->AddComponent(player_gun);
 	player_gun_frame->Rotate(0, 170, -17);
+
+	Object* player_gun_particle_pivot = new Object("gun_particle_pivot");
+	player_gun_frame->AddChild(player_gun_particle_pivot);
+	//player_gun_particle_pivot->set_local_position(XMFLOAT3(0.0f, 0.2f, 0.3f));		//1
+	//player_gun_particle_pivot->set_local_position(XMFLOAT3(-0.018f, 0.2f, 0.58f));	//7
+	//player_gun_particle_pivot->set_local_position(XMFLOAT3(0.013f, 0.123f, 0.81f));	//8
+	player_gun_particle_pivot->set_local_position(XMFLOAT3(0.0f, 0.143f, 1.24f));		//9
+
+	// 화염방사기에 충돌 박스 달기
+	Object* flamethrower_tip = player->FindFrame("gun_particle_pivot");
+	GunComponent* gun = Object::GetComponentInChildren<GunComponent>(player);
+	auto flamethrow_box_component = new BoxColliderComponent(flamethrower_tip, gun->flamethrow_box());
+	flamethrower_tip->AddComponent(flamethrow_box_component);
 
 	//Set player's camera
 	Object* camera_object = new Object();
@@ -390,6 +424,37 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 			(float)kDefaultFrameBufferWidth / (float)kDefaultFrameBufferHeight, 58);
 	camera_object->AddComponent(camera_component);
 	main_camera_ = camera_component;
+
+	// 몬스터 HIT 파티클 생성
+	{
+		monster_hit_particles_.emplace_back(new Object("monster_hit_particle"));
+		Object* monster_particle = monster_hit_particles_.back();
+		object_list_.emplace_back(monster_particle);
+		monster_particle->set_local_position({ 0, 1, 0 });
+		Material* monster_particle_material = std::find_if(materials_.begin(), materials_.end(), [&](const auto& material) {
+			return material->name() == "Trail_1";
+			})->get();
+		ParticleComponent* monster_particle_component = new ParticleComponent(monster_particle, device, 1000, ParticleComponent::Sphere, monster_particle_material);
+		monster_particle_component->set_scene(this);
+		monster_particle->AddComponent(monster_particle_component);
+		particle_renderers.push_back(monster_particle_component);
+	}
+
+	// 총 발사 파티클 생성
+	{
+		//particle_ = new Object();
+		Material* particleMaterial = std::find_if(materials_.begin(), materials_.end(), [&](const auto& material) {
+			return material->name() == "Trail_1";
+			})->get();
+		//ParticleComponent* particleComponent = new ParticleComponent(player_gun_particle_pivot, device, 50, ParticleComponent::Cone, particleMaterial);
+		ParticleComponent* particleComponent = new ParticleComponent(player_gun_particle_pivot, device, 1000, ParticleComponent::BigCone, particleMaterial);
+		particleComponent->set_scene(this);
+		particleComponent->set_color({ 0.9f,0.1f,0.1f,0.5f });
+		particleComponent->set_direction_pivot_object(camera_object);
+		player_gun_particle_pivot->AddComponent(particleComponent);
+		particle_renderers.push_back(particleComponent);
+		fps_controller->set_particle(particleComponent);
+	}
 
 	//Add player to scene
 	AddObject(player);
@@ -415,6 +480,7 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 	skybox->AddComponent(new MeshComponent(skybox, 
 		Scene::FindMesh("Skybox", meshes_), Scene::FindMaterial("Skybox_Cube2", materials_)));
 	AddObject(skybox);
+
 
 	//Create sub camera (free view)
 	camera_object = new Object;
@@ -487,8 +553,6 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 	}
 
 	Scene::UpdateObjectWorldMatrix();
-
-	
 
 }
 
@@ -1011,6 +1075,22 @@ bool BaseScene::ProcessInput(UINT id, WPARAM w_param, LPARAM l_param, float time
 	switch (id)
 	{
 	case WM_KEYDOWN:
+		if (w_param == '1')
+		{
+			particle_renderers.back()->set_color({0.9f,0.1f,0.1f,0.5f});
+		}
+		if (w_param == '2')
+		{
+			particle_renderers.back()->set_color({ 0.1f,0.9f,0.1f,0.5f });
+		}
+		if (w_param == '3')
+		{
+			particle_renderers.back()->set_color({ 0.9f,0.9f,0.1f,0.5f });
+		}
+		if (w_param == '4')
+		{
+			// 총기 변경
+		}
 		// 카메라 전환 테스트
 		if (w_param == 'K')
 		{
@@ -1120,7 +1200,8 @@ void BaseScene::Update(float elapsed_time)
 
 	Scene::Update(elapsed_time);
 
-	particle_system_->Update(elapsed_time);
+	//particle_system_->Update(elapsed_time);
+	//particle_->Update(elapsed_time);
 
 	UpdateObjectHitWall();
 	
@@ -1227,6 +1308,7 @@ void BaseScene::UpdateObjectHitBullet()
 		if (object == player_)
 			continue;
 		CheckObjectHitBullet(object);
+		CheckObjectHitFlamethrow(object);
 	}
 }
 
@@ -1496,66 +1578,75 @@ void BaseScene::CheckObjectHitObject(Object* object)
 				constexpr float kMinSafeDistance = 1.5f; // 살짝 밀려도 충돌 안나도록 여유
 				if (distance > kMinSafeDistance) // 벽에 안 부딪힌다면 밀기
 				{
-					object->set_position_vector(object_pos + dir * 0.1f);
-				}
-				return;
-			}
-		}
-	}
-	else
-	{
-		auto box1 = Object::GetComponentInChildren<BoxColliderComponent>(object);
-		if (!box1) return;
+					//object->set_position_vector(object_pos + dir * 0.1f);
 
-		BoundingOrientedBox obb1 = box1->animated_box();
+					// TODO : 몬스터 AI완성 이후 충돌시에 밀리는 기능 추가
 
-		for (auto& other : ground_check_object_list_)
-		{
-			if (!other || other == object || other->is_dead()) continue;
-
-			auto box2 = Object::GetComponentInChildren<BoxColliderComponent>(other);
-			if (!box2) continue;
-
-			if (obb1.Intersects(box2->animated_box()))
-			{
-				XMFLOAT3 position = object->world_position_vector();
-				constexpr float kGroundYOffset = 0.75f;
-				position.y += kGroundYOffset;
-				XMVECTOR ray_origin = XMLoadFloat3(&position);
-				position.y -= kGroundYOffset;
-
-				XMFLOAT3 other_pos = other->world_position_vector();
-				XMFLOAT3 dir = xmath_util_float3::Normalize(object_pos - other_pos);
-				XMVECTOR ray_direction = XMLoadFloat3(&dir);
-				ray_direction = XMVectorSetY(ray_direction, 0);
-				ray_direction = XMVector3Normalize(ray_direction);
-
-				if (0 == XMVectorGetX(XMVector3Length(ray_direction)))
-					return;
-
-				bool is_collide = false;
-				float distance{ std::numeric_limits<float>::max() };
-				for (auto& mesh_collider : checking_maps_mesh_collider_list_[stage_clear_num_])
-				{
-					float t{};
-					if (mesh_collider->CollisionCheckByRay(ray_origin, ray_direction, t))
+					/*auto monster = Object::GetComponent<MonsterComponent>(object);
+					if (monster)
 					{
-						if (t < distance)
-						{
-							distance = t;
-						}
-					}
-				}
-
-				constexpr float kMinSafeDistance = 1.5f; // 살짝 밀려도 충돌 안나도록 여유
-				if (distance > kMinSafeDistance) // 벽에 안 부딪힌다면 밀기
-				{
-					object->set_position_vector(object_pos + dir * 0.1f);
+						monster->set_is_pushed(true);
+						monster->set_push_timer(5.0f);
+					}*/
 				}
 				return;
 			}
 		}
 	}
+	//else
+	//{
+	//	auto box1 = Object::GetComponentInChildren<BoxColliderComponent>(object);
+	//	if (!box1) return;
+
+	//	BoundingOrientedBox obb1 = box1->animated_box();
+
+	//	for (auto& other : ground_check_object_list_)
+	//	{
+	//		if (!other || other == object || other->is_dead()) continue;
+
+	//		auto box2 = Object::GetComponentInChildren<BoxColliderComponent>(other);
+	//		if (!box2) continue;
+
+	//		if (obb1.Intersects(box2->animated_box()))
+	//		{
+	//			XMFLOAT3 position = object->world_position_vector();
+	//			constexpr float kGroundYOffset = 0.75f;
+	//			position.y += kGroundYOffset;
+	//			XMVECTOR ray_origin = XMLoadFloat3(&position);
+	//			position.y -= kGroundYOffset;
+
+	//			XMFLOAT3 other_pos = other->world_position_vector();
+	//			XMFLOAT3 dir = xmath_util_float3::Normalize(object_pos - other_pos);
+	//			XMVECTOR ray_direction = XMLoadFloat3(&dir);
+	//			ray_direction = XMVectorSetY(ray_direction, 0);
+	//			ray_direction = XMVector3Normalize(ray_direction);
+
+	//			if (0 == XMVectorGetX(XMVector3Length(ray_direction)))
+	//				return;
+
+	//			bool is_collide = false;
+	//			float distance{ std::numeric_limits<float>::max() };
+	//			for (auto& mesh_collider : checking_maps_mesh_collider_list_[stage_clear_num_])
+	//			{
+	//				float t{};
+	//				if (mesh_collider->CollisionCheckByRay(ray_origin, ray_direction, t))
+	//				{
+	//					if (t < distance)
+	//					{
+	//						distance = t;
+	//					}
+	//				}
+	//			}
+
+	//			constexpr float kMinSafeDistance = 1.5f; // 살짝 밀려도 충돌 안나도록 여유
+	//			if (distance > kMinSafeDistance) // 벽에 안 부딪힌다면 밀기
+	//			{
+	//				object->set_position_vector(object_pos + dir * 0.1f);
+	//			}
+	//			return;
+	//		}
+	//	}
+	//}
 }
 
 void BaseScene::CheckObjectHitBullet(Object* object)
@@ -1586,6 +1677,20 @@ void BaseScene::CheckObjectHitBullet(Object* object)
 				bullet->set_is_dead(true);
 				if (monster && !monster->IsDead())
 				{
+					ParticleComponent* gun_particle = nullptr;
+					{
+						Object* flame_tip = player_->FindFrame("gun_particle_pivot");
+						if (flame_tip)
+							gun_particle = Object::GetComponent<ParticleComponent>(flame_tip);
+					}
+
+
+					// 몬스터 HIT 파티클 출력
+					ParticleComponent* particle_component = Object::GetComponent<ParticleComponent>(monster_hit_particles_.front());
+					particle_component->set_hit_position(monster->owner()->world_position_vector());
+					particle_component->set_color(gun_particle->color());
+					particle_component->Play(50);
+
 					monster->HitDamage(gun->damage());
 
 					if(monster->IsDead())
@@ -1595,6 +1700,64 @@ void BaseScene::CheckObjectHitBullet(Object* object)
 		}
 	}
 
+}
+
+void BaseScene::CheckObjectHitFlamethrow(Object* object)
+{
+	FPSControllerComponent* controller = Object::GetComponent<FPSControllerComponent>(player_);
+	if (!controller || !controller->is_firekey_down())
+		return;
+
+	GunComponent* gun = Object::GetComponentInChildren<GunComponent>(player_);
+	auto& bullet_list = gun->fired_bullet_list();
+
+	auto& box_collider_list = Object::GetComponentsInChildren<BoxColliderComponent>(object);
+	if (!box_collider_list.size())
+		return;
+
+	if (gun->gun_name() == "flamethrower") // 화염방사기 조건
+	{
+		Object* flame_tip = player_->FindFrame("gun_particle_pivot");
+		auto flame_collider = Object::GetComponent<BoxColliderComponent>(flame_tip);
+		if (!flame_collider) return;
+
+		for (auto& monster_box : Object::GetComponentsInChildren<BoxColliderComponent>(object))
+		{
+			if (flame_collider->animated_box().Intersects(monster_box->animated_box()))
+			{
+				ParticleComponent* gun_particle = nullptr;
+				{
+					Object* flame_tip = player_->FindFrame("gun_particle_pivot");
+					if (flame_tip)
+						gun_particle = Object::GetComponent<ParticleComponent>(flame_tip);
+				}
+
+				// 데미지 적용
+				MonsterComponent* monster = Object::GetComponent<MonsterComponent>(object);
+				if (monster && !monster->IsDead())
+				{
+					ParticleComponent* gun_particle = nullptr;
+					{
+						Object* flame_tip = player_->FindFrame("gun_particle_pivot");
+						if (flame_tip)
+							gun_particle = Object::GetComponent<ParticleComponent>(flame_tip);
+					}
+
+					// 몬스터 HIT 파티클 출력
+					ParticleComponent* particle_component = Object::GetComponent<ParticleComponent>(monster_hit_particles_.front());
+					particle_component->set_hit_position(monster->owner()->world_position_vector());
+					particle_component->set_color(gun_particle->color());
+					particle_component->Play(50);
+
+					//monster->set_hp(monster->hp() - gun->damage());
+					monster->set_hp(monster->hp() - 0.5f);
+					if (monster->IsDead())
+						catch_monster_num_++;
+				}
+			}
+		}
+		return;
+	}
 }
 
 void BaseScene::CheckPlayerHitPyramid(Object* object)

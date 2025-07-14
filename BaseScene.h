@@ -8,6 +8,7 @@
 class MeshColliderComponent;
 class SpawnerComponent;
 class BoxColliderComponent;
+class ParticleComponent;
 
 class BaseScene :
     public Scene
@@ -53,6 +54,7 @@ public:
 	void CheckPlayerHitWall(Object* object, const XMFLOAT3& velocity);
 	void CheckObjectHitObject(Object* object);
 	void CheckObjectHitBullet(Object* object);
+	void CheckObjectHitFlamethrow(Object* object);
 	void CheckPlayerHitPyramid(Object* object);
 	void CheckSpawnBoxHitPlayer();
 
@@ -75,10 +77,11 @@ private:
 	bool is_activate_spawner_ = false;
 
 	//TODO: 앞으로 충돌관련 리스트가 추가된다면(그럴 필요성이 있어서) 오브젝트 매니저 클래스를 구현하는 것을 고려할 것.
-	std::list<Object*> ground_check_object_list_;	//지면 체크가 필요한 객체들의 리스트(플레이어, monster, NPC)
 	std::list<Object*> wall_check_object_list_;	//벽 체크가 필요한 객체들의 리스트(플레이어, monster, NPC)
 
 	std::unique_ptr<ParticleSystem> particle_system_{ nullptr };	//파티클 시스템
+
+	std::vector<Object*> monster_hit_particles_;
 
 	std::vector<BoxColliderComponent*> spawn_boxs_{}; // 스테이지 몬스터 생성 체크를 위한 박스들
 

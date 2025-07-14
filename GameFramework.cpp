@@ -683,6 +683,7 @@ void GameFramework::FrameAdvance()
         true, &DepthStencilView());
 
     scene_->Render(d3d_command_list_.Get());
+    scene_->ParticleRender(d3d_command_list_.Get());
 
     d3d_command_list_->Close();
     ID3D12CommandList* command_lists[] = { d3d_command_list_.Get() };

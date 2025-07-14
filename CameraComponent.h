@@ -30,6 +30,7 @@ public:
 	XMFLOAT4X4 view_matrix() const;
 	XMFLOAT4X4 projection_matrix() const;
 	XMFLOAT3 world_position() const;
+	XMFLOAT3 up_vector() const;
 	BoundingFrustum view_frustum() const;
 
 private:
@@ -37,6 +38,7 @@ private:
 	XMFLOAT4X4 projection_matrix_ = xmath_util_float4x4::Identity();
 
 	XMFLOAT3 world_position_{ 0,0,0 };
+	XMFLOAT3 up_vector_{ 0,0,0 };
 
 	BoundingFrustum view_frustum_{};
 };
