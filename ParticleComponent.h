@@ -43,6 +43,8 @@ public:
 
 	virtual Component* GetCopy() override;
 
+	void Initialize(Object* owner, ID3D12Device* device, UINT particle_count, eShape shape, Material* material);
+
 	virtual void Update(float elapsed_time) override;
 	virtual void Render(ID3D12GraphicsCommandList* command_list, FrameResource* curr_frame_resource);
 
@@ -63,10 +65,14 @@ public:
 
 	void Play(int particle_count);
 
+	static ParticleRenderer* kParticleRenderer;
+
 private:
 	Scene* scene_ = nullptr;
 
 	Object* direction_pivot_object_ = nullptr;
+
+	ID3D12Device* device_ = nullptr;
 
 	UINT capacity_ = 50;
 	UINT alive_count_ = 0;

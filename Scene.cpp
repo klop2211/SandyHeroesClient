@@ -123,14 +123,37 @@ void Scene::DeleteDeadObjects()
 		sector.DeleteDeadObject();
 	}
 
-	object_list_.remove_if([](const std::unique_ptr<Object>& object) {
-		if (object->is_dead())
+	auto it = object_list_.begin();
+	while (it != object_list_.end()) {
+		if ((*it)->is_dead()) {
+			auto current = it++;
+			(*current)->Destroy();
+			dead_object_list_.splice(dead_object_list_.end(), object_list_, current);
+		}
+		else {
+			Object* dead_object = (*it)->PopDeadChild();
+			while(dead_object)
+			{
+				dead_object_list_.emplace_back(std::unique_ptr<Object>(dead_object));
+				dead_object = (*it)->PopDeadChild();
+			}
+			++it;
+		}
+	}
+
+	dead_object_list_.remove_if([](const std::unique_ptr<Object>& object) {
+		if (object->dead_frame_count() > FrameResourceManager::kFrameCount)
 		{
-			object->Destroy();
 			return true;
 		}
 		return false;
-		});
+		});	
+
+	for (const std::unique_ptr<Object>& object : dead_object_list_)
+	{
+		object->AddDeadFrameCount(1);
+	}
+
 }
 
 void Scene::UpdateObjectWorldMatrix()
@@ -310,6 +333,7 @@ void Scene::AddObject(Object* object)
 {
 	object_list_.emplace_back();
 	object_list_.back().reset(object);
+
 }
 
 void Scene::DeleteObject(Object* object)
@@ -576,11 +600,8 @@ void Scene::ParticleRender(ID3D12GraphicsCommandList* command_list)
 	
 	particleShader->Render(command_list, curr_frame_resource, game_framework_->descriptor_manager(), main_camera_);
 
-	for (ParticleComponent* particleComponent : particle_renderers)
-	{
-		particleComponent->material()->Render(command_list, curr_frame_resource, game_framework_->descriptor_manager(), main_camera_);
-		particleComponent->Render(command_list, curr_frame_resource);
-	}
+	particle_renderer_->ParticleRender(command_list, curr_frame_resource, game_framework_->descriptor_manager(), main_camera_);
+
 }
 
 void Scene::RenderText(ID2D1Bitmap1* d2d_render_target, ID2D1DeviceContext2* d2d_device_context)
@@ -616,6 +637,9 @@ void Scene::Initialize(ID3D12Device* device, ID3D12GraphicsCommandList* command_
 	ID3D12RootSignature* root_signature, GameFramework* game_framework, ID2D1DeviceContext* device_context, IDWriteFactory* dwrite_factory)
 {
 	game_framework_ = game_framework;
+
+	particle_renderer_ = std::make_unique<ParticleRenderer>();
+	ParticleComponent::kParticleRenderer = particle_renderer_.get();
 
 	BuildTextBrushAndFormat(device_context, dwrite_factory);
 	BuildShader(device, root_signature);

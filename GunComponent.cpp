@@ -8,6 +8,7 @@
 #include "DebugMeshComponent.h"
 #include "MeshColliderComponent.h"
 #include "Scene.h"
+#include "ParticleComponent.h"
 
 std::unordered_map<std::string, GunInfo> GunComponent::kGunInfos{};
 
@@ -15,7 +16,23 @@ GunComponent::GunComponent(Object* owner) : Component(owner)
 {
 }
 
-GunComponent::GunComponent(const GunComponent& other) : Component(other.owner_)
+GunComponent::GunComponent(const GunComponent& other) : Component(other.owner_), 
+    gun_name_(other.gun_name_), 
+    damage_(other.damage_), 
+    critical_damage_rate_(other.critical_damage_rate_),
+    rpm_(other.rpm_), 
+    magazine_cacity_(other.magazine_cacity_), 
+    reload_time_(other.reload_time_),
+    fire_type_(other.fire_type_), 
+    burst_num_(other.burst_num_), 
+    bullet_type_(other.bullet_type_),
+    bullet_speed_(other.bullet_speed_), 
+    loaded_bullets_(other.loaded_bullets_),
+    loading_time_(other.loading_time_), 
+    cooling_time_(other.cooling_time_),
+    is_reload_(other.is_reload_),
+	flamethrow_box_(other.flamethrow_box_)
+    
 {
 }
 
@@ -57,7 +74,7 @@ void GunComponent::ReloadBullets()
     if (!is_reload_)
     {
         //TODO: 데모 버젼 노쿨
-        loading_time_ = 0.f;
+        loading_time_ = reload_time_;
         //loading_time_ = reload_time_;
         is_reload_ = true;
 
@@ -68,15 +85,25 @@ bool GunComponent::FireBullet(XMFLOAT3 direction, Object* bullet_model, Scene* s
 {
    /* if (bullet_type_ == BulletType::kSpecial)
         return false;*/
-    if (gun_name_ == "flamethrower")
-        return true;
-
     if (loaded_bullets_ > 0)
     {
         const float rps = rpm_ / 60.f;
         if (rps * cooling_time_ >= 1.f)
         {
             cooling_time_ = 0.f;
+
+			auto root = owner_->GetHierarchyRoot();
+			auto particle = Object::GetComponentInChildren<ParticleComponent>(root);
+            if(particle)
+            {
+                particle->Play(25);
+			}
+
+            --loaded_bullets_;
+
+            if (gun_name_ == "flamethrower")
+                return true;
+
             Object* bullet = bullet_model;
             bullet->set_is_movable(true);
             XMFLOAT3 bullet_look = xmath_util_float3::Normalize(bullet->look_vector());
@@ -102,7 +129,6 @@ bool GunComponent::FireBullet(XMFLOAT3 direction, Object* bullet_model, Scene* s
 				};
 			bullet->OnDestroy(on_destroy_func);
             fired_bullet_list_.push_back(bullet);
-            --loaded_bullets_;
         }
     }
     else
@@ -117,6 +143,7 @@ void GunComponent::LoadGunInfo(const std::string& gun_name)
 {
     GunInfo gun_info{ kGunInfos[gun_name] };
 
+	gun_name_ = gun_name;
     damage_ = gun_info.damage;
     critical_damage_rate_ = gun_info.critical_damage_rate;
     rpm_ = gun_info.rpm;
@@ -185,7 +212,7 @@ void GunComponent::LoadGunInfosFromFile(const std::string& file_name)
         ss >> at_sign >> name >> bullet_type_str
             >> info.damage >> info.critical_damage_rate >> info.rpm
             >> info.magazine_cacity >> info.reload_time >> fire_type_str >> info.burst_num >> info.bullet_speed;
-
+ 
         if (bullet_type_str == "normal")
         {
             info.bullet_type = BulletType::kNormal;

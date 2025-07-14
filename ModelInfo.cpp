@@ -12,6 +12,7 @@
 #include "PlayerAnimationState.h"
 #include "BoxColliderComponent.h"
 #include "DebugMeshComponent.h"
+#include "GroundColliderComponent.h"
 
 ModelInfo::ModelInfo(const std::string& file_name, std::vector<std::unique_ptr<Mesh>>& meshes,
 	std::vector<std::unique_ptr<Material>>& materials, std::vector<std::unique_ptr<Texture>>& textures)
@@ -180,6 +181,14 @@ Object* ModelInfo::LoadFrameInfoFromFile(std::ifstream& file, std::vector<std::u
 #endif //_DEBUG
 
 		ReadStringFromFile(file, load_token);
+
+		if (load_token == "<GroundCollider>:")
+		{
+			GroundColliderComponent* mesh_collider = new GroundColliderComponent(frame);
+			mesh_collider->set_mesh(mesh);
+			frame->AddComponent(mesh_collider);
+			ReadStringFromFile(file, load_token);
+		}
 
 	}
 	else if (load_token == "<SkinningInfo>:")

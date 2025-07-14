@@ -37,17 +37,11 @@
     <Filter Include="2.Scene">
       <UniqueIdentifier>{7fb82dd8-c53f-4508-b745-e52a6e7b874d}</UniqueIdentifier>
     </Filter>
-    <Filter Include="2.Scene\TestScene">
-      <UniqueIdentifier>{9067d95c-12fd-4805-add0-fa632b158c81}</UniqueIdentifier>
-    </Filter>
     <Filter Include="2.Scene\Base">
       <UniqueIdentifier>{ebb6b811-8c07-4146-a0be-75a94f565f5e}</UniqueIdentifier>
     </Filter>
     <Filter Include="3.Shader">
       <UniqueIdentifier>{6fd218ff-d5dd-4ea2-affb-599ffaba36fc}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="3.Shader\SkinnedMeshShader">
-      <UniqueIdentifier>{8907c794-c724-4295-b1bf-c6a145725483}</UniqueIdentifier>
     </Filter>
     <Filter Include="3.Shader\Standard">
       <UniqueIdentifier>{5f21cb53-108b-40c9-a02d-661285dca773}</UniqueIdentifier>
@@ -219,9 +213,6 @@
     <ClInclude Include="FrameResourceManager.h">
       <Filter>1.Manager\FrameResourceManager</Filter>
     </ClInclude>
-    <ClInclude Include="TestScene.h">
-      <Filter>2.Scene\TestScene</Filter>
-    </ClInclude>
     <ClInclude Include="FrameResource.h">
       <Filter>1.Manager\FrameResourceManager</Filter>
     </ClInclude>
@@ -245,9 +236,6 @@
     </ClInclude>
     <ClInclude Include="SkinnedMesh.h">
       <Filter>4.Mesh</Filter>
-    </ClInclude>
-    <ClInclude Include="SkinnedMeshShader.h">
-      <Filter>3.Shader\SkinnedMeshShader</Filter>
     </ClInclude>
     <ClInclude Include="SkinnedMeshComponent.h">
       <Filter>7.Component\Mesh\SkinnedMesh</Filter>
@@ -275,9 +263,6 @@
     </ClInclude>
     <ClInclude Include="GunComponent.h">
       <Filter>7.Component\Gun</Filter>
-    </ClInclude>
-    <ClInclude Include="ColliderComponent.h">
-      <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="SkyboxShader.h">
       <Filter>3.Shader\Skybox</Filter>
@@ -390,6 +375,21 @@
     <ClInclude Include="TextFormat.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="ParticleComponent.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="ParticleShader.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="SkinnedShadowShader.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="GroundColliderComponent.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="ParticleRenderer.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="SandyHeroesClient.cpp">
@@ -425,9 +425,6 @@
     <ClCompile Include="FrameResourceManager.cpp">
       <Filter>1.Manager\FrameResourceManager</Filter>
     </ClCompile>
-    <ClCompile Include="TestScene.cpp">
-      <Filter>2.Scene\TestScene</Filter>
-    </ClCompile>
     <ClCompile Include="DescriptorManager.cpp">
       <Filter>1.Manager\DescriptorManager</Filter>
     </ClCompile>
@@ -448,9 +445,6 @@
     </ClCompile>
     <ClCompile Include="SkinnedMesh.cpp">
       <Filter>4.Mesh</Filter>
-    </ClCompile>
-    <ClCompile Include="SkinnedMeshShader.cpp">
-      <Filter>3.Shader\SkinnedMeshShader</Filter>
     </ClCompile>
     <ClCompile Include="SkinnedMeshComponent.cpp">
       <Filter>7.Component\Mesh\SkinnedMesh</Filter>
@@ -478,9 +472,6 @@
     </ClCompile>
     <ClCompile Include="GunComponent.cpp">
       <Filter>7.Component\Gun</Filter>
-    </ClCompile>
-    <ClCompile Include="ColliderComponent.cpp">
-      <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="SkyboxShader.cpp">
       <Filter>3.Shader\Skybox</Filter>
@@ -593,6 +584,21 @@
     <ClCompile Include="TextFormat.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="ParticleComponent.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="ParticleShader.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="SkinnedShadowShader.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="GroundColliderComponent.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="ParticleRenderer.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="SandyHeroesClient.rc">
@@ -609,7 +615,6 @@
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="GlobalValues.hlsl" />
-    <FxCompile Include="SkinnedMeshShader.hlsl" />
     <FxCompile Include="LightingUtil.hlsl" />
     <FxCompile Include="StandardShader.hlsl" />
     <FxCompile Include="SkyboxShader.hlsl" />
@@ -618,5 +623,7 @@
     <FxCompile Include="Transparent.hlsl" />
     <FxCompile Include="Breathing.hlsl" />
     <FxCompile Include="Shadow.hlsl" />
+    <FxCompile Include="ParticleShader.hlsl" />
+    <FxCompile Include="SkinnedShadow.hlsl" />
   </ItemGroup>
 </Project>

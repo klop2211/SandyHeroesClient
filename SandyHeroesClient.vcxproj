@@ -144,7 +144,6 @@
     <ClInclude Include="BoxColliderComponent.h" />
     <ClInclude Include="BreathingShader.h" />
     <ClInclude Include="CameraComponent.h" />
-    <ClInclude Include="ColliderComponent.h" />
     <ClInclude Include="Component.h" />
     <ClInclude Include="CubeMesh.h" />
     <ClInclude Include="CutSceneRecorder.h" />
@@ -158,6 +157,7 @@
     <ClInclude Include="FrameResource.h" />
     <ClInclude Include="FrameResourceManager.h" />
     <ClInclude Include="GameFramework.h" />
+    <ClInclude Include="GroundColliderComponent.h" />
     <ClInclude Include="GunComponent.h" />
     <ClInclude Include="HitDragonAnimationState.h" />
     <ClInclude Include="InputControllerComponent.h" />
@@ -171,6 +171,7 @@
     <ClInclude Include="Object.h" />
     <ClInclude Include="MovementComponent.h" />
     <ClInclude Include="ParticleComponent.h" />
+    <ClInclude Include="ParticleRenderer.h" />
     <ClInclude Include="ParticleShader.h" />
     <ClInclude Include="ParticleSystem.h" />
     <ClInclude Include="PlayerAnimationState.h" />
@@ -197,7 +198,6 @@
     <ClInclude Include="Shader.h" />
     <ClInclude Include="SkinnedMesh.h" />
     <ClInclude Include="SkinnedMeshComponent.h" />
-    <ClInclude Include="SkinnedMeshShader.h" />
     <ClInclude Include="SkyboxMesh.h" />
     <ClInclude Include="SkyboxShader.h" />
     <ClInclude Include="StandardMeshShader.h" />
@@ -205,7 +205,6 @@
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="TestControllerComponent.h" />
-    <ClInclude Include="TestScene.h" />
     <ClInclude Include="Timer.h" />
     <ClInclude Include="UiMeshComponent.h" />
     <ClInclude Include="UIShader.h" />
@@ -221,7 +220,6 @@
     <ClCompile Include="BoxColliderComponent.cpp" />
     <ClCompile Include="BreathingShader.cpp" />
     <ClCompile Include="CameraComponent.cpp" />
-    <ClCompile Include="ColliderComponent.cpp" />
     <ClCompile Include="Component.cpp" />
     <ClCompile Include="CubeMesh.cpp" />
     <ClCompile Include="CutSceneRecorder.cpp" />
@@ -233,6 +231,7 @@
     <ClCompile Include="FPSControllerComponent.cpp" />
     <ClCompile Include="FrameResourceManager.cpp" />
     <ClCompile Include="GameFramework.cpp" />
+    <ClCompile Include="GroundColliderComponent.cpp" />
     <ClCompile Include="GunComponent.cpp" />
     <ClCompile Include="HitDragonAnimationState.cpp" />
     <ClCompile Include="InputControllerComponent.cpp" />
@@ -246,6 +245,7 @@
     <ClCompile Include="Object.cpp" />
     <ClCompile Include="MovementComponent.cpp" />
     <ClCompile Include="ParticleComponent.cpp" />
+    <ClCompile Include="ParticleRenderer.cpp" />
     <ClCompile Include="ParticleShader.cpp" />
     <ClCompile Include="ParticleSystem.cpp" />
     <ClCompile Include="PlayerAnimationState.cpp" />
@@ -271,14 +271,12 @@
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="SkinnedMesh.cpp" />
     <ClCompile Include="SkinnedMeshComponent.cpp" />
-    <ClCompile Include="SkinnedMeshShader.cpp" />
     <ClCompile Include="SkyboxMesh.cpp" />
     <ClCompile Include="SkyboxShader.cpp" />
     <ClCompile Include="StandardMeshShader.cpp" />
     <ClCompile Include="StandardSkinnedMeshShader.cpp" />
     <ClCompile Include="stdafx.cpp" />
     <ClCompile Include="TestControllerComponent.cpp" />
-    <ClCompile Include="TestScene.cpp" />
     <ClCompile Include="Timer.cpp" />
     <ClCompile Include="UiMeshComponent.cpp" />
     <ClCompile Include="UIShader.cpp" />
@@ -328,14 +326,6 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
     <FxCompile Include="Shadow.hlsl">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </FxCompile>
-    <FxCompile Include="SkinnedMeshShader.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>

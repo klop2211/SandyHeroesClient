@@ -3,6 +3,10 @@
 #include "FPSControllerComponent.h"
 #include "BaseScene.h"
 #include "Scene.h"
+#include "CameraComponent.h"
+#include "ParticleRenderer.h"
+
+ParticleRenderer* ParticleComponent::kParticleRenderer = nullptr;
 
 ParticleComponent::ParticleComponent(Object* owner) : Component(owner)
 {
@@ -10,14 +14,32 @@ ParticleComponent::ParticleComponent(Object* owner) : Component(owner)
 
 ParticleComponent::ParticleComponent(Object* owner, ID3D12Device* device, UINT particle_count, eShape shape, Material* material) : Component(owner)
 {
+	Initialize(owner, device, particle_count, shape, material);
+}
+
+ParticleComponent::ParticleComponent(const ParticleComponent& other) : Component(other), 
+scene_(other.scene_),
+color_(other.color_)
+{
+	Initialize(other.owner_, other.device_, other.capacity_, other.shape_, other.material_);
+}
+
+Component* ParticleComponent::GetCopy()
+{
+    return new ParticleComponent(*this);
+}
+
+void ParticleComponent::Initialize(Object* owner, ID3D12Device* device, UINT particle_count, eShape shape, Material* material)
+{
 	capacity_ = particle_count;
 	shape_ = shape;
 	material_ = material;
 	particles_.reserve(capacity_);
 	particle_data_.reserve(capacity_);
 
-	particle_buffer_ = std::make_unique<UploadBuffer<Particle>>(device, particle_count, false);
+	device_ = device;
 
+	particle_buffer_ = std::make_unique<UploadBuffer<Particle>>(device, particle_count, false);
 
 	for (int i = 0; i < capacity_; ++i)
 	{
@@ -81,21 +103,12 @@ ParticleComponent::ParticleComponent(Object* owner, ID3D12Device* device, UINT p
 		{
 			assert(false);
 		}
-		
+
 	}
 
 	vertex_buffer_view_.BufferLocation = particle_buffer_->Resource()->GetGPUVirtualAddress();
 	vertex_buffer_view_.SizeInBytes = capacity_ * sizeof(Particle);
 	vertex_buffer_view_.StrideInBytes = sizeof(Particle);
-}
-
-ParticleComponent::ParticleComponent(const ParticleComponent& other) : Component(other)
-{
-}
-
-Component* ParticleComponent::GetCopy()
-{
-    return new ParticleComponent(*this);
 }
 
 void ParticleComponent::Update(float elapsed_time)
@@ -153,6 +166,13 @@ void ParticleComponent::Update(float elapsed_time)
 				position = owner_->world_position_vector();
 				XMFLOAT3 owner_forward = owner_->world_look_vector();
 				XMVECTOR forward = XMLoadFloat3(&owner_forward); // 기준 방향
+				if (scene_)
+				{
+					auto camera = scene_->main_camera();
+					if (camera) {
+						forward = XMLoadFloat3(&camera->owner()->world_look_vector());
+					}
+				}
 				if (direction_pivot_object_) {
 					forward = XMLoadFloat3(&direction_pivot_object_->world_look_vector());
 				}
@@ -189,6 +209,14 @@ void ParticleComponent::Update(float elapsed_time)
 				position = owner_->world_position_vector();
 				XMFLOAT3 owner_forward = owner_->world_look_vector();
 				XMVECTOR forward = XMLoadFloat3(&owner_forward); // 기준 방향
+				if (scene_)
+				{
+					auto camera = scene_->main_camera();
+					if (camera) {
+						forward = XMLoadFloat3(&camera->owner()->world_look_vector());
+					}
+				}
+
 				if (direction_pivot_object_) {
 					forward = XMLoadFloat3(&direction_pivot_object_->world_look_vector());
 				}
@@ -214,6 +242,11 @@ void ParticleComponent::Update(float elapsed_time)
 	}
 
 	alive_count_ = particleIndex;
+
+	if (alive_count_ > 0)
+	{
+		kParticleRenderer->AddParticleComponent(this);
+	}
 }
 
 void ParticleComponent::Render(ID3D12GraphicsCommandList* command_list,
@@ -306,6 +339,13 @@ void ParticleComponent::Play(int particle_count)
 			position = owner_->world_position_vector();
 			XMFLOAT3 owner_forward = owner_->world_look_vector();
 			XMVECTOR forward = XMLoadFloat3(&owner_forward); // 기준 방향
+			if (scene_)
+			{
+				auto camera = scene_->main_camera();
+				if (camera) {
+					forward = XMLoadFloat3(&camera->owner()->world_look_vector());
+				}
+			}
 			if (direction_pivot_object_) {
 				forward = XMLoadFloat3(&direction_pivot_object_->world_look_vector());
 			}
@@ -340,6 +380,14 @@ void ParticleComponent::Play(int particle_count)
 			position = owner_->world_position_vector();
 			XMFLOAT3 owner_forward = owner_->world_look_vector();
 			XMVECTOR forward = XMLoadFloat3(&owner_forward); // 기준 방향
+			if (scene_)
+			{
+				auto camera = scene_->main_camera();
+				if (camera) {
+					forward = XMLoadFloat3(&camera->owner()->world_look_vector());
+				}
+			}
+
 			if (direction_pivot_object_) {
 				forward = XMLoadFloat3(&direction_pivot_object_->world_look_vector());
 			}
