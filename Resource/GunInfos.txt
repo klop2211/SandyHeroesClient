@@ -1,4 +1,4 @@
 @ classic	normal	20	2.0	320	12	1.75	semiauto	0	375
 @ specter	normal	28	1.6	810	30	2.25	auto	0	400
 @ vandal	normal	42	2.0	770	25	2.5	auto	0	710
-@ flamethrow	special	1	2.0	1	1	0	auto	0	1
+@ flamethrower	special	1	2.0	1250	150	0	auto	0	1

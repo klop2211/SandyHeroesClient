@@ -42,6 +42,7 @@ public:
 	Object* parent() const;
 	bool is_ground() const;	
 	bool is_dead() const;	//죽은 오브젝트인가?
+	UINT dead_frame_count() const { return dead_frame_count_; }	//죽은 후 프레임 카운트
 
 	CollideType collide_type() const;
 
@@ -83,6 +84,11 @@ public:
 	Object* FindFrame(const std::string& name);
 	Object* GetHierarchyRoot();
 
+	void DeleteChild(const std::string& name);
+	void KillChild(const std::string& name);
+	Object* PopDeadChild();	// 죽은 자식 오브젝트를 찾아서 자식 노드에서 제거하고 반환한다.
+	void ChangeChild(Object* src, const std::string& dst_name, bool is_delete = true);
+
 	void UpdateWorldMatrix(const XMFLOAT4X4* const parent_transform); 
 
 	virtual void Update(float elapsed_time);
@@ -95,6 +101,7 @@ public:
 
 	void OnDestroy(std::function<void(Object*)> func);
 	void Destroy();
+	void AddDeadFrameCount(UINT frame_count);
 
 	static Object* DeepCopy(Object* value, Object* parent = nullptr);
 
@@ -190,6 +197,7 @@ protected:
 	std::string tag_ = "None_Tag";	//오브젝트를 "분류"하기 위한 태그 값 ex) "Player", "HitDragon", "ShotDragon"
 
 	bool is_dead_ = false;	//죽은 오브젝트인가?	
+	UINT dead_frame_count_ = 0;	//오브젝트가 죽은 후 프레임 카운트
 
 	//물리 관련 변수들
 	bool is_ground_ = false;	//지면에 닿아있는가?

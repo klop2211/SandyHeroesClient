@@ -292,7 +292,6 @@ void FPSControllerComponent::Update(float elapsed_time)
 			XMStoreFloat3(&bullet_dir, XMVector3Normalize(picking_point_w - XMLoadFloat3(&gun_shoting_point)));
 			auto bullet_mesh = scene_->FindModelInfo("SM_Bullet_01")->GetInstance();
 			gun->FireBullet(bullet_dir, bullet_mesh, scene_);
-			particle_->Play(10);
 		}
 	}
 }

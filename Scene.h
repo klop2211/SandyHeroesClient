@@ -5,6 +5,7 @@
 #include "Mesh.h"
 #include "ModelInfo.h"
 #include "Sector.h"
+#include "ParticleRenderer.h"
 
 class FrameResourceManager;
 class DescriptorManager;
@@ -14,7 +15,6 @@ class InputControllerComponent;
 class GameFramework;
 class ColliderComponent;
 class MeshColliderComponent;
-class ParticleComponent;
 
 class Scene
 {
@@ -94,6 +94,7 @@ public:
 
 protected:
 	std::list<std::unique_ptr<Object>> object_list_;
+	std::list<std::unique_ptr<Object>> dead_object_list_;
 	std::unordered_map<int, std::unique_ptr<Shader>> shaders_;
 	std::vector<std::unique_ptr<Mesh>> meshes_;
 	std::vector<std::unique_ptr<ModelInfo>> model_infos_;
@@ -135,7 +136,7 @@ protected:
 	Object* player_ = nullptr;
 
 	//For ParticleRender
-	std::vector<ParticleComponent*> particle_renderers{};
+	std::unique_ptr<ParticleRenderer> particle_renderer_{ nullptr };	//파티클 렌더러
 
 };
 

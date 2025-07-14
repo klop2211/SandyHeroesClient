@@ -337,6 +337,86 @@ Object* Object::GetHierarchyRoot()
 	return this;
 }
 
+void Object::DeleteChild(const std::string& name)
+{
+	if (child_ && child_->name_ == name)
+	{
+		delete child_;
+		child_ = nullptr;
+		return;
+	}
+	if (child_)
+	{
+		child_->DeleteChild(name);
+	}
+	if (sibling_)
+	{
+		sibling_->DeleteChild(name);
+	}
+}
+
+void Object::KillChild(const std::string& name)
+{
+	if (child_ && child_->name_ == name)
+	{
+		child_->set_is_dead(true);
+		return;
+	}
+	if (child_)
+	{
+		child_->KillChild(name);
+	}
+	if (sibling_)
+	{
+		sibling_->KillChild(name);
+	}
+}
+
+Object* Object::PopDeadChild()
+{
+	if (child_ && child_->is_dead_)
+	{
+		Object* dead_child = child_;
+		child_ = nullptr;
+		return dead_child;
+	}
+	if (child_)
+	{
+		Object* dead_child = child_->PopDeadChild();
+		if (dead_child)
+			return dead_child;
+	}
+	if (sibling_)
+	{
+		return sibling_->PopDeadChild();
+	}
+	return nullptr;
+}
+
+void Object::ChangeChild(Object* src, const std::string& dst_name, bool is_delete)
+{
+	if (!src || !child_)
+		return;
+	if (child_->name_ == dst_name)
+	{
+		if (is_delete)
+			delete child_;
+		else
+			child_->set_is_dead(true);
+		child_ = src;
+		return;
+	}
+	if (child_)
+	{
+		child_->ChangeChild(src, dst_name, is_delete);
+	}
+	if (sibling_)
+	{
+		sibling_->ChangeChild(src, dst_name, is_delete);
+	}
+}
+
+
 void Object::UpdateWorldMatrix(const XMFLOAT4X4* const parent_world)
 {
 	world_matrix_ = parent_world ? transform_matrix_ * (*parent_world) : transform_matrix_;
@@ -421,6 +501,11 @@ void Object::Destroy()
 	{
 		on_destroy_func_(this);
 	}
+}
+
+void Object::AddDeadFrameCount(UINT frame_count)
+{
+	dead_frame_count_ += frame_count;
 }
 
 Object* Object::DeepCopy(Object* value, Object* parent)
