@@ -155,8 +155,10 @@ void BaseScene::BuildMesh(ID3D12Device* device, ID3D12GraphicsCommandList* comma
 	model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/Monster/Strong_Dragon.bin", meshes_, materials_, textures_));
 	
 	model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/Gun/vandal.bin", meshes_, materials_, textures_));	//7 밴달
-	model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/Gun/Odin.bin", meshes_, materials_, textures_));	//8 오딘
+	model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/Gun/odin.bin", meshes_, materials_, textures_));	//8 오딘
 	model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/Gun/flamethrower.bin", meshes_, materials_, textures_));	//9 화염방사기
+	model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/Gun/sherif.bin", meshes_, materials_, textures_));	//10 셰리프
+	model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/Gun/specter.bin", meshes_, materials_, textures_));	//11 스펙터
 
 	//BuildScene("Base");
 
@@ -443,7 +445,7 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 
 	//Set player's gun
 	Object* player_gun_frame = player->FindFrame("WeaponR_locator");
-	player_gun_frame->AddChild(FindModelInfo("Flamethrower")->GetInstance());
+	player_gun_frame->AddChild(FindModelInfo("Classic")->GetInstance());
 
 	//Add player to scene
 	AddObject(player);
@@ -729,7 +731,94 @@ void BaseScene::BuildModelInfo(ID3D12Device* device)
 
 	//Create Gun Models
 	{
-		//Create flamethrower model
+		//Create Classic Model 1
+		{
+			ModelInfo* classic_model = new ModelInfo();
+			auto classic_object = model_infos_[1]->GetInstance();
+			classic_object->set_name("Classic");
+			classic_model->set_hierarchy_root(classic_object);
+			classic_model->set_model_name("Classic");
+
+			GunComponent* gun_component = new GunComponent(classic_object);
+			gun_component->LoadGunInfo("classic");
+			classic_object->AddComponent(gun_component);
+			classic_object->Rotate(0, 170, -17);
+
+			Object* player_gun_particle_pivot = new Object("gun_particle_pivot");
+			classic_object->AddChild(player_gun_particle_pivot);
+			player_gun_particle_pivot->set_local_position(XMFLOAT3(0.0f, 0.2f, 0.3f));
+
+			// 총 발사 파티클 생성
+			Material* particleMaterial = std::find_if(materials_.begin(), materials_.end(), [&](const auto& material) {
+				return material->name() == "Trail_1";
+				})->get();
+			ParticleComponent* particleComponent = new ParticleComponent(player_gun_particle_pivot, device, 50, ParticleComponent::Cone, particleMaterial);
+			particleComponent->set_scene(this);
+			particleComponent->set_color({ 0.9f,0.1f,0.1f,0.5f });
+			player_gun_particle_pivot->AddComponent(particleComponent);
+
+			model_infos_.emplace_back();
+			model_infos_.back().reset(classic_model);
+		}
+		//Create vandal Model 7
+		{
+			ModelInfo* vandal_model = new ModelInfo();
+			auto vandal_object = model_infos_[7]->GetInstance();
+			vandal_object->set_name("Vandal");
+			vandal_model->set_hierarchy_root(vandal_object);
+			vandal_model->set_model_name("Vandal");
+
+			GunComponent* gun_component = new GunComponent(vandal_object);
+			gun_component->LoadGunInfo("vandal");
+			vandal_object->AddComponent(gun_component);
+			vandal_object->Rotate(0, 170, -17);
+
+			Object* player_gun_particle_pivot = new Object("gun_particle_pivot");
+			vandal_object->AddChild(player_gun_particle_pivot);
+			player_gun_particle_pivot->set_local_position(XMFLOAT3(-0.018f, 0.2f, 0.58f));
+
+			// 총 발사 파티클 생성
+			Material* particleMaterial = std::find_if(materials_.begin(), materials_.end(), [&](const auto& material) {
+				return material->name() == "Trail_1";
+				})->get();
+			ParticleComponent* particleComponent = new ParticleComponent(player_gun_particle_pivot, device, 50, ParticleComponent::Cone, particleMaterial);
+			particleComponent->set_scene(this);
+			particleComponent->set_color({ 0.9f,0.1f,0.1f,0.5f });
+			player_gun_particle_pivot->AddComponent(particleComponent);
+
+			model_infos_.emplace_back();
+			model_infos_.back().reset(vandal_model);
+		}
+		//Create odin Model 8
+		{
+			ModelInfo* odin_model = new ModelInfo();
+			auto odin_object = model_infos_[8]->GetInstance();
+			odin_object->set_name("Odin");
+			odin_model->set_hierarchy_root(odin_object);
+			odin_model->set_model_name("Odin");
+
+			GunComponent* gun_component = new GunComponent(odin_object);
+			gun_component->LoadGunInfo("odin");
+			odin_object->AddComponent(gun_component);
+			odin_object->Rotate(0, 170, -17);
+
+			Object* player_gun_particle_pivot = new Object("gun_particle_pivot");
+			odin_object->AddChild(player_gun_particle_pivot);
+			player_gun_particle_pivot->set_local_position(XMFLOAT3(0.013f, 0.123f, 0.81f));
+
+			// 총 발사 파티클 생성
+			Material* particleMaterial = std::find_if(materials_.begin(), materials_.end(), [&](const auto& material) {
+				return material->name() == "Trail_1";
+				})->get();
+			ParticleComponent* particleComponent = new ParticleComponent(player_gun_particle_pivot, device, 50, ParticleComponent::Cone, particleMaterial);
+			particleComponent->set_scene(this);
+			particleComponent->set_color({ 0.9f,0.1f,0.1f,0.5f });
+			player_gun_particle_pivot->AddComponent(particleComponent);
+
+			model_infos_.emplace_back();
+			model_infos_.back().reset(odin_model);
+		}
+		//Create flamethrower model 9
 		{
 			ModelInfo* flamethrower_model = new ModelInfo();
 			auto flamethrower_object = model_infos_[9]->GetInstance();
@@ -744,7 +833,7 @@ void BaseScene::BuildModelInfo(ID3D12Device* device)
 
 			Object* player_gun_particle_pivot = new Object("gun_particle_pivot");
 			flamethrower_object->AddChild(player_gun_particle_pivot);
-			player_gun_particle_pivot->set_local_position(XMFLOAT3(0.0f, 0.143f, 1.24f));		//9
+			player_gun_particle_pivot->set_local_position(XMFLOAT3(0.0f, 0.143f, 1.24f));
 
 			// 화염방사기에 충돌 박스 달기
 			auto flamethrow_box_component = new BoxColliderComponent(player_gun_particle_pivot, gun_component->flamethrow_box());
@@ -762,22 +851,22 @@ void BaseScene::BuildModelInfo(ID3D12Device* device)
 			model_infos_.emplace_back();
 			model_infos_.back().reset(flamethrower_model);
 		}
-		//Create Classic Model
+		//Create sherif Model 10
 		{
-			ModelInfo* classic_model = new ModelInfo();
-			auto classic_object = model_infos_[1]->GetInstance();
-			classic_object->set_name("Classic");
-			classic_model->set_hierarchy_root(classic_object);
-			classic_model->set_model_name("Classic");
+			ModelInfo* sherif_model = new ModelInfo();
+			auto sherif_object = model_infos_[10]->GetInstance();
+			sherif_object->set_name("Sherif");
+			sherif_model->set_hierarchy_root(sherif_object);
+			sherif_model->set_model_name("Sherif");
 
-			GunComponent* gun_component = new GunComponent(classic_object);
-			gun_component->LoadGunInfo("classic");
-			classic_object->AddComponent(gun_component);
-			classic_object->Rotate(0, 170, -17);
+			GunComponent* gun_component = new GunComponent(sherif_object);
+			gun_component->LoadGunInfo("sherif");
+			sherif_object->AddComponent(gun_component);
+			sherif_object->Rotate(0, 170, -17);
 
 			Object* player_gun_particle_pivot = new Object("gun_particle_pivot");
-			classic_object->AddChild(player_gun_particle_pivot);
-			player_gun_particle_pivot->set_local_position(XMFLOAT3(0.0f, 0.2f, 0.3f));		//1
+			sherif_object->AddChild(player_gun_particle_pivot);
+			player_gun_particle_pivot->set_local_position(XMFLOAT3(0.0f, 0.317f, 0.1f));
 
 			// 총 발사 파티클 생성
 			Material* particleMaterial = std::find_if(materials_.begin(), materials_.end(), [&](const auto& material) {
@@ -789,10 +878,38 @@ void BaseScene::BuildModelInfo(ID3D12Device* device)
 			player_gun_particle_pivot->AddComponent(particleComponent);
 
 			model_infos_.emplace_back();
-			model_infos_.back().reset(classic_model);
+			model_infos_.back().reset(sherif_model);
+		}
+		//Create specter Model 11
+		{
+			ModelInfo* specter_model = new ModelInfo();
+			auto specter_object = model_infos_[11]->GetInstance();
+			specter_object->set_name("Specter");
+			specter_model->set_hierarchy_root(specter_object);
+			specter_model->set_model_name("Specter");
+
+			GunComponent* gun_component = new GunComponent(specter_object);
+			gun_component->LoadGunInfo("specter");
+			specter_object->AddComponent(gun_component);
+			specter_object->Rotate(0, 170, -17);
+
+			Object* player_gun_particle_pivot = new Object("gun_particle_pivot");
+			specter_object->AddChild(player_gun_particle_pivot);
+			player_gun_particle_pivot->set_local_position(XMFLOAT3(0.016f, 0.1477f, 0.823f));
+
+			// 총 발사 파티클 생성
+			Material* particleMaterial = std::find_if(materials_.begin(), materials_.end(), [&](const auto& material) {
+				return material->name() == "Trail_1";
+				})->get();
+			ParticleComponent* particleComponent = new ParticleComponent(player_gun_particle_pivot, device, 50, ParticleComponent::Cone, particleMaterial);
+			particleComponent->set_scene(this);
+			particleComponent->set_color({ 0.9f,0.1f,0.1f,0.5f });
+			player_gun_particle_pivot->AddComponent(particleComponent);
+
+			model_infos_.emplace_back();
+			model_infos_.back().reset(specter_model);
 		}
 	}
-
 }
 
 void BaseScene::CreatePlayerUI()
@@ -1129,29 +1246,80 @@ bool BaseScene::ProcessInput(UINT id, WPARAM w_param, LPARAM l_param, float time
 				return true;
 		}
 	}
+	std::vector<std::string> guns{ "Classic", "Sherif", "Specter", "Vandal", "Odin", "Flamethrower" };
 	switch (id)
 	{
 	case WM_KEYDOWN:
+	{
+		Object* player_gun_frame = player_->FindFrame("WeaponR_locator");
 		if (w_param == '1')
 		{
-			//particle_renderers_.back()->set_color({0.9f,0.1f,0.1f,0.5f});
-			Object* player_gun_frame = player_->FindFrame("WeaponR_locator");
-			player_gun_frame->ChangeChild(FindModelInfo("Classic")->GetInstance(), "Flamethrower", false);
+			// classic
+			for (int i = 0; i < guns.size(); ++i)
+			{
+				if (i == 0) continue;
+				player_gun_frame->ChangeChild(FindModelInfo(guns[0])->GetInstance(), guns[i], false);
+			}
 		}
 		if (w_param == '2')
 		{
-			//particle_renderers_.back()->set_color({ 0.1f,0.9f,0.1f,0.5f });
-			Object* player_gun_frame = player_->FindFrame("WeaponR_locator");
-			player_gun_frame->ChangeChild(FindModelInfo("Flamethrower")->GetInstance(), "Classic", false);
-
+			// sherif
+			for (int i = 0; i < guns.size(); ++i)
+			{
+				if (i == 1) continue;
+				player_gun_frame->ChangeChild(FindModelInfo(guns[1])->GetInstance(), guns[i], false);
+			}
 		}
 		if (w_param == '3')
 		{
-			//particle_renderers_.back()->set_color({ 0.9f,0.9f,0.1f,0.5f });
+			// spector
+			for (int i = 0; i < guns.size(); ++i)
+			{
+				if (i == 2) continue;
+				player_gun_frame->ChangeChild(FindModelInfo(guns[2])->GetInstance(), guns[i], false);
+			}
 		}
 		if (w_param == '4')
 		{
-			// 총기 변경
+			// vandal
+			for (int i = 0; i < guns.size(); ++i)
+			{
+				if (i == 3) continue;
+				player_gun_frame->ChangeChild(FindModelInfo(guns[3])->GetInstance(), guns[i], false);
+			}
+		}
+		if (w_param == '5')
+		{
+			// odin
+			for (int i = 0; i < guns.size(); ++i)
+			{
+				if (i == 4) continue;
+				player_gun_frame->ChangeChild(FindModelInfo(guns[4])->GetInstance(), guns[i], false);
+			}
+		}
+		if (w_param == '6')
+		{
+			// flamethrower
+			for (int i = 0; i < guns.size(); ++i)
+			{
+				if (i == 5) continue;
+				player_gun_frame->ChangeChild(FindModelInfo(guns[5])->GetInstance(), guns[i], false);
+			}
+		}
+		if (w_param == '8')
+		{
+			ParticleComponent* particle = Object::GetComponentInChildren<ParticleComponent>(player_gun_frame);
+			particle->set_color({ 0.9f,0.1f,0.1f,0.5f });	//red
+		}
+		if (w_param == '9')
+		{
+			ParticleComponent* particle = Object::GetComponentInChildren<ParticleComponent>(player_gun_frame);
+			particle->set_color({ 0.1f,0.9f,0.1f,0.5f });	//yellow
+		}
+		if (w_param == '0')
+		{
+			ParticleComponent* particle = Object::GetComponentInChildren<ParticleComponent>(player_gun_frame);
+			particle->set_color({ 0.9f,0.9f,0.1f,0.5f });	//green
 		}
 		// 카메라 전환 테스트
 		if (w_param == 'K')
@@ -1220,7 +1388,7 @@ bool BaseScene::ProcessInput(UINT id, WPARAM w_param, LPARAM l_param, float time
 		{
 			is_render_debug_mesh_ = !is_render_debug_mesh_;
 			return true;
-		}	
+		}
 		if (w_param == 'B')
 		{
 			auto pos = player_->position_vector();
@@ -1245,7 +1413,7 @@ bool BaseScene::ProcessInput(UINT id, WPARAM w_param, LPARAM l_param, float time
 			}
 			return true;
 		}
-
+	}
 		break;
 	default:
 		return false;

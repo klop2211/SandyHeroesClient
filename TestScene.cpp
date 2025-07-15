@@ -68,7 +68,7 @@ void TestScene::BuildMesh(ID3D12Device* device, ID3D12GraphicsCommandList* comma
 	materials_.emplace_back();
 	materials_.back().reset(material);
 
-	model_infos_.reserve(3);
+	model_infos_.reserve(6);
 	model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/Dog00.bin", meshes_, materials_, textures_));
 
 	BuildScene();

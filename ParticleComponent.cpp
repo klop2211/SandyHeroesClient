@@ -71,7 +71,7 @@ void ParticleComponent::Initialize(Object* owner, ID3D12Device* device, UINT par
 			randomPos += XMVectorSet(position.x, position.y, position.z, 0);
 			XMStoreFloat3(&position, randomPos);
 
-			particles_.emplace_back(Particle(color_, position, XMFLOAT2(0.05f, 0.05f))); // cone 텍스쳐 사이즈
+			particles_.emplace_back(Particle(color_, position, XMFLOAT2(0.1f, 0.1f))); // cone 텍스쳐 사이즈
 			particle_data_.emplace_back(ParticleData(direction, 2.0f, 0.1f, 0.1f));	//cone
 		}
 		else if (shape_ == Circle)
