@@ -1934,13 +1934,56 @@ void BaseScene::CheckObjectHitBullet(Object* object)
 					{
 						catch_monster_num_++;
 
+						// 총기 이름 목록
+						std::vector<std::string> gun_names = { "Classic", "Sherif", "Specter", "Vandal", "Odin", "Flamethrower" };
+
+						std::vector<int> drop_weights = { 15, 10, 7, 5, 3, 1 }; // 전체 합 = 41
+
+						// 드랍할지 말지: 41% 확률로 총기 드랍, 나머지 59%는 아무것도 안 떨어짐
+						if (rand() % 100 >= 41) return; // 59% 확률로 드랍 안 함
+
+						// 랜덤 엔진 및 분포 생성
+						std::random_device rd;
+						std::mt19937 gen(rd());
+						std::discrete_distribution<> dist(drop_weights.begin(), drop_weights.end());
+
+						int random_index = dist(gen);
+						std::string gun_name = gun_names[random_index];
+						Object* dropped_gun = FindModelInfo(gun_names[random_index])->GetInstance();
+
+						XMFLOAT3 drop_pos = monster->owner()->world_position_vector();
+						drop_pos.y += 0.1f;
+						dropped_gun->set_position_vector(drop_pos);
+						dropped_gun->set_is_movable(true);
+
+						BoundingBox gun_bb{ {0.f, 0.f, 0.f}, {0.5f, 0.3f, 1.0f} };
+						auto box_comp = new BoxColliderComponent(dropped_gun, gun_bb);
+						dropped_gun->AddComponent(box_comp);
+
+						// TODO: 파티클 추가
+						Material* particle_material = std::find_if(materials_.begin(), materials_.end(), [&](const auto& material) {
+							return material->name() == "Trail_1";
+							})->get();
+						ParticleComponent* particle = new ParticleComponent(
+							dropped_gun,
+							device_,
+							100,
+							ParticleComponent::Circle,
+							particle_material
+						);
+						particle->set_scene(this);
+						particle->set_loop(true);
+						particle->set_color({ 1.0f, 1.0f, 1.0f, 1.0f });
+						dropped_gun->AddComponent(particle);
+						particle->Play(50);
+
+						AddObject(dropped_gun);
+						dropped_guns_.push_back(dropped_gun);
 					}
-						
 				}
 			}
 		}
 	}
-
 }
 
 void BaseScene::CheckObjectHitFlamethrow(Object* object)
@@ -2021,6 +2064,7 @@ void BaseScene::CheckObjectHitFlamethrow(Object* object)
 						auto box_comp = new BoxColliderComponent(dropped_gun, gun_bb);
 						dropped_gun->AddComponent(box_comp);
 
+						// TODO: 파티클 추가
 						Material* particle_material = std::find_if(materials_.begin(), materials_.end(), [&](const auto& material) {
 							return material->name() == "Trail_1";
 							})->get();
@@ -2032,9 +2076,10 @@ void BaseScene::CheckObjectHitFlamethrow(Object* object)
 							particle_material
 						);
 						particle->set_scene(this);
-						particle->set_color({ 1.0f, 0.0f, 1.0f, 1.0f });
-						particle_renderers.push_back(particle); // 반드시 필요!
+						particle->set_loop(true);
+						particle->set_color({ 1.0f, 1.0f, 1.0f, 1.0f });
 						dropped_gun->AddComponent(particle);
+						particle->Play(50);
 
 						AddObject(dropped_gun);
 						dropped_guns_.push_back(dropped_gun);

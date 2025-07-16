@@ -42,6 +42,7 @@ public:
 
     //setter
     void set_gun_name(std::string& value);
+    void set_upgrade(int value);
 
     //getter
     GunFireType fire_type() const;
@@ -71,6 +72,7 @@ private:
     };
 
     std::string gun_name_;
+    int upgrade_{};
 
     // ÃÑ±â Á¤º¸
     int damage_{ 0 };                   

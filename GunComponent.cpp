@@ -162,6 +162,11 @@ void GunComponent::set_gun_name(std::string& value)
     gun_name_ = value;
 }
 
+void GunComponent::set_upgrade(int value)
+{
+    upgrade_ = value;
+}
+
 GunFireType GunComponent::fire_type() const
 {
     return fire_type_;

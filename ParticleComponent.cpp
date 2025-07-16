@@ -76,11 +76,12 @@ void ParticleComponent::Initialize(Object* owner, ID3D12Device* device, UINT par
 		}
 		else if (shape_ == Circle)
 		{
-			XMVECTOR axis = XMVectorSet(1, 0, 0, 0); // 기준 방향
-			XMStoreFloat3(&position, RANDOM::CircleEdgePoint(axis, 5.0f, &direction) + XMVectorSet(0, 10, 0, 0));
+			position = owner->world_position_vector();
+			XMVECTOR axis = XMVectorSet(0, 1, 0, 0); // 기준 방향
+			XMStoreFloat3(&position, RANDOM::CircleEdgePoint(axis, 0.5f, &direction));
 
-			particles_.emplace_back(Particle(color_, position, XMFLOAT2(1.0f, 1.0f))); // 텍스쳐 사이즈
-			particle_data_.emplace_back(ParticleData(direction, 10.0f, 0.1f, 0.1f));
+			particles_.emplace_back(Particle(color_, position, XMFLOAT2(0.25f, 0.25f))); // 텍스쳐 사이즈
+			particle_data_.emplace_back(ParticleData(direction, 2.0f, 0.1f, 0.1f));
 		}
 		else if (shape_ == BigCone)
 		{
@@ -192,10 +193,11 @@ void ParticleComponent::Update(float elapsed_time)
 			}
 			else if (shape_ == Circle)
 			{
-				XMVECTOR axis = XMVectorSet(1, 0, 0, 0); // 기준 방향
-				XMStoreFloat3(&position, RANDOM::CircleEdgePoint(axis, 5.0f, &direction) + XMVectorSet(0, 15, 0, 0));
+				position = owner_->world_position_vector();
+				XMVECTOR axis = XMVectorSet(0, 1, 0, 0); // 기준 방향
+				XMStoreFloat3(&position, RANDOM::CircleEdgePoint(axis, 0.5f, &direction));
 
-				particle_data_[i].max_life_time_ = RANDOM::GetRandomValue(1.5f, 1.5f); // 기본
+				particle_data_[i].max_life_time_ = RANDOM::GetRandomValue(0.1f, 0.5f); // 기본
 				particle_data_[i].life_time_ = particle_data_[i].max_life_time_;
 				particle_data_[i].velocity_ = direction;
 				XMFLOAT3 pivot_position = owner_->world_position_vector();
@@ -365,10 +367,11 @@ void ParticleComponent::Play(int particle_count)
 		}
 		else if (shape_ == Circle)
 		{
-			XMVECTOR axis = XMVectorSet(1, 0, 0, 0); // 기준 방향
-			XMStoreFloat3(&position, RANDOM::CircleEdgePoint(axis, 5.0f, &direction) + XMVectorSet(0, 15, 0, 0));
+			position = owner_->world_position_vector();
+			XMVECTOR axis = XMVectorSet(0, 1, 0, 0); // 기준 방향
+			XMStoreFloat3(&position, RANDOM::CircleEdgePoint(axis, 0.5f, &direction));
 
-			particle_data_[i].max_life_time_ = RANDOM::GetRandomValue(1.5f, 1.5f); // 기본
+			particle_data_[i].max_life_time_ = RANDOM::GetRandomValue(0.1f, 0.5f); // 기본
 			particle_data_[i].life_time_ = particle_data_[i].max_life_time_;
 			particle_data_[i].velocity_ = direction;
 			XMFLOAT3 pivot_position = owner_->world_position_vector();
