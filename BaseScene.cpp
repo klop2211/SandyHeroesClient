@@ -160,6 +160,9 @@ void BaseScene::BuildMesh(ID3D12Device* device, ID3D12GraphicsCommandList* comma
 	model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/Gun/sherif.bin", meshes_, materials_, textures_));	//10 셰리프
 	model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/Gun/specter.bin", meshes_, materials_, textures_));	//11 스펙터
 
+	model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/Object/Chest.bin", meshes_, materials_, textures_));	//12 상자
+	model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/Object/Scroll.bin", meshes_, materials_, textures_));	//13 스크롤
+
 	//BuildScene("Base");
 
 	std::ifstream scene_file{ "./Resource/Model/World/Scene.bin", std::ios::binary };
@@ -543,6 +546,8 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 
 	Scene::UpdateObjectWorldMatrix();
 
+
+	device_ = device;
 }
 
 void BaseScene::BuildTextBrushAndFormat(ID2D1DeviceContext* device_context, IDWriteFactory* dwrite_factory)
@@ -1536,7 +1541,10 @@ void BaseScene::UpdateObjectHitBullet()
 	for (auto& object : ground_check_object_list_)
 	{
 		if (object == player_)
+		{
+			CheckPlayerHitGun(object);
 			continue;
+		}
 		CheckObjectHitBullet(object);
 		CheckObjectHitFlamethrow(object);
 	}
@@ -1922,8 +1930,12 @@ void BaseScene::CheckObjectHitBullet(Object* object)
 					particle_component->Play(50);
 					monster->HitDamage(gun->damage());
 
-					if(monster->IsDead())
+					if (monster->IsDead())
+					{
 						catch_monster_num_++;
+
+					}
+						
 				}
 			}
 		}
@@ -1980,11 +1992,97 @@ void BaseScene::CheckObjectHitFlamethrow(Object* object)
 
 					monster->HitDamage(gun->damage());
 					if (monster->IsDead())
+					{
 						catch_monster_num_++;
+
+						// 총기 이름 목록
+						std::vector<std::string> gun_names = { "Classic", "Sherif", "Specter", "Vandal", "Odin", "Flamethrower" };
+
+						std::vector<int> drop_weights = { 15, 10, 7, 5, 3, 1 }; // 전체 합 = 41
+
+						// 드랍할지 말지: 41% 확률로 총기 드랍, 나머지 59%는 아무것도 안 떨어짐
+						if (rand() % 100 >= 41) return; // 59% 확률로 드랍 안 함
+
+						// 랜덤 엔진 및 분포 생성
+						std::random_device rd;
+						std::mt19937 gen(rd());
+						std::discrete_distribution<> dist(drop_weights.begin(), drop_weights.end());
+
+						int random_index = dist(gen);
+						std::string gun_name = gun_names[random_index];
+						Object* dropped_gun = FindModelInfo(gun_names[random_index])->GetInstance();
+
+						XMFLOAT3 drop_pos = monster->owner()->world_position_vector();
+						drop_pos.y += 0.1f;
+						dropped_gun->set_position_vector(drop_pos);
+						dropped_gun->set_is_movable(true);
+
+						BoundingBox gun_bb{ {0.f, 0.f, 0.f}, {0.5f, 0.3f, 1.0f} };
+						auto box_comp = new BoxColliderComponent(dropped_gun, gun_bb);
+						dropped_gun->AddComponent(box_comp);
+
+						Material* particle_material = std::find_if(materials_.begin(), materials_.end(), [&](const auto& material) {
+							return material->name() == "Trail_1";
+							})->get();
+						ParticleComponent* particle = new ParticleComponent(
+							dropped_gun,
+							device_,
+							100,
+							ParticleComponent::Circle,
+							particle_material
+						);
+						particle->set_scene(this);
+						particle->set_color({ 1.0f, 0.0f, 1.0f, 1.0f });
+						particle_renderers.push_back(particle); // 반드시 필요!
+						dropped_gun->AddComponent(particle);
+
+						AddObject(dropped_gun);
+						dropped_guns_.push_back(dropped_gun);
+					}
 				}
 			}
 		}
 		return;
+	}
+}
+
+void BaseScene::CheckPlayerHitGun(Object* object)
+{
+	auto player_box = Object::GetComponentInChildren<MeshColliderComponent>(object);
+	if (!player_box) return;
+
+	BoundingOrientedBox player_obb = player_box->GetWorldOBB();
+
+	for (auto it = dropped_guns_.begin(); it != dropped_guns_.end(); )
+	{
+		Object* gun = *it;
+		auto gun_box = Object::GetComponent<BoxColliderComponent>(gun);
+		if (!gun_box) { ++it; continue; }
+
+		if (player_obb.Intersects(gun_box->animated_box()))
+		{
+			// 총기 획득 처리
+			std::string dropped_name = gun->name(); // "Dropped_Classic"
+			std::string gun_name = dropped_name.substr(dropped_name.find('_') + 1); // "Classic"
+
+			Object* player_gun_frame = player_->FindFrame("WeaponR_locator");
+			if (!player_gun_frame) { ++it; continue; }
+
+			std::vector<std::string> guns{ "Classic", "Sherif", "Specter", "Vandal", "Odin", "Flamethrower" };
+			for (const auto& name : guns)
+			{
+				if (name == gun_name) continue;
+				player_gun_frame->ChangeChild(FindModelInfo(gun_name)->GetInstance(), name, false);
+			}
+
+			gun->set_is_dead(true);
+			gun->Destroy();
+			it = dropped_guns_.erase(it);
+		}
+		else
+		{
+			++it;
+		}
 	}
 }
 
