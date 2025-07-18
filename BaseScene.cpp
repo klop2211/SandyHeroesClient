@@ -1423,6 +1423,11 @@ bool BaseScene::ProcessInput(UINT id, WPARAM w_param, LPARAM l_param, float time
 			ParticleComponent* particle = Object::GetComponentInChildren<ParticleComponent>(player_gun_frame);
 			particle->set_color({ 0.9f,0.9f,0.1f,0.5f });	//green
 		}
+		if (w_param == 'F')
+		{
+			f_key_ = true;
+			CheckPlayerHitGun(player_);
+		}
 		// 카메라 전환 테스트
 		if (w_param == 'K')
 		{
@@ -2289,7 +2294,12 @@ void BaseScene::CheckObjectHitFlamethrow(Object* object)
 void BaseScene::CheckPlayerHitGun(Object* object)
 {
 	auto player_box = Object::GetComponentInChildren<MeshColliderComponent>(object);
-	if (!player_box) return;
+	if (!player_box)
+	{
+		f_key_ = false;
+		return;
+	}
+	
 
 	BoundingOrientedBox player_obb = player_box->GetWorldOBB();
 
@@ -2299,7 +2309,7 @@ void BaseScene::CheckPlayerHitGun(Object* object)
 		auto gun_box = Object::GetComponent<BoxColliderComponent>(gun);
 		if (!gun_box) { ++it; continue; }
 
-		if (player_obb.Intersects(gun_box->animated_box()))
+		if (player_obb.Intersects(gun_box->animated_box()) && f_key_)
 		{
 			GunComponent* gun_component = Object::GetComponent<GunComponent>(gun);
 			if (!gun_component) { ++it; continue; }
@@ -2358,7 +2368,7 @@ void BaseScene::CheckPlayerHitGun(Object* object)
 			gun->set_is_dead(true);
 			gun->Destroy();
 			it = dropped_guns_.erase(it);
-
+			f_key_ = false;
 		}
 		else
 		{

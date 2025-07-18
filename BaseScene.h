@@ -72,6 +72,8 @@ private:
 	int catch_monster_num_{ 0 };
 	// 열쇠를 먹은 횟수
 	int get_key_num_{ 0 };
+	// F키 누름
+	bool f_key_{};
 
 	//현재 스테이지의 스포터를 활성화 했는가?
 	bool is_activate_spawner_ = false;
