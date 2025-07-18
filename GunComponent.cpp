@@ -167,6 +167,11 @@ void GunComponent::set_upgrade(int value)
     upgrade_ = value;
 }
 
+void GunComponent::set_element(ElementType value)
+{
+    element_ = value;
+}
+
 GunFireType GunComponent::fire_type() const
 {
     return fire_type_;
@@ -195,6 +200,16 @@ float GunComponent::critical_damage_rate() const
 BoundingBox GunComponent::flamethrow_box() const
 {
     return flamethrow_box_;
+}
+
+int GunComponent::upgrade() const
+{
+    return upgrade_;
+}
+
+ElementType GunComponent::element() const
+{
+    return element_;
 }
 
 int GunComponent::loaded_bullets() const

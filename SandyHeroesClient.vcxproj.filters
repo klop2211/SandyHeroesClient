@@ -599,6 +599,9 @@
     <ClCompile Include="ParticleRenderer.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="가은이의마구마구코드작성.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="SandyHeroesClient.rc">
