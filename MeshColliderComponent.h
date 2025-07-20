@@ -15,7 +15,7 @@ public:
     // 월드 좌표계의 광선과 mesh_ 간에 충돌체크
     // 매개변수: 광선 원점, 방향, OUT 충돌된 거리(월드 좌표계)
     // return: 충돌 여부
-    bool CollisionCheckByRay(FXMVECTOR ray_origin, FXMVECTOR ray_direction, float& out_distance);
+    virtual bool CollisionCheckByRay(FXMVECTOR ray_origin, FXMVECTOR ray_direction, float& out_distance);
 
     bool CollisionCheckByObb(BoundingOrientedBox obb);
 

@@ -41,5 +41,6 @@ private:
 	XMFLOAT3 up_vector_{ 0,0,0 };
 
 	BoundingFrustum view_frustum_{};
+	BoundingFrustum world_frustum_{};
 };
 

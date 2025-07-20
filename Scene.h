@@ -54,7 +54,7 @@ public:
 
 	virtual void Render(ID3D12GraphicsCommandList* command_list);
 	virtual void ShadowRender(ID3D12GraphicsCommandList* command_list);
-	virtual void RenderText(ID2D1Bitmap1* d2d_render_target, ID2D1DeviceContext2* d2d_device_context);
+	virtual void RenderText(ID2D1DeviceContext2* d2d_device_context);
 	virtual void ParticleRender(ID3D12GraphicsCommandList* command_list);
 
 	virtual bool ProcessInput(UINT id, WPARAM w_param, LPARAM l_param, float time) = 0;

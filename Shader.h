@@ -50,12 +50,15 @@ public:
 	void Render(ID3D12GraphicsCommandList* command_list, 
 		FrameResource* curr_frame_resource, DescriptorManager* descriptor_manager, CameraComponent* camera, bool bShadow = false);
 
+	void set_is_render(bool value) { is_render_ = value; }
+
 protected:
 	ComPtr<ID3D12PipelineState> d3d_pipeline_state_;
 
 	ShaderType shader_type_ = ShaderType::kNone;
 
 	bool is_frustum_culling_ = true;
+	bool is_render_ = true;
 
 	std::vector<Material*> materials_{};
 };

@@ -19,3 +19,10 @@ Object* Component::owner() const
 {
 	return owner_;
 }
+
+Object* Component::hierarchy_root()
+{
+	if(!hierarchy_root_)
+		hierarchy_root_ = owner_->GetHierarchyRoot();
+	return hierarchy_root_;
+}

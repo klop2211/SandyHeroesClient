@@ -24,6 +24,9 @@ Component* CameraComponent::GetCopy()
 
 void CameraComponent::Update(float elapsed_time)
 {
+	auto view = XMLoadFloat4x4(&view_matrix_);
+	auto inv_view = XMMatrixInverse(&XMMatrixDeterminant(view), view);
+	view_frustum_.Transform(world_frustum_, inv_view);
 }
 
 void CameraComponent::CreateProjectionMatrix(
@@ -41,12 +44,7 @@ bool CameraComponent::CollisionCheckByMeshComponent(MeshComponent* mesh_componen
 	auto aabb = mesh_component->GetMesh()->bounds();
 	BoundingOrientedBox::CreateFromBoundingBox(obb, aabb);
 	obb.Transform(obb, XMLoadFloat4x4(& mesh_component->owner()->world_matrix()));
-
-	auto view = XMLoadFloat4x4(&view_matrix_);
-	auto inv_view = XMMatrixInverse(&XMMatrixDeterminant(view), view);
-	BoundingFrustum world_frustum;
-	view_frustum_.Transform(world_frustum, inv_view);
-	return world_frustum.Intersects(obb);
+	return world_frustum_.Intersects(obb);
 }
 
 using namespace xmath_util_float3;

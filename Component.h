@@ -30,8 +30,10 @@ public:
 	virtual Component* GetCopy() = 0;
 	virtual void Update(float elapsed_time) {};
 
+	Object* hierarchy_root();
+
 protected:
 	Object* owner_ = nullptr;
-
+	Object* hierarchy_root_ = nullptr; // 오브젝트의 계층 구조에서 루트 오브젝트를 가리킴
 };
 

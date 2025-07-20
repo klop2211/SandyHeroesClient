@@ -209,6 +209,7 @@
     <ClInclude Include="UiMeshComponent.h" />
     <ClInclude Include="UIShader.h" />
     <ClInclude Include="UploadBuffer.h" />
+    <ClInclude Include="WallColliderComponent.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AnimationSet.cpp" />
@@ -280,6 +281,7 @@
     <ClCompile Include="Timer.cpp" />
     <ClCompile Include="UiMeshComponent.cpp" />
     <ClCompile Include="UIShader.cpp" />
+    <ClCompile Include="WallColliderComponent.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="SandyHeroesClient.rc" />

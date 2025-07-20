@@ -44,7 +44,6 @@ void GameFramework::Initialize(HINSTANCE hinstance, HWND hwnd)
 
     InitDirect3D();
 
-
     d3d_command_list_->Reset(d3d_command_allocator_.Get(), nullptr);
 
     BuildRootSignature();
@@ -58,13 +57,17 @@ void GameFramework::Initialize(HINSTANCE hinstance, HWND hwnd)
     scene_->Initialize(d3d_device_.Get(), d3d_command_list_.Get(), d3d_root_signature_.Get(), 
         this, d2d_device_context_.Get(), dwrite_factory_.Get());
 
-    OnResize();
-
     d3d_command_list_->Close();
     ID3D12CommandList* cmd_list[] = { d3d_command_list_.Get() };
     d3d_command_queue_->ExecuteCommandLists(1, cmd_list);
 
-    FlushCommandQueue();
+    OnResize();
+
+    //d3d_command_list_->Close();
+    //cmd_list[0] = d3d_command_list_.Get();
+    //d3d_command_queue_->ExecuteCommandLists(1, cmd_list);
+
+    //FlushCommandQueue();
 
     scene_->ReleaseMeshUploadBuffer();
 
@@ -171,60 +174,7 @@ void GameFramework::InitDirect3D()
         DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), &dwrite_factory_);
     }
 
-    // Query the desktop's dpi settings, which will be used to create
-// D2D's render targets.
-    float dpiX;
-    float dpiY;
-#pragma warning(push)
-#pragma warning(disable : 4996) // GetDesktopDpi is deprecated.
-    d2d_factory_->GetDesktopDpi(&dpiX, &dpiY);
-#pragma warning(pop)
-    D2D1_BITMAP_PROPERTIES1 bitmapProperties = D2D1::BitmapProperties1(
-        D2D1_BITMAP_OPTIONS_TARGET | D2D1_BITMAP_OPTIONS_CANNOT_DRAW,
-        D2D1::PixelFormat(DXGI_FORMAT_UNKNOWN, D2D1_ALPHA_MODE_PREMULTIPLIED),
-        dpiX,
-        dpiY
-    );
 
-    // Create frame resources.
-    {
-        CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(d3d_rtv_heap_->GetCPUDescriptorHandleForHeapStart());
-
-        // Create a RTV, D2D render target, and a command allocator for each frame.
-        for (UINT n = 0; n < kSwapChainBufferCount; n++)
-        {
-            dxgi_swap_chain_->GetBuffer(n, IID_PPV_ARGS(&d3d_swap_chain_buffers_[n]));
-            d3d_device_->CreateRenderTargetView(d3d_swap_chain_buffers_[n].Get(), nullptr, rtvHandle);
-
-            //NAME_D3D12_OBJECT_INDEXED(d3d_swap_chain_buffers_, n);
-
-            // Create a wrapped 11On12 resource of this back buffer. Since we are 
-            // rendering all D3D12 content first and then all D2D content, we specify 
-            // the In resource state as RENDER_TARGET - because D3D12 will have last 
-            // used it in this state - and the Out resource state as PRESENT. When 
-            // ReleaseWrappedResources() is called on the 11On12 device, the resource 
-            // will be transitioned to the PRESENT state.
-            D3D11_RESOURCE_FLAGS d3d11Flags = { D3D11_BIND_RENDER_TARGET };
-            d3d11on12_device_->CreateWrappedResource(
-                d3d_swap_chain_buffers_[n].Get(),
-                &d3d11Flags,
-                D3D12_RESOURCE_STATE_RENDER_TARGET,
-                D3D12_RESOURCE_STATE_PRESENT,
-                IID_PPV_ARGS(&d3d11_wrapped_swap_chain_buffers_[n])
-            );
-
-            // Create a render target for D2D to draw directly to this back buffer.
-            ComPtr<IDXGISurface> surface;
-            d3d11_wrapped_swap_chain_buffers_[n].As(&surface);
-            d2d_device_context_->CreateBitmapFromDxgiSurface(
-                surface.Get(),
-                &bitmapProperties,
-                &d2d_render_targets_[n]
-            );
-
-            rtvHandle.Offset(1, rtv_descriptor_size_);
-        }
-    }
 }
 
 void GameFramework::CreateCommandObject()
@@ -373,18 +323,26 @@ void GameFramework::BuildRootSignature()
 
 void GameFramework::OnResize()
 {
+	d2d_device_context_->SetTarget(nullptr);
+    d2d_device_context_->Flush();
+
     FlushCommandQueue();
 
     d3d_command_list_->Reset(d3d_command_allocator_.Get(), nullptr);
 
-    //�ĸ���۸� �ٽ� ����� ���� ���� ���� ����
-    for (ComPtr<ID3D12Resource>& swap_chain_buffer : d3d_swap_chain_buffers_)
-        swap_chain_buffer.Reset();
+    for(int i = 0; i < kSwapChainBufferCount; ++i)
+    {
+        d2d_render_targets_[i].Reset();
+        d3d11_wrapped_swap_chain_buffers_[i].Reset();
+        d3d_swap_chain_buffers_[i].Reset();
+	}
+
+    d3d11_device_context_->ClearState();
+    d3d11_device_context_->Flush();
 
     d3d_depth_stencil_buffer_.Reset();
     d3d_shadow_depth_buffer_.Reset();
 
-    //�ĸ���� ũ�� ����
     dxgi_swap_chain_->ResizeBuffers(
         kSwapChainBufferCount, 
         client_width_, client_height_, 
@@ -393,22 +351,74 @@ void GameFramework::OnResize()
 
     current_back_buffer_ = 0;
 
-    //Rtv ����
+    //Create Rtv
     CD3DX12_CPU_DESCRIPTOR_HANDLE rtv_heap_handle (
         d3d_rtv_heap_->GetCPUDescriptorHandleForHeapStart());
     for (int i = 0; i < kSwapChainBufferCount; ++i)
     {
-        //���� ��������
         dxgi_swap_chain_->GetBuffer(i, 
             IID_PPV_ARGS(d3d_swap_chain_buffers_[i].GetAddressOf()));
-        //�� ����
         d3d_device_->CreateRenderTargetView(
             d3d_swap_chain_buffers_[i].Get(), nullptr, rtv_heap_handle);
-
-        //�� ������ �̵�
+        d3d_swap_chain_buffers_[i]->SetName(
+			(L"SwapChainBuffer " + std::to_wstring(i)).c_str());
         rtv_heap_handle.Offset(1, rtv_descriptor_size_);
     }
 
+    // Create d2d frame resources.
+    {
+        // Query the desktop's dpi settings, which will be used to create
+        // D2D's render targets.
+        float dpiX;
+        float dpiY;
+#pragma warning(push)
+#pragma warning(disable : 4996) // GetDesktopDpi is deprecated.
+        d2d_factory_->GetDesktopDpi(&dpiX, &dpiY);
+#pragma warning(pop)
+        D2D1_BITMAP_PROPERTIES1 bitmapProperties = D2D1::BitmapProperties1(
+            D2D1_BITMAP_OPTIONS_TARGET | D2D1_BITMAP_OPTIONS_CANNOT_DRAW,
+            D2D1::PixelFormat(DXGI_FORMAT_UNKNOWN, D2D1_ALPHA_MODE_PREMULTIPLIED),
+            dpiX,
+            dpiY
+        );
+
+        CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(d3d_rtv_heap_->GetCPUDescriptorHandleForHeapStart());
+
+        // Create a RTV, D2D render target, and a command allocator for each frame.
+        for (UINT n = 0; n < kSwapChainBufferCount; n++)
+        {
+            // Create a wrapped 11On12 resource of this back buffer. Since we are 
+            // rendering all D3D12 content first and then all D2D content, we specify 
+            // the In resource state as RENDER_TARGET - because D3D12 will have last 
+            // used it in this state - and the Out resource state as PRESENT. When 
+            // ReleaseWrappedResources() is called on the 11On12 device, the resource 
+            // will be transitioned to the PRESENT state.
+            D3D11_RESOURCE_FLAGS d3d11Flags = { D3D11_BIND_RENDER_TARGET };
+            d3d11on12_device_->CreateWrappedResource(
+                d3d_swap_chain_buffers_[n].Get(),
+                &d3d11Flags,
+                D3D12_RESOURCE_STATE_RENDER_TARGET,
+                D3D12_RESOURCE_STATE_PRESENT,
+                IID_PPV_ARGS(&d3d11_wrapped_swap_chain_buffers_[n])
+            );
+
+			std::wstring name = L"WrappedSwapChainBuffer " + std::to_wstring(n);
+            d3d11_wrapped_swap_chain_buffers_[n]->SetPrivateData(
+                WKPDID_D3DDebugObjectNameW,
+				static_cast<UINT>(name.size() * sizeof(wchar_t)),
+                name.c_str());
+            // Create a render target for D2D to draw directly to this back buffer.
+            ComPtr<IDXGISurface> surface;
+            d3d11_wrapped_swap_chain_buffers_[n].As(&surface);
+            d2d_device_context_->CreateBitmapFromDxgiSurface(
+                surface.Get(),
+                &bitmapProperties,
+                &d2d_render_targets_[n]
+            );
+
+            rtvHandle.Offset(1, rtv_descriptor_size_);
+        }
+    }
 
     //Depth-Stencil ���� ����
     D3D12_RESOURCE_DESC ds_buffer_desc = {};
@@ -437,9 +447,8 @@ void GameFramework::OnResize()
         &ds_clear_value,
         IID_PPV_ARGS(d3d_depth_stencil_buffer_.GetAddressOf()));
 
-    //Dsv ����
-    // ���� ds ���۸� ������ �� ������ �ٲ�ų� ���ۿ� ���� 
-    // ������ desc�� ������� �ʴٸ� �Ʒ� �ּ��� ����ؼ� dsv�� �����ؾ���
+	d3d_depth_stencil_buffer_->SetName(L"DepthStencilBuffer");
+
     /*D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc;
     dsvDesc.Flags = D3D12_DSV_FLAG_NONE;
     dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
@@ -450,7 +459,6 @@ void GameFramework::OnResize()
         nullptr,                
         DepthStencilView());
 
-    //�������۸� ��� ���� ���·� ����
     d3d_command_list_->ResourceBarrier(1,
         &CD3DX12_RESOURCE_BARRIER::Transition(
             d3d_depth_stencil_buffer_.Get(),
@@ -484,6 +492,8 @@ void GameFramework::OnResize()
             D3D12_RESOURCE_STATE_GENERIC_READ,
             &shadowClear,
             IID_PPV_ARGS(d3d_shadow_depth_buffer_.GetAddressOf()));
+
+		d3d_shadow_depth_buffer_->SetName(L"ShadowDepthBuffer");
 
         D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
         srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
@@ -619,19 +629,17 @@ void GameFramework::FrameAdvance()
 
     //scene_->CheckObjectByObjectCollisions();
 
-    //������Ʈ
     scene_->Update(client_timer_->ElapsedTime());
     scene_->UpdateObjectWorldMatrix();
 
+    scene_->RunViewFrustumCulling();
 
-    //����
     auto& command_allocator = frame_resource_manager_->curr_frame_resource()->d3d_allocator;
 
     command_allocator->Reset();
 
     d3d_command_list_->Reset(command_allocator.Get(), nullptr);
     d3d_command_list_->SetGraphicsRootSignature(d3d_root_signature_.Get());
-
 
     d3d_command_list_->RSSetViewports(1, &shadow_viewport_);
     d3d_command_list_->RSSetScissorRects(1, &shadow_scissor_rect_);
@@ -689,10 +697,16 @@ void GameFramework::FrameAdvance()
     ID3D12CommandList* command_lists[] = { d3d_command_list_.Get() };
     d3d_command_queue_->ExecuteCommandLists(_countof(command_lists), command_lists);
 
+
     // Acquire our wrapped render target resource for the current back buffer.
     d3d11on12_device_->AcquireWrappedResources(d3d11_wrapped_swap_chain_buffers_[current_back_buffer_].GetAddressOf(), 1);
+    
+    d2d_device_context_->SetTarget(d2d_render_targets_[current_back_buffer_].Get());
+    d2d_device_context_->BeginDraw();
 
-    scene_->RenderText(d2d_render_targets_[current_back_buffer_].Get(), d2d_device_context_.Get());
+    scene_->RenderText(d2d_device_context_.Get());
+
+	d2d_device_context_->EndDraw();
 
     // Release our wrapped render target resource. Releasing 
     // transitions the back buffer resource to the state specified

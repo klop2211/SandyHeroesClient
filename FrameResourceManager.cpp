@@ -72,6 +72,9 @@ void FrameResourceManager::CirculateFrameResource(ID3D12Fence* fence)
     {
         HANDLE event_handle = CreateEventEx(nullptr, nullptr, 0, EVENT_ALL_ACCESS);
         fence->SetEventOnCompletion(curr_frame_resource_->fence, event_handle);
+
+		//OutputDebugString(L"Waiting for frame resource to complete...\n");
+
         WaitForSingleObject(event_handle, INFINITE);
         CloseHandle(event_handle);
     }

@@ -35,7 +35,7 @@ VertexOut MeshVS(MeshVertexIn v_in)
     float4 position_w = mul(float4(v_in.position, 1.f), g_world_matrix);
     v_out.position_w = position_w.xyz;
     v_out.position = mul(mul(float4(v_out.position_w, 1.f), g_view_matrix), g_projection_matrix);
-        
+
     //비균등 비례가 월드행렬에 있다면 월드행렬의 역전치 행렬로 변환해야함!
     v_out.normal_w = mul(v_in.normal, (float3x3)g_world_matrix);
     v_out.tangent_w = mul(v_in.tangent, (float3x3) g_world_matrix);
@@ -75,8 +75,8 @@ VertexOut SkinnedMeshVS(SkinnedMeshVertexIn v_in)
 
 float4 PS(VertexOut p_in) : SV_Target
 {
-    const float fog_start = 30.f;
-    const float fog_range = 50.f;
+    const float fog_start = 40.f;
+    const float fog_range = 120.f;
     const float4 fog_color = float4(1.0, 0.8, 0.6, 1.f);
     float dist_to_eye = length(g_camera_position - p_in.position_w);
 

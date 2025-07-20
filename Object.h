@@ -51,6 +51,7 @@ public:
 	XMFLOAT3 local_position() const { return local_position_; }	//로컬 좌표계
 
 	bool is_movable() const { return is_movable_; }
+	bool is_in_view_sector() const { return is_in_view_sector_; } // 카메라 절두체 컬링을 통과한 섹터에 있는가?
 
 	//setter
 	void set_transform_matrix(const XMFLOAT4X4& value);
@@ -73,6 +74,7 @@ public:
 	void set_local_position(const XMFLOAT3& value); 
 
 	void set_is_movable(bool value); 
+	void set_is_in_view_sector(bool value) { is_in_view_sector_ = value; } // 카메라 절두체 컬링을 통과한 섹터에 있는가?
 
 	//SRT 정보를 transform_matrix_로 초기화한다.
 	void ResetSRTFromTransformMatrix();
@@ -206,6 +208,8 @@ protected:
 	CollideType collide_type_ = { false, false };	//지면 체크, 벽 체크
 
 	bool is_movable_ = false;	//이동 가능한가? 
+
+	bool is_in_view_sector_ = false; // 카메라 절두체 컬링을 통과한 섹터에 있는가?
 
 	std::function<void(Object*)> on_destroy_func_ = nullptr;	//오브젝트가 파괴될 때 호출되는 함수
 

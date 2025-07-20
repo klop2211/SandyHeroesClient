@@ -166,6 +166,12 @@
     <Filter Include="7.Component\UI\Text">
       <UniqueIdentifier>{f2870744-75f6-4f5f-a5a9-550909440526}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Renderer">
+      <UniqueIdentifier>{f064ec12-b65e-4578-a52e-a097d38200f3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="3.Shader\Particle">
+      <UniqueIdentifier>{2383cc65-78a7-44de-9845-179f95770c2e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="targetver.h">
@@ -366,28 +372,31 @@
     <ClInclude Include="ProgressBarComponent.h">
       <Filter>7.Component\UI\ProgressBar</Filter>
     </ClInclude>
-    <ClInclude Include="TextComponent.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="TextRenderer.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
     <ClInclude Include="TextFormat.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="ParticleComponent.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="ParticleShader.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
     <ClInclude Include="SkinnedShadowShader.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="GroundColliderComponent.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
     <ClInclude Include="ParticleRenderer.h">
+      <Filter>Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="TextRenderer.h">
+      <Filter>Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="TextComponent.h">
+      <Filter>7.Component\UI\Text</Filter>
+    </ClInclude>
+    <ClInclude Include="GroundColliderComponent.h">
+      <Filter>7.Component\Collider</Filter>
+    </ClInclude>
+    <ClInclude Include="ParticleShader.h">
+      <Filter>3.Shader\Particle</Filter>
+    </ClInclude>
+    <ClInclude Include="WallColliderComponent.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>
@@ -575,28 +584,31 @@
     <ClCompile Include="ProgressBarComponent.cpp">
       <Filter>7.Component\UI\ProgressBar</Filter>
     </ClCompile>
-    <ClCompile Include="TextComponent.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="TextRenderer.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
     <ClCompile Include="TextFormat.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="ParticleComponent.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="ParticleShader.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
     <ClCompile Include="SkinnedShadowShader.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="GroundColliderComponent.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
     <ClCompile Include="ParticleRenderer.cpp">
+      <Filter>Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="TextRenderer.cpp">
+      <Filter>Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="TextComponent.cpp">
+      <Filter>7.Component\UI\Text</Filter>
+    </ClCompile>
+    <ClCompile Include="GroundColliderComponent.cpp">
+      <Filter>7.Component\Collider</Filter>
+    </ClCompile>
+    <ClCompile Include="ParticleShader.cpp">
+      <Filter>3.Shader\Particle</Filter>
+    </ClCompile>
+    <ClCompile Include="WallColliderComponent.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>

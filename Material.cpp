@@ -118,21 +118,25 @@ void Material::Render(ID3D12GraphicsCommandList* command_list,
 	if(!bShadow)
 		UpdateShaderVariables(command_list, curr_frame_resource, descriptor_manager);
 
+
 	for (const auto& mesh_component : mesh_component_list_)
 	{
+		if (bShadow)
+		{
+			mesh_component->Render(this, command_list, curr_frame_resource);
+			continue;
+		}
 		if (camera)
 		{
-			if (mesh_component->is_in_view_frustum())
+			if (mesh_component->hierarchy_root()->is_in_view_sector())
 			{
-				mesh_component->Render(this, command_list, curr_frame_resource);
-				mesh_component->set_is_in_view_frustum(false); // ·»´õ¸µ ÈÄ ºä ÇÁ·¯½ºÅÒ Ã¼Å© ÃÊ±âÈ­
+				if (camera->CollisionCheckByMeshComponent(mesh_component))
+				{
+					mesh_component->Render(this, command_list, curr_frame_resource);
+				}
 			}
 		}
 		else
-		{
-			mesh_component->Render(this, command_list, curr_frame_resource);
-		}
-		if (bShadow)
 		{
 			mesh_component->Render(this, command_list, curr_frame_resource);
 		}
