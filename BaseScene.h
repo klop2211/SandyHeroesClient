@@ -68,6 +68,8 @@ public:
 private:
 	//static constexpr int kStageMaxCount{ 8 };	// 게임 스테이지 총 개수
 
+	ID3D12Device* device_{ nullptr };	//Direct3D 12 디바이스
+
 	//스테이지별 몬스터 스포너 리스트
 	std::array<std::list<SpawnerComponent*>, kStageMaxCount> stage_monster_spawner_list_;
 

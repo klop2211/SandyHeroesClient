@@ -2332,7 +2332,6 @@ void BaseScene::CheckPlayerHitGun(Object* object)
 
 			// 드랍 총기 제거
 			gun->set_is_dead(true);
-			gun->Destroy();
 			it = dropped_guns_.erase(it);
 			f_key_ = false;
 		}

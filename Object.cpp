@@ -376,8 +376,10 @@ Object* Object::PopDeadChild()
 {
 	if (child_ && child_->is_dead_)
 	{
+		Object* new_child = child_->sibling_;
+		child_->sibling_ = nullptr;
 		Object* dead_child = child_;
-		child_ = nullptr;
+		child_ = new_child;
 		return dead_child;
 	}
 	if (child_)
@@ -395,15 +397,20 @@ Object* Object::PopDeadChild()
 
 void Object::ChangeChild(Object* src, const std::string& dst_name, bool is_delete)
 {
-	if (!src || !child_)
+	if (!src)
 		return;
-	if (child_->name_ == dst_name)
+	if (child_ && child_->name_ == dst_name)
 	{
 		if (is_delete)
+		{
 			delete child_;
+			child_ = src;
+		}
 		else
+		{
 			child_->set_is_dead(true);
-		child_ = src;
+			child_->AddSibling(src);
+		}
 		return;
 	}
 	if (child_)
