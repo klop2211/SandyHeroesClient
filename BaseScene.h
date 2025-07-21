@@ -45,6 +45,7 @@ public:
 	void UpdateObjectHitWall();
 	void UpdateObjectHitBullet();
 	void UpdateObjectHitObject();
+	void UpdateScroll(float elapsed_time);
 	void UpdateStageClear();
 
 	void PrepareGroundChecking();	//맵 바닥체크를 위한 사전 작업
@@ -56,6 +57,7 @@ public:
 	void CheckObjectHitFlamethrow(Object* object);
 	void CheckPlayerHitGun(Object* object);
 	void CheckPlayerHitPyramid(Object* object);
+	void CheckPlayerHitChest(Object* object);
 	void CheckSpawnBoxHitPlayer();
 
 	//getter
@@ -89,6 +91,19 @@ private:
 
 	std::vector<Object*> dropped_guns_;
 
+	std::vector<Object*> chests_;
+	std::vector<bool> chests_open_;
+	std::vector<bool> scroll_open_;
+
+	struct ScrollData
+	{
+		Object* scroll = nullptr;
+		XMFLOAT3 direction = {};  // 정규화된 이동 방향
+		float moved_distance = 0.f;
+		bool is_active = true;
+	};
+	std::vector<ScrollData> scrolls_;
+	
 	std::vector<BoxColliderComponent*> spawn_boxs_{}; // 스테이지 몬스터 생성 체크를 위한 박스들
 
 	std::vector<CutSceneTrack> cut_scene_tracks_{};

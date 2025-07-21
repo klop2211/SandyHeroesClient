@@ -132,6 +132,14 @@ void BaseScene::BuildMesh(ID3D12Device* device, ID3D12GraphicsCommandList* comma
 	meshes_.push_back(std::make_unique<UIMesh>(ui_x, ui_y, ui_width, ui_height));
 	meshes_.back().get()->set_name("PlayerHpBar");
 
+	//Scroll
+	constexpr float scroll_width = 100.f;
+	constexpr float scroll_height = 200.f;
+	ui_width = scroll_width;
+	ui_height = scroll_height;
+	meshes_.push_back(std::make_unique<UIMesh>(ui_width, ui_height));
+	meshes_.back().get()->set_name("Scroll");
+
 	//skybox
 	meshes_.push_back(std::make_unique<SkyboxMesh>(meshes_[0].get()));
 
@@ -376,6 +384,18 @@ void BaseScene::BuildMaterial(ID3D12Device* device, ID3D12GraphicsCommandList* c
 		}
 	}
 
+	// 스크롤 UI
+	{
+		material = new Material{ "test_texture", (int)ShaderType::kUI };
+		textures_.push_back(std::make_unique<Texture>());
+		textures_.back()->name = "test_texture";
+		textures_.back()->type = TextureType::kAlbedoMap;
+		material->AddTexture(textures_.back().get());
+		materials_.emplace_back();
+		materials_.back().reset(material);
+	}
+	
+
 	Scene::BuildMaterial(device, command_list);
 }
 
@@ -419,26 +439,6 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 
 	//Load All GunInfos
 	GunComponent::LoadGunInfosFromFile("./Resource/GunInfos.txt");
-
-	//player_gun_frame->AddChild(model_infos_[9]->GetInstance());	//1 권총, 7 밴달, 8 오딘, 9 화염방사기
-	//player_gun_frame = player_gun_frame->child();
-	//GunComponent* player_gun = new GunComponent(player_gun_frame);
-	//player_gun->LoadGunInfo("flamethrower");
-	//player_gun_frame->AddComponent(player_gun);
-	//player_gun_frame->Rotate(0, 170, -17);
-
-	//Object* player_gun_particle_pivot = new Object("gun_particle_pivot");
-	//player_gun_frame->AddChild(player_gun_particle_pivot);
-	////player_gun_particle_pivot->set_local_position(XMFLOAT3(0.0f, 0.2f, 0.3f));		//1
-	////player_gun_particle_pivot->set_local_position(XMFLOAT3(-0.018f, 0.2f, 0.58f));	//7
-	////player_gun_particle_pivot->set_local_position(XMFLOAT3(0.013f, 0.123f, 0.81f));	//8
-	//player_gun_particle_pivot->set_local_position(XMFLOAT3(0.0f, 0.143f, 1.24f));		//9
-
-	//// 화염방사기에 충돌 박스 달기
-	//Object* flamethrower_tip = player->FindFrame("gun_particle_pivot");
-	//GunComponent* gun = Object::GetComponentInChildren<GunComponent>(player);
-	//auto flamethrow_box_component = new BoxColliderComponent(flamethrower_tip, gun->flamethrow_box());
-	//flamethrower_tip->AddComponent(flamethrow_box_component);
 
 	//Set player's camera
 	Object* camera_object = new Object();
@@ -501,6 +501,112 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 		const auto& box_object = FindObject("SpawnBox" + std::to_string(i + 1));
 		const auto& box = Object::GetComponent<BoxColliderComponent>(box_object);
 		spawn_boxs_.push_back(box);
+	}
+
+	// 보물상자
+	{
+		constexpr int kChestCount = 6;
+		XMFLOAT3 chest_positions[kChestCount] = {
+			{ 32.19f, 0.38f, 8.44f },
+			{ 101.82f, 0.38f, 16.34f },
+			{ 56.3f, 0.147f, -108.4f },
+			{ 65.9f, 0.351f, -183.7f },
+			{ 110.72f, 0.346f, -175.84f},
+			{ 141.55f, 0.35f, -164.17f }
+		};
+		XMFLOAT3 chest_rotations[kChestCount] = {
+		{ 0.0f, 171.0f, 0.0f },
+		{ 0.0f, 294.6f, 0.0f },
+		{ 0.0f, 383.8f, 0.0f },
+		{ 0.0f, 361.4f, 0.0f },
+		{ 0.0f, 299.42f, 0.0f },
+		{ 0.0f, 179.44f, 0.0f }
+		};
+
+		chests_.reserve(kChestCount);
+		chests_open_.reserve(kChestCount);
+		for (int i = 0; i < kChestCount; ++i)
+		{
+			Object* chest = model_infos_[12]->GetInstance();
+			chest->set_name("Chest" + std::to_string(i));
+			chest->set_position_vector(chest_positions[i]);
+			chest->set_local_rotation(chest_rotations[i]);
+			chest->set_is_movable(true);
+
+			// 충돌용 BoxColliderComponent 부착
+			BoundingBox box_bounds{ {0.0f, 0.0f, 0.0f}, {1.5f, 1.0f, 1.5f} };
+			auto collider = new BoxColliderComponent(chest, box_bounds);
+			chest->AddComponent(collider);
+
+		
+
+			AddObject(chest);
+			chests_.push_back(chest);
+		}
+	}
+
+	// 스크롤
+	{
+		const int scroll_model_index = 13;
+		XMFLOAT3 scroll_rotations[scroll_model_index] = {
+		{ -90.307f, -90.0f, -98.0f },
+		{ -90.307f, -90.0f, -98.0f },
+		{ 0.0f, 0.0f, 0.0f },
+		{ 0.0f, 0.0f, 0.0f },
+		{ 0.0f, 0.0f, 0.0f },
+
+		{ 0.0f, 0.0f, 0.0f },
+		{ 0.0f, 0.0f, 0.0f },
+		{ 0.0f, 0.0f, 0.0f },
+		{ 0.0f, 0.0f, 0.0f },
+		{ 0.0f, 0.0f, 0.0f },
+
+	    { 0.0f, 0.0f, 0.0f },
+	    { 0.0f, 0.0f, 0.0f },
+		{ 0.0f, 0.0f, 0.0f }
+		};
+
+		for (int i = 0; i < 12; ++i)
+		{
+			// 스크롤 오브젝트 생성
+			Object* scroll = model_infos_[scroll_model_index]->GetInstance();
+			scroll->set_name("Scroll_" + std::to_string(i));
+			scroll->set_tag("Scroll");
+			scroll->set_is_movable(true);
+
+			//XMFLOAT3 rotation = { -90.0f, -90.0f, 0.0f };
+			scroll->set_local_rotation(scroll_rotations[i]);
+
+			// 초기 위치를 숨김 처리 (화면 바깥으로)
+			scroll->set_position_vector(XMFLOAT3{ 9999.f, 9999.f, 9999.f });
+
+			// [2] UI 바 오브젝트 생성 및 부착
+			Object* ui_bar = new Object();
+			ui_bar->set_tag("Scroll_UI");
+
+			// [3] UIMeshComponent 부착
+			Mesh* mesh = Scene::FindMesh("Scroll", meshes_);
+			Material* material = Scene::FindMaterial("test_texture", materials_);
+			auto ui_component = new UiMeshComponent(ui_bar, mesh, material, this);
+			ui_component->set_ui_layer(UiLayer::kZero);
+			ui_component->set_is_static(false);
+			ui_bar->AddComponent(ui_component);
+
+			scroll->AddChild(ui_bar);
+
+			// 씬에 추가
+			AddObject(scroll);
+
+			// ScrollData에 등록 (초기 direction은 0, 이동 안 함)
+			ScrollData data;
+			data.scroll = scroll;
+			data.direction = XMFLOAT3(0.f, 0.f, 0.f);
+			data.moved_distance = 0.f;
+			data.is_active = false;
+
+			scrolls_.push_back(data);
+		}
+		scroll_open_.reserve(scroll_model_index);
 	}
 
 	//Create Skybox
@@ -952,28 +1058,6 @@ void BaseScene::BuildModelInfo(ID3D12Device* device)
 		}
 	}
 
-	////Create Gun UI
-	//{
-	//	ModelInfo* gun_ui = new ModelInfo();
-	//	gun_ui->set_model_name("Gun_UI");
-	//
-	//	auto bar_background = new Object();
-	//	gun_ui->set_hierarchy_root(bar_background);
-	//
-	//	auto ui_background_material = Scene::FindMaterial("Classic+1", materials_);
-	//
-	//	auto ui_component = new UiMeshComponent(bar_background,
-	//		Scene::FindMesh("ProgressBar", meshes_), ui_background_material, this);
-	//	ui_component->set_ui_ratio({ 2.0f, 2.0f });
-	//	ui_component->set_ui_layer(UiLayer::kZero);
-	//	bar_background->AddComponent(ui_component);
-	//	
-	//	ui_background_material->DeleteMeshComponent(ui_component);
-	//
-	//	model_infos_.emplace_back();
-	//	model_infos_.back().reset(gun_ui);
-	//}
-
 	//Create Gun UI
 	{
 		std::vector<std::string> gun_names = {
@@ -1011,7 +1095,7 @@ void BaseScene::BuildModelInfo(ID3D12Device* device)
 				model_infos_.back().reset(gun_ui);
 			}
 		}
-}
+	}
 }
 
 void BaseScene::CreatePlayerUI()
@@ -1556,7 +1640,9 @@ void BaseScene::Update(float elapsed_time)
 
 	CheckSpawnBoxHitPlayer();
 
+	CheckPlayerHitChest(player_);
 
+	UpdateScroll(elapsed_time);
 }
 
 void BaseScene::RenderText(ID2D1Bitmap1* d2d_render_target, ID2D1DeviceContext2* d2d_device_context)
@@ -1662,6 +1748,42 @@ void BaseScene::UpdateObjectHitObject()
 	{
 		auto movement = Object::GetComponentInChildren<MovementComponent>(object);
 		CheckObjectHitObject(object);
+	}
+}
+
+void BaseScene::UpdateScroll(float elapsed_time)
+{
+	// [1] Scroll 이동 처리
+	constexpr float scroll_speed = 1.5f; // 초당 이동 거리
+
+	for (auto& data : scrolls_)
+	{
+		if (!data.is_active || !data.scroll) continue;
+
+		// [2] 방향 벡터 로드
+		XMVECTOR direction = XMLoadFloat3(&data.direction);
+		direction = XMVector3Normalize(direction);
+
+		// [3] 이동 거리 계산
+		float delta = scroll_speed * elapsed_time;
+
+		// 남은 거리보다 초과하지 않도록 제한
+		if (data.moved_distance + delta > 1.5f)
+		{
+			delta = 1.5f - data.moved_distance;
+			data.is_active = false; // 이동 완료
+		}
+
+		// [4] 위치 계산 및 적용
+		XMVECTOR pos = XMLoadFloat3(&data.scroll->position_vector());
+		pos += direction * delta;
+
+		XMFLOAT3 new_pos;
+		XMStoreFloat3(&new_pos, pos);
+		data.scroll->set_position_vector(new_pos);
+
+		// [5] 누적 거리 갱신
+		data.moved_distance += delta;
 	}
 }
 
@@ -1773,6 +1895,24 @@ void BaseScene::CheckObjectIsGround(Object* object)
 			}
 		}
 	}
+
+	//보물상자
+	for (auto& chest : chests_)
+	{
+		if (!chest || chest->is_dead()) continue;
+
+		auto chest_collider = Object::GetComponentInChildren<MeshColliderComponent>(chest);
+		if (!chest_collider) continue;
+
+		float t{};
+		if (chest_collider->CollisionCheckByRay(ray_origin, ray_direction, t))
+		{
+			is_collide = true;
+			if (t < distance)
+				distance = t;
+		}
+	}
+
 	if (is_collide)
 	{
 		float distance_on_ground = distance - kGroundYOffset; //지면까지의 거리
@@ -1852,6 +1992,40 @@ void BaseScene::CheckPlayerHitWall(Object* object, const XMFLOAT3& velocity)
 		if (distance < MAX_DISTANCE)
 			is_collide = true;
 	}
+
+	// 보물상자
+	{
+		XMFLOAT3 position = object->world_position_vector();
+		constexpr float kGroundYOffset = 0.25f;
+		position.y += kGroundYOffset;
+		XMVECTOR ray_origin = XMLoadFloat3(&position);
+		position.y -= kGroundYOffset;
+
+		XMVECTOR ray_direction = XMLoadFloat3(&velocity);
+		ray_direction = XMVectorSetY(ray_direction, 0);
+		ray_direction = XMVector3Normalize(ray_direction);
+
+		if (0 == XMVectorGetX(XMVector3Length(ray_direction)))
+			return;
+
+		for (auto& chest : chests_)
+		{
+			if (!chest || chest->is_dead()) continue;
+
+			auto chest_collider = Object::GetComponentInChildren<MeshColliderComponent>(chest);
+			if (!chest_collider) continue;
+
+			float t{};
+			if (chest_collider->CollisionCheckByRay(ray_origin, ray_direction, t))
+			{
+				if (t < distance)
+					distance = t;
+			}
+			if (distance < MAX_DISTANCE)
+				is_collide = true;
+		}
+	}
+	
 
 
 	if (is_collide)
@@ -2412,6 +2586,54 @@ void BaseScene::CheckPlayerHitPyramid(Object* object)
 				});
 
 			break;
+		}
+	}
+}
+
+void BaseScene::CheckPlayerHitChest(Object* object)
+{
+	if (!object || object->is_dead()) return;
+
+	auto player_mesh_collider = Object::GetComponentInChildren<MeshColliderComponent>(object);
+	if (!player_mesh_collider) return;
+
+	BoundingOrientedBox player_obb = player_mesh_collider->GetWorldOBB();
+
+	for (size_t i = 0; i < chests_.size(); ++i)
+	{
+		Object* chest = chests_[i];
+
+		// 트리거 판정용
+		auto box_colliders = Object::GetComponents<BoxColliderComponent>(chest);
+		if (box_colliders.empty()) continue;
+
+		for (auto& box_collider : box_colliders)
+		{
+			if (player_obb.Intersects(box_collider->animated_box()))
+			{
+				chests_open_[i] = true;
+
+				if (!scroll_open_[i])
+				{
+					// 스크롤 2개 생성
+					const XMFLOAT3 chest_pos = chest->world_position_vector();
+
+					// 왼쪽 위 대각선 방향
+					{
+						Object* scroll = scrolls_[i * 2].scroll;
+						scroll->set_position_vector(chest_pos);
+						scrolls_.push_back({ scroll, XMFLOAT3(-0.307f, 0.707f, 0.f), 0.f, true });
+					}
+
+					// 오른쪽 위 대각선 방향
+					{
+						Object* scroll = scrolls_[i * 2 + 1].scroll;
+						scroll->set_position_vector(chest_pos);
+						scrolls_.push_back({ scroll, XMFLOAT3(0.307f, 0.707f, 0.f), 0.f, true });
+					}
+					scroll_open_[i] = true;
+				}
+			}
 		}
 	}
 }
