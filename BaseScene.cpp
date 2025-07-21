@@ -44,6 +44,8 @@
 #include "PlayerComponent.h"
 #include "TextComponent.h"
 #include "ParticleRenderer.h"
+#include "GroundColliderComponent.h"
+#include "WallColliderComponent.h"
 
 void BaseScene::Initialize(ID3D12Device* device, ID3D12GraphicsCommandList* command_list, 
 	ID3D12RootSignature* root_signature, GameFramework* game_framework, 
@@ -64,7 +66,7 @@ void BaseScene::Initialize(ID3D12Device* device, ID3D12GraphicsCommandList* comm
 
 void BaseScene::BuildShader(ID3D12Device* device, ID3D12RootSignature* root_signature)
 {
-	constexpr int shader_count = 8;
+	constexpr int shader_count = 9;
 	shaders_.reserve(shader_count);
 
 	shaders_[(int)ShaderType::kStandardMesh] = std::make_unique<StandardMeshShader>();
@@ -76,8 +78,6 @@ void BaseScene::BuildShader(ID3D12Device* device, ID3D12RootSignature* root_sign
 	shaders_[(int)ShaderType::kShadow] = std::make_unique<ShadowShader>();
 	shaders_[(int)ShaderType::kSkinnedShadow] = std::make_unique<SkinnedShadowShader>();
 	shaders_[(int)ShaderType::kParticle] = std::make_unique<ParticleShader>();
-
-	//TODO: ���̴��� �����Ǵ� ���׸��� ���� Reserve
 
 	for (const auto& [type, shader] : shaders_)
 	{
@@ -447,7 +447,7 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 	camera_object->set_position_vector(0, 0.3f, 0); // 플레이어 캐릭터의 키가 150인것을 고려하여 머리위치에 배치
 	camera_object->set_name("CAMERA_1");
 	CameraComponent* camera_component =
-		new CameraComponent(camera_object, 0.01, 70,
+		new CameraComponent(camera_object, 0.01, 150,
 			(float)kDefaultFrameBufferWidth / (float)kDefaultFrameBufferHeight, 58);
 	camera_object->AddComponent(camera_component);
 	main_camera_ = camera_component;
@@ -620,7 +620,7 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 	camera_object = new Object;
 	camera_object->set_name("CAMERA_2");
 	camera_component =
-		new CameraComponent(camera_object, 0.01, 120,
+		new CameraComponent(camera_object, 0.01, 2000,
 			(float)kDefaultFrameBufferWidth / (float)kDefaultFrameBufferHeight, 58);
 	TestControllerComponent* controller = new TestControllerComponent(camera_object);
 	controller->set_client_wnd(game_framework_->main_wnd());
@@ -1526,6 +1526,11 @@ bool BaseScene::ProcessInput(UINT id, WPARAM w_param, LPARAM l_param, float time
 				main_camera_ = new_camera;
 			}
 			main_input_controller_ = Object::GetComponent<TestControllerComponent>(camera);
+
+			// UI off
+			shaders_[(int)ShaderType::kUI]->set_is_render(false);
+			text_renderer_->set_is_render(false);
+
 			return true;
 		}
 		if (w_param == 'L')
@@ -1539,6 +1544,9 @@ bool BaseScene::ProcessInput(UINT id, WPARAM w_param, LPARAM l_param, float time
 				main_camera_ = new_camera;
 			}
 			main_input_controller_ = Object::GetComponent<FPSControllerComponent>(player_);
+			shaders_[(int)ShaderType::kUI]->set_is_render(true);
+			text_renderer_->set_is_render(true);
+
 			return true;
 		}
 		if (w_param == 'O')
@@ -1645,9 +1653,9 @@ void BaseScene::Update(float elapsed_time)
 	UpdateScroll(elapsed_time);
 }
 
-void BaseScene::RenderText(ID2D1Bitmap1* d2d_render_target, ID2D1DeviceContext2* d2d_device_context)
+void BaseScene::RenderText(ID2D1DeviceContext2* d2d_device_context)
 {
-	text_renderer_->Render(d2d_render_target, d2d_device_context, d2d_text_brush_.Get());
+	text_renderer_->Render(d2d_device_context, d2d_text_brush_.Get());
 }
 
 void BaseScene::AddObject(Object* object)
@@ -1661,7 +1669,9 @@ void BaseScene::AddObject(Object* object)
 	}
 	if (collide_type.wall_check)
 	{
-		wall_check_object_list_.push_back(object);
+		auto movement = Object::GetComponentInChildren<MovementComponent>(object);
+		if(movement)
+			wall_check_object_list_.emplace_back(object, movement);
 	}
 }
 
@@ -1674,7 +1684,9 @@ void BaseScene::DeleteObject(Object* object)
 	}
 	if (collide_type.wall_check)
 	{
-		wall_check_object_list_.remove(object);
+		wall_check_object_list_.remove_if([object](const WallCheckObject& wall_check_object) {
+			return wall_check_object.object == object;
+			});
 	}
 
 	Scene::DeleteObject(object);
@@ -1686,8 +1698,8 @@ void BaseScene::DeleteDeadObjects()
 	ground_check_object_list_.remove_if([](const Object* object) {
 		return object->is_dead();
 		});
-	wall_check_object_list_.remove_if([](const Object* object) {
-		return object->is_dead();
+	wall_check_object_list_.remove_if([](const WallCheckObject& wall_check_object) {
+		return wall_check_object.object->is_dead();
 		});
 	Scene::DeleteDeadObjects();
 }
@@ -1712,11 +1724,9 @@ void BaseScene::UpdateObjectHitWall()
 		PrepareGroundChecking();
 	}
 
-	for (auto& object : wall_check_object_list_)
+	for (auto& wall_check_object : wall_check_object_list_)
 	{
-		auto movement = Object::GetComponentInChildren<MovementComponent>(object);
-		XMFLOAT3 velocity = movement->velocity();
-		CheckPlayerHitWall(object, velocity);
+		CheckPlayerHitWall(wall_check_object.object, wall_check_object.movement);
 	}
 }
 
@@ -1811,6 +1821,7 @@ void BaseScene::UpdateStageClear()
 		if (catch_monster_num_ < 1)
 			return;
 		//TODO: 스테이지 3번은 투명발판을 밟아 다음 스테이지로 진행해야 클리어
+		break;
 	case 4:
 		if (catch_monster_num_ < 1)
 			return;
@@ -1827,7 +1838,7 @@ void BaseScene::UpdateStageClear()
 		}
 		if (get_key_num_ == 3)
 		{
-			auto& mesh_list = checking_maps_mesh_collider_list_[stage_clear_num_];
+			auto& mesh_list = stage_wall_collider_list_[stage_clear_num_];
 			mesh_list.remove_if([](MeshColliderComponent* collider) {
 				return collider->mesh() && collider->mesh()->name() == "Cube";
 				});
@@ -1844,8 +1855,8 @@ void BaseScene::UpdateStageClear()
 		break;
 	}
 	// 현재 스테이지에서 "Cube" 메쉬 제거
-	auto& mesh_list = checking_maps_mesh_collider_list_[stage_clear_num_];
-	mesh_list.remove_if([](MeshColliderComponent* collider) {
+	auto& mesh_list = stage_wall_collider_list_[stage_clear_num_];
+	mesh_list.remove_if([](auto collider) {
 		return collider->mesh() && collider->mesh()->name() == "Cube";
 		});
 
@@ -1868,8 +1879,10 @@ void BaseScene::CheckObjectIsGround(Object* object)
 
 	bool is_collide = false;
 	float distance{ std::numeric_limits<float>::max() };
-	for (auto& mesh_collider : checking_maps_mesh_collider_list_[stage_clear_num_])
+	//int a = 0;
+	for (auto& mesh_collider : stage_ground_collider_list_[stage_clear_num_])
 	{
+		//++a;
 		float t{};
 		if (mesh_collider->CollisionCheckByRay(ray_origin, ray_direction, t))
 		{
@@ -1882,8 +1895,9 @@ void BaseScene::CheckObjectIsGround(Object* object)
 	}
 	if (stage_clear_num_ - 1 >= 0)
 	{
-		for (auto& mesh_collider : checking_maps_mesh_collider_list_[stage_clear_num_ - 1])
+		for (auto& mesh_collider : stage_ground_collider_list_[stage_clear_num_ - 1])
 		{
+			//++a;
 			float t{};
 			if (mesh_collider->CollisionCheckByRay(ray_origin, ray_direction, t))
 			{
@@ -1912,6 +1926,7 @@ void BaseScene::CheckObjectIsGround(Object* object)
 				distance = t;
 		}
 	}
+	//OutputDebugString(std::wstring(L"GroundColliderComponent Count: " + std::to_wstring(a) + L"\n").c_str());
 
 	if (is_collide)
 	{
@@ -1938,12 +1953,16 @@ void BaseScene::PrepareGroundChecking()
 	{
 		Object* object = Scene::FindObject(stage_names[i]);
 		checking_maps_mesh_collider_list_[i] = Object::GetComponentsInChildren<MeshColliderComponent>(object);
+		stage_ground_collider_list_[i] = Object::GetComponentsInChildren<GroundColliderComponent>(object);
+		stage_wall_collider_list_[i] = Object::GetComponentsInChildren<WallColliderComponent>(object);
 	}
 	is_prepare_ground_checking_ = true;
 }
 
-void BaseScene::CheckPlayerHitWall(Object* object, const XMFLOAT3& velocity)
+void BaseScene::CheckPlayerHitWall(Object* object, MovementComponent* movement)
 {
+	XMFLOAT3 velocity = movement->velocity();
+
 	XMFLOAT3 position = object->world_position_vector();
 	constexpr float kGroundYOffset = 0.75f;
 	position.y += kGroundYOffset;
@@ -1959,8 +1978,11 @@ void BaseScene::CheckPlayerHitWall(Object* object, const XMFLOAT3& velocity)
 
 	bool is_collide = false;
 	float distance{ std::numeric_limits<float>::max() };
-	for (auto& mesh_collider : checking_maps_mesh_collider_list_[stage_clear_num_])
+	int a = 0;
+	constexpr float MAX_DISTANCE = 0.5f;
+	for(auto& mesh_collider : stage_wall_collider_list_[stage_clear_num_])
 	{
+		++a;
 		float t{};
 		if (mesh_collider->CollisionCheckByRay(ray_origin, ray_direction, t))
 		{
@@ -1969,17 +1991,12 @@ void BaseScene::CheckPlayerHitWall(Object* object, const XMFLOAT3& velocity)
 				distance = t;
 			}
 		}
-	}
-
-	constexpr float MAX_DISTANCE = 0.5f;
-	if (distance < MAX_DISTANCE)
-		is_collide = true;
-
-
+	}		
 	if (stage_clear_num_ - 1 >= 0)
 	{
-		for (auto& mesh_collider : checking_maps_mesh_collider_list_[stage_clear_num_ - 1])
+		for (auto& mesh_collider : stage_wall_collider_list_[stage_clear_num_ - 1])
 		{
+			++a;
 			float t{};
 			if (mesh_collider->CollisionCheckByRay(ray_origin, ray_direction, t))
 			{
@@ -1989,9 +2006,9 @@ void BaseScene::CheckPlayerHitWall(Object* object, const XMFLOAT3& velocity)
 				}
 			}
 		}
-		if (distance < MAX_DISTANCE)
-			is_collide = true;
 	}
+	if (distance < MAX_DISTANCE)
+		is_collide = true;
 
 	// 보물상자
 	{
@@ -2030,7 +2047,6 @@ void BaseScene::CheckPlayerHitWall(Object* object, const XMFLOAT3& velocity)
 
 	if (is_collide)
 	{
-		auto movement = Object::GetComponentInChildren<MovementComponent>(object);
 		movement->Stop();
 		return;
 	}
@@ -2038,6 +2054,10 @@ void BaseScene::CheckPlayerHitWall(Object* object, const XMFLOAT3& velocity)
 
 void BaseScene::CheckObjectHitObject(Object* object)
 {
+	//TODO: 몬스터 AI완성 이후 충돌시에 밀리는 기능 추가 및 return; 삭제!!
+	return;
+
+
 	if (!object || object->is_dead()) return;
 
 	auto movement = Object::GetComponentInChildren<MovementComponent>(object);
@@ -2077,7 +2097,7 @@ void BaseScene::CheckObjectHitObject(Object* object)
 
 				bool is_collide = false;
 				float distance{ std::numeric_limits<float>::max() };
-				for (auto& mesh_collider : checking_maps_mesh_collider_list_[stage_clear_num_])
+				for (auto& mesh_collider : stage_wall_collider_list_[stage_clear_num_])
 				{
 					float t{};
 					if (mesh_collider->CollisionCheckByRay(ray_origin, ray_direction, t))
@@ -2107,60 +2127,6 @@ void BaseScene::CheckObjectHitObject(Object* object)
 			}
 		}
 	}
-	//else
-	//{
-	//	auto box1 = Object::GetComponentInChildren<BoxColliderComponent>(object);
-	//	if (!box1) return;
-
-	//	BoundingOrientedBox obb1 = box1->animated_box();
-
-	//	for (auto& other : ground_check_object_list_)
-	//	{
-	//		if (!other || other == object || other->is_dead()) continue;
-
-	//		auto box2 = Object::GetComponentInChildren<BoxColliderComponent>(other);
-	//		if (!box2) continue;
-
-	//		if (obb1.Intersects(box2->animated_box()))
-	//		{
-	//			XMFLOAT3 position = object->world_position_vector();
-	//			constexpr float kGroundYOffset = 0.75f;
-	//			position.y += kGroundYOffset;
-	//			XMVECTOR ray_origin = XMLoadFloat3(&position);
-	//			position.y -= kGroundYOffset;
-
-	//			XMFLOAT3 other_pos = other->world_position_vector();
-	//			XMFLOAT3 dir = xmath_util_float3::Normalize(object_pos - other_pos);
-	//			XMVECTOR ray_direction = XMLoadFloat3(&dir);
-	//			ray_direction = XMVectorSetY(ray_direction, 0);
-	//			ray_direction = XMVector3Normalize(ray_direction);
-
-	//			if (0 == XMVectorGetX(XMVector3Length(ray_direction)))
-	//				return;
-
-	//			bool is_collide = false;
-	//			float distance{ std::numeric_limits<float>::max() };
-	//			for (auto& mesh_collider : checking_maps_mesh_collider_list_[stage_clear_num_])
-	//			{
-	//				float t{};
-	//				if (mesh_collider->CollisionCheckByRay(ray_origin, ray_direction, t))
-	//				{
-	//					if (t < distance)
-	//					{
-	//						distance = t;
-	//					}
-	//				}
-	//			}
-
-	//			constexpr float kMinSafeDistance = 1.5f; // 살짝 밀려도 충돌 안나도록 여유
-	//			if (distance > kMinSafeDistance) // 벽에 안 부딪힌다면 밀기
-	//			{
-	//				object->set_position_vector(object_pos + dir * 0.1f);
-	//			}
-	//			return;
-	//		}
-	//	}
-	//}
 }
 
 void BaseScene::CheckObjectHitBullet(Object* object)
@@ -2187,7 +2153,6 @@ void BaseScene::CheckObjectHitBullet(Object* object)
 				MonsterComponent* monster = Object::GetComponent<MonsterComponent>(object);
 				if (monster && monster->IsDead())
 					continue;
-				particle_system_->SpawnParticle(this, box_collider->animated_box().Center, 10, 0.5f);
 				bullet->set_is_dead(true);
 				if (monster && !monster->IsDead())
 				{
@@ -2197,7 +2162,6 @@ void BaseScene::CheckObjectHitBullet(Object* object)
 						if (flame_tip)
 							gun_particle = Object::GetComponent<ParticleComponent>(flame_tip);
 					}
-
 
 					// 몬스터 HIT 파티클 출력
 					ParticleComponent* particle_component = Object::GetComponent<ParticleComponent>(monster_hit_particles_.front());
@@ -2540,7 +2504,6 @@ void BaseScene::CheckPlayerHitGun(Object* object)
 
 			// 드랍 총기 제거
 			gun->set_is_dead(true);
-			gun->Destroy();
 			it = dropped_guns_.erase(it);
 			f_key_ = false;
 		}

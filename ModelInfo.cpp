@@ -13,6 +13,7 @@
 #include "BoxColliderComponent.h"
 #include "DebugMeshComponent.h"
 #include "GroundColliderComponent.h"
+#include "WallColliderComponent.h"
 
 ModelInfo::ModelInfo(const std::string& file_name, std::vector<std::unique_ptr<Mesh>>& meshes,
 	std::vector<std::unique_ptr<Material>>& materials, std::vector<std::unique_ptr<Texture>>& textures)
@@ -184,9 +185,27 @@ Object* ModelInfo::LoadFrameInfoFromFile(std::ifstream& file, std::vector<std::u
 
 		if (load_token == "<GroundCollider>:")
 		{
-			GroundColliderComponent* mesh_collider = new GroundColliderComponent(frame);
-			mesh_collider->set_mesh(mesh);
-			frame->AddComponent(mesh_collider);
+			if (mesh)
+			{
+				GroundColliderComponent* mesh_collider = new GroundColliderComponent(frame);
+				mesh_collider->set_mesh(mesh);
+				frame->AddComponent(mesh_collider);
+			}
+			ReadStringFromFile(file, load_token);
+		}
+		if (load_token == "<WallCollider>:")
+		{
+			if (mesh)
+			{
+				WallColliderComponent* wall_collider = new WallColliderComponent(frame);
+				wall_collider->set_mesh(mesh);
+				auto box = Object::GetComponent<BoxColliderComponent>(frame);
+				if(box)
+				{
+					wall_collider->set_box_collider(box);
+				}
+				frame->AddComponent(wall_collider);
+			}
 			ReadStringFromFile(file, load_token);
 		}
 

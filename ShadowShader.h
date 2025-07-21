@@ -10,4 +10,6 @@ public:
     virtual D3D12_SHADER_BYTECODE CreateVertexShader(ID3DBlob** shader_blob) override;
     virtual D3D12_SHADER_BYTECODE CreatePixelShader(ID3DBlob** shader_blob) override;
     virtual D3D12_RASTERIZER_DESC CreateRasterizerState();
+    virtual void CreateShader(ID3D12Device* device, ID3D12RootSignature* root_signature) override;
+
 };

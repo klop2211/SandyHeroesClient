@@ -142,6 +142,9 @@ void Shader::AddMaterial(Material* material)
 void Shader::Render(ID3D12GraphicsCommandList* command_list, 
 	FrameResource* curr_frame_resource, DescriptorManager* descriptor_manager, CameraComponent* camera, bool bShadow)
 {
+	if(!is_render_)
+		return;
+
 	if(!bShadow)
 		command_list->SetPipelineState(d3d_pipeline_state_.Get());
 

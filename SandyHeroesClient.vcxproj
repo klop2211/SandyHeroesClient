@@ -209,6 +209,7 @@
     <ClInclude Include="UiMeshComponent.h" />
     <ClInclude Include="UIShader.h" />
     <ClInclude Include="UploadBuffer.h" />
+    <ClInclude Include="WallColliderComponent.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AnimationSet.cpp" />
@@ -280,10 +281,7 @@
     <ClCompile Include="Timer.cpp" />
     <ClCompile Include="UiMeshComponent.cpp" />
     <ClCompile Include="UIShader.cpp" />
-    <ClCompile Include="가은이의마구마구코드작성.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </ClCompile>
+    <ClCompile Include="WallColliderComponent.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="SandyHeroesClient.rc" />

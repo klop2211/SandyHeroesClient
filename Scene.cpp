@@ -199,25 +199,17 @@ void Scene::RunViewFrustumCulling()
 {
 	int i = 0;
 	int j = 0;
+	BoundingFrustum world_frustum;
+	auto view = XMLoadFloat4x4(&main_camera_->view_matrix());
+	auto inv_view = XMMatrixInverse(&XMMatrixDeterminant(view), view);
+	main_camera_->view_frustum().Transform(world_frustum, inv_view);
+
 	for (auto& sector : sectors_)
 	{
-		BoundingFrustum world_frustum;	
-		auto view = XMLoadFloat4x4(&main_camera_->view_matrix());
-		auto inv_view = XMMatrixInverse(&XMMatrixDeterminant(view), view);
-		main_camera_->view_frustum().Transform(world_frustum, inv_view);
-		if (sector.bounds().Intersects(world_frustum))
+		bool is_in_view_sector = sector.bounds().Intersects(world_frustum);
+		for (const auto& object : sector.object_list())
 		{
-			++j;
-			for (const auto& object : sector.object_list())
-			{
-				auto mesh_component_list = Object::GetComponentsInChildren<MeshComponent>(object);
-				for (const auto& mesh_component : mesh_component_list)
-				{
-					mesh_component->set_is_in_view_frustum(main_camera_->CollisionCheckByMeshComponent(mesh_component));
-					++i;
-				}
-			}
-
+			object->set_is_in_view_sector(is_in_view_sector);
 		}
 	}
 	//std::string str = "View Frustum Culling: " + std::to_string(i) + " objects checked.\n" + std::to_string(j) + " Sectors checked.\n";
@@ -402,7 +394,7 @@ void Scene::UpdateRenderPassConstantBuffer(ID3D12GraphicsCommandList* command_li
 
 void Scene::UpdateRenderPassShadowBuffer(ID3D12GraphicsCommandList* command_list)
 {
-	constexpr float radius = 50.0f;
+	constexpr float radius = 150.0f;
 
 	CBShadow shadow_pass = {};
 	shadow_pass.light_dir = { 0.577350020,  -0.577350020, 0.577350020 };
@@ -417,8 +409,8 @@ void Scene::UpdateRenderPassShadowBuffer(ID3D12GraphicsCommandList* command_list
 	//XMStoreFloat3(&shadow_pass.light_pos_w, lightPos);
 
 
-
-	XMFLOAT3 player_pos = player_->world_position_vector();
+	auto camera_object = main_camera_->owner();
+	XMFLOAT3 player_pos = camera_object->world_position_vector();
 	XMVECTOR targetPos = XMLoadFloat3(&player_pos); // 플레이어를 타겟으로
 	XMVECTOR lightDir = XMLoadFloat3(&shadow_pass.light_dir);
 	XMVECTOR lightPos = targetPos - 2.0f * radius * lightDir;
@@ -494,7 +486,7 @@ void Scene::Render(ID3D12GraphicsCommandList* command_list)
 	FrameResourceManager* frame_resource_manager = game_framework_->frame_resource_manager();
 	auto curr_frame_resource = frame_resource_manager->curr_frame_resource();
 
-	RunViewFrustumCulling();
+	//RunViewFrustumCulling();
 
 	//Default-Render-Pass
 	UpdateRenderPassConstantBuffer(command_list);
@@ -527,68 +519,35 @@ void Scene::ShadowRender(ID3D12GraphicsCommandList* command_list)
 		skinnedShader->Render(command_list, curr_frame_resource, game_framework_->descriptor_manager(), main_camera_, true);
 	}
 
+	//{
+	//	auto& shadow_shader = shaders_[(int)ShaderType::kShadow];
+	//	auto& mesh_shader = shaders_[(int)ShaderType::kStandardMesh];
+	//	shadow_shader->Render(command_list, curr_frame_resource, game_framework_->descriptor_manager(), main_camera_);
+	//	mesh_shader->Render(command_list, curr_frame_resource, game_framework_->descriptor_manager(), main_camera_, true);
+	//}
 
-	for (const auto& [type, shader] : shaders_)
+	auto& shadow_shader = shaders_[(int)ShaderType::kShadow];
+	shadow_shader->Render(command_list, curr_frame_resource, game_framework_->descriptor_manager(), main_camera_);
+	for (int i = -1; i <= 1; ++i)
 	{
-		if (type == (int)ShaderType::kShadow)
+		int idx = std::clamp(stage_clear_num_ + i, 0, 7);
+		for (auto& object : checking_maps_mesh_collider_list_[idx])
 		{
-			auto& shadow_shader = shader;
-			shadow_shader->Render(command_list, curr_frame_resource, game_framework_->descriptor_manager(), main_camera_);
-			for (int i = -1; i <= 1; ++i)
-			{
-				int idx = std::clamp(stage_clear_num_ + i, 0, 7);
-				for (auto& object : checking_maps_mesh_collider_list_[idx])
-				{
-					if (object->mesh()->name() == "Cube") continue;
+			if (object->mesh()->name() == "Cube") continue;
 
-					const auto& mesh_component = Object::GetComponent<MeshComponent>(object->owner());
-					mesh_component->UpdateConstantBufferForShadow(curr_frame_resource, -1);
+			const auto& mesh_component = Object::GetComponent<MeshComponent>(object->owner());
+			mesh_component->UpdateConstantBufferForShadow(curr_frame_resource, -1);
 
-					auto gpu_address = curr_frame_resource->cb_object->Resource()->GetGPUVirtualAddress();
-					const auto cb_size = d3d_util::CalculateConstantBufferSize((sizeof(CBObject)));
-					gpu_address += cb_size * mesh_component->constant_buffer_index();
+			auto gpu_address = curr_frame_resource->cb_object->Resource()->GetGPUVirtualAddress();
+			const auto cb_size = d3d_util::CalculateConstantBufferSize((sizeof(CBObject)));
+			gpu_address += cb_size * mesh_component->constant_buffer_index();
 
-					command_list->SetGraphicsRootConstantBufferView((int)RootParameterIndex::kWorldMatrix, gpu_address);
+			command_list->SetGraphicsRootConstantBufferView((int)RootParameterIndex::kWorldMatrix, gpu_address);
 
-					mesh_component->GetMesh()->Render(command_list, 0);
-				}
-			}
-
+			mesh_component->GetMesh()->Render(command_list, 0);
 		}
-		//if (type == (int)ShaderType::kSkinnedShadow)
-		//{
-		//	auto& skinned_shadow_shader = shader;
-		//	skinned_shadow_shader->Render(command_list, curr_frame_resource, game_framework_->descriptor_manager(), main_camera_);
-
-		//	for (auto& object : ground_check_object_list_)
-		//	{
-		//		const auto& skinned_mesh_component = Object::GetComponentInChildren<SkinnedMeshComponent>(object);
-
-		//		const auto& skinned_mesh = skinned_mesh_component->GetMesh();
-		//		skinned_mesh->UpdateConstantBufferForShadow(curr_frame_resource, index);
-		//		skinned_mesh_component->UpdateConstantBufferForShadow(curr_frame_resource, -1);
-
-		//		{
-		//			auto gpu_address = curr_frame_resource->cb_bone_transform->Resource()->GetGPUVirtualAddress();
-		//			const auto cb_size = d3d_util::CalculateConstantBufferSize((sizeof(CBBoneTransform)));
-		//			gpu_address += cb_size * skinned_mesh_component->constant_buffer_index();
-		//			command_list->SetGraphicsRootConstantBufferView((int)RootParameterIndex::kBoneTransform, gpu_address);
-		//		}
-
-		//		{
-		//			auto gpu_address = curr_frame_resource->cb_object->Resource()->GetGPUVirtualAddress();
-		//			const auto cb_size = d3d_util::CalculateConstantBufferSize((sizeof(CBObject)));
-		//			gpu_address += cb_size * skinned_mesh_component->constant_buffer_index();
-		//			command_list->SetGraphicsRootConstantBufferView((int)RootParameterIndex::kWorldMatrix, gpu_address);
-		//		}
-
-
-		//		//skinned_mesh_component->Render(nullptr, command_list, curr_frame_resource);
-		//		skinned_mesh_component->GetMesh()->Render(command_list, 0);
-		//	}
-
-		//}
 	}
+
 }
 
 void Scene::ParticleRender(ID3D12GraphicsCommandList* command_list)
@@ -604,23 +563,8 @@ void Scene::ParticleRender(ID3D12GraphicsCommandList* command_list)
 
 }
 
-void Scene::RenderText(ID2D1Bitmap1* d2d_render_target, ID2D1DeviceContext2* d2d_device_context)
+void Scene::RenderText(ID2D1DeviceContext2* d2d_device_context)
 {
-	D2D1_SIZE_F rtSize = d2d_render_target->GetSize();
-	D2D1_RECT_F textRect = D2D1::RectF(0, 0, rtSize.width, rtSize.height);
-	static const WCHAR text[] = L"Default Scene Text Render";
-
-	d2d_device_context->SetTarget(d2d_render_target);
-	d2d_device_context->BeginDraw();
-	d2d_device_context->SetTransform(D2D1::Matrix3x2F::Identity());
-	d2d_device_context->DrawText(
-		text,
-		_countof(text) - 1,
-		d2d_text_format_.Get(),
-		&textRect,
-		d2d_text_brush_.Get()
-	);
-	d2d_device_context->EndDraw();
 
 }
 

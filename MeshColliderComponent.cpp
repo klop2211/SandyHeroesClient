@@ -9,6 +9,7 @@ MeshColliderComponent::MeshColliderComponent(Object* owner) : Component(owner)
 
 MeshColliderComponent::MeshColliderComponent(const MeshColliderComponent& other) : Component(other.owner_)
 {
+	mesh_ = other.mesh_;
 }
 
 Component* MeshColliderComponent::GetCopy()

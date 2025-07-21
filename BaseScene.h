@@ -8,6 +8,9 @@
 class MeshColliderComponent;
 class SpawnerComponent;
 class BoxColliderComponent;
+class GroundColliderComponent;
+class WallColliderComponent;
+class MovementComponent;
 
 class BaseScene :
     public Scene
@@ -35,7 +38,7 @@ public:
 
 	virtual void Update(float elapsed_time) override;
 
-	virtual void RenderText(ID2D1Bitmap1* d2d_render_target, ID2D1DeviceContext2* d2d_device_context) override;
+	virtual void RenderText(ID2D1DeviceContext2* d2d_device_context) override;
 
 	virtual void AddObject(Object* object) override;
 	virtual void DeleteObject(Object* object) override;
@@ -51,7 +54,7 @@ public:
 	void PrepareGroundChecking();	//맵 바닥체크를 위한 사전 작업
 
 	void CheckObjectIsGround(Object* object);
-	void CheckPlayerHitWall(Object* object, const XMFLOAT3& velocity);
+	void CheckPlayerHitWall(Object* object, MovementComponent* movement);
 	void CheckObjectHitObject(Object* object);
 	void CheckObjectHitBullet(Object* object);
 	void CheckObjectHitFlamethrow(Object* object);
@@ -67,6 +70,8 @@ public:
 private:
 	//static constexpr int kStageMaxCount{ 8 };	// 게임 스테이지 총 개수
 
+	ID3D12Device* device_{ nullptr };	//Direct3D 12 디바이스
+
 	//스테이지별 몬스터 스포너 리스트
 	std::array<std::list<SpawnerComponent*>, kStageMaxCount> stage_monster_spawner_list_;
 
@@ -80,10 +85,20 @@ private:
 	//현재 스테이지의 스포터를 활성화 했는가?
 	bool is_activate_spawner_ = false;
 
-	ID3D12Device* device_;
+	struct WallCheckObject
+	{
+		Object* object{ nullptr };
+		MovementComponent* movement{ nullptr };
 
-	//TODO: 앞으로 충돌관련 리스트가 추가된다면(그럴 필요성이 있어서) 오브젝트 매니저 클래스를 구현하는 것을 고려할 것.
-	std::list<Object*> wall_check_object_list_;	//벽 체크가 필요한 객체들의 리스트(플레이어, monster, NPC)
+		WallCheckObject(Object* obj, MovementComponent* move)
+			: object(obj), movement(move) {
+		}
+	};
+
+	std::list<WallCheckObject> wall_check_object_list_;	//벽 체크가 필요한 객체들의 리스트(플레이어, monster, NPC)
+
+	std::array<std::list<GroundColliderComponent*>, 8> stage_ground_collider_list_;	//스테이지 바닥 콜라이더 리스트
+	std::array<std::list<WallColliderComponent*>, 8> stage_wall_collider_list_;	//스테이지 벽 콜라이더 리스트
 
 	std::unique_ptr<ParticleSystem> particle_system_{ nullptr };	//파티클 시스템
 
@@ -109,7 +124,6 @@ private:
 	std::vector<CutSceneTrack> cut_scene_tracks_{};
 
 	std::unique_ptr<TextRenderer> text_renderer_{ nullptr }; // 텍스트 렌더러
-
 	std::unordered_map<std::string, std::unique_ptr<TextFormat>> text_formats_;
 };
 

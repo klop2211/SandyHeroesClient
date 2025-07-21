@@ -104,6 +104,6 @@ public:
 	std::unique_ptr<UploadBuffer<CBMaterial>> cb_material;
 	std::unique_ptr<UploadBuffer<CBUi>> cb_ui;
 
-	UINT fence = 0;
+	UINT64 fence = 0;
 };
 
