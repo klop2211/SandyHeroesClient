@@ -6,6 +6,7 @@ class Scene;
 
 enum class GunFireType { kAuto, kSemiAuto, kBoltAction, kBurst };
 enum class BulletType { kNormal, kBig, kSpecial };
+enum class ElementType { kFire, kElectric, kPoison };
 
 struct GunInfo
 {
@@ -42,6 +43,8 @@ public:
 
     //setter
     void set_gun_name(std::string& value);
+    void set_upgrade(int value);
+    void set_element(ElementType value);
 
     //getter
     GunFireType fire_type() const;
@@ -52,6 +55,8 @@ public:
 	int loaded_bullets() const;
     BoundingBox flamethrow_box() const;
     const std::string& gun_name() const { return gun_name_; }
+    int upgrade() const;
+    ElementType element() const;
 
     //총기 정보를 로드하는 함수
     static void LoadGunInfosFromFile(const std::string& file_name); 
@@ -71,6 +76,8 @@ private:
     };
 
     std::string gun_name_;
+    int upgrade_{};
+    ElementType element_{ ElementType::kFire };
 
     // 총기 정보
     int damage_{ 0 };                   
