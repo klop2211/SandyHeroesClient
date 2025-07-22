@@ -13,7 +13,7 @@ class WallColliderComponent;
 class MovementComponent;
 
 class BaseScene :
-    public Scene
+	public Scene
 {
 private:
 	static constexpr int kStageMaxCount{ 8 };	// 게임 스테이지 총 개수
@@ -81,7 +81,8 @@ private:
 	int get_key_num_{ 0 };
 	// F키 누름
 	bool f_key_{};
-
+	bool scroll_f_key_{};
+	
 	//현재 스테이지의 스포터를 활성화 했는가?
 	bool is_activate_spawner_ = false;
 
@@ -110,13 +111,35 @@ private:
 	std::vector<bool> chests_open_;
 	std::vector<bool> scroll_open_;
 
+	enum class ScrollType
+	{
+		kSprinter,
+		kNinja,
+		kWeaponMaster,
+		kFlameMaster,
+		kAcidMaster,
+		kElectricMaster,
+		kFlameFrenzy,
+		kAcidFrenzy,
+		kElectricFrenzy,
+		kHardenedSkin,
+		None
+	};
+
 	struct ScrollData
 	{
 		Object* scroll = nullptr;
 		XMFLOAT3 direction = {};  // 정규화된 이동 방향
 		float moved_distance = 0.f;
 		bool is_active = true;
+		ScrollType type = ScrollType::None;
 	};
+
+	// 획득한 스크롤
+	std::array<ScrollType, 6> store_scrolls_ 
+	{ ScrollType::None, ScrollType::None, ScrollType::None,
+	  ScrollType::None, ScrollType::None, ScrollType::None };
+
 	std::vector<ScrollData> scrolls_;
 	
 	std::vector<BoxColliderComponent*> spawn_boxs_{}; // 스테이지 몬스터 생성 체크를 위한 박스들

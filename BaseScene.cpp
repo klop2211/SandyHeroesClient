@@ -133,8 +133,8 @@ void BaseScene::BuildMesh(ID3D12Device* device, ID3D12GraphicsCommandList* comma
 	meshes_.back().get()->set_name("PlayerHpBar");
 
 	//Scroll
-	constexpr float scroll_width = 100.f;
-	constexpr float scroll_height = 200.f;
+	constexpr float scroll_width = 150.f;
+	constexpr float scroll_height = 250.f;
 	ui_width = scroll_width;
 	ui_height = scroll_height;
 	meshes_.push_back(std::make_unique<UIMesh>(ui_width, ui_height));
@@ -385,14 +385,22 @@ void BaseScene::BuildMaterial(ID3D12Device* device, ID3D12GraphicsCommandList* c
 	}
 
 	// 스크롤 UI
+	constexpr int kScrollTextureCount = 10;
+	for (int i = 0; i < kScrollTextureCount; ++i)
 	{
-		material = new Material{ "test_texture", (int)ShaderType::kUI };
-		textures_.push_back(std::make_unique<Texture>());
-		textures_.back()->name = "test_texture";
-		textures_.back()->type = TextureType::kAlbedoMap;
+		std::string texture_name = "scroll_texture_" + std::to_string(i);
+		std::string material_name = "scroll_material_" + std::to_string(i);
+
+		// 텍스처 생성
+		auto texture = std::make_unique<Texture>();
+		texture->name = texture_name;
+		texture->type = TextureType::kAlbedoMap;
+		textures_.push_back(std::move(texture));
+
+		// 머티리얼 생성
+		auto material = new Material{ material_name, (int)ShaderType::kUI };
 		material->AddTexture(textures_.back().get());
-		materials_.emplace_back();
-		materials_.back().reset(material);
+		materials_.emplace_back(material);
 	}
 	
 
@@ -538,7 +546,16 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 			auto collider = new BoxColliderComponent(chest, box_bounds);
 			chest->AddComponent(collider);
 
-		
+			// 파티클
+			Material* particle_material = std::find_if(materials_.begin(), materials_.end(), [&](const auto& material) {
+				return material->name() == "Trail_1";
+				})->get();
+			ParticleComponent* chest_particle = new ParticleComponent(
+				chest, device, 222, ParticleComponent::eShape::UpCone, particle_material);
+			chest_particle->set_scene(this);
+			chest_particle->set_loop(false);
+			chest_particle->set_color(XMFLOAT4(1.0f, 0.843f, 0.0f, 1.0f));
+			chest->AddComponent(chest_particle);
 
 			AddObject(chest);
 			chests_.push_back(chest);
@@ -547,26 +564,34 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 
 	// 스크롤
 	{
+		std::vector<int> texture_indices(10);
+		std::iota(texture_indices.begin(), texture_indices.end(), 0); // 0~9 채우기
+
+		// 랜덤 셔플
+		std::random_device rd;
+		std::mt19937 g(rd());
+		std::shuffle(texture_indices.begin(), texture_indices.end(), g);
+
 		const int scroll_model_index = 13;
-		XMFLOAT3 scroll_rotations[scroll_model_index] = {
+		const int scroll_num = 6;
+		XMFLOAT3 scroll_rotations[scroll_num] = {
 		{ -90.307f, -90.0f, -98.0f },
-		{ -90.307f, -90.0f, -98.0f },
-		{ 0.0f, 0.0f, 0.0f },
-		{ 0.0f, 0.0f, 0.0f },
-		{ 0.0f, 0.0f, 0.0f },
+		//{ -90.307f, -90.0f, -98.0f },
+		{ -90.308f, -90.0f, 24.845f },
+		//{ -90.308f, -90.0f, 24.845f },
+		{ -90.308f, -90.0f, 112.932f },
 
-		{ 0.0f, 0.0f, 0.0f },
-		{ 0.0f, 0.0f, 0.0f },
-		{ 0.0f, 0.0f, 0.0f },
-		{ 0.0f, 0.0f, 0.0f },
-		{ 0.0f, 0.0f, 0.0f },
+		//{ -90.308f, -90.0f, 112.932f },
+		{ -90.308f, -90.0f, 90.053f },
+		//{ -90.308f, -90.0f, 90.053f },
+		{ -90.308f, -90.0f, 30.424f },
+		//{ -90.308f, -90.0f, 30.424f },
 
-	    { 0.0f, 0.0f, 0.0f },
-	    { 0.0f, 0.0f, 0.0f },
-		{ 0.0f, 0.0f, 0.0f }
+		{ -90.308f, -90.0f, -91.405f }
+		//{ -90.308f, -90.0f, -91.405f }
 		};
 
-		for (int i = 0; i < 12; ++i)
+		for (int i = 0; i < scroll_num; ++i)
 		{
 			// 스크롤 오브젝트 생성
 			Object* scroll = model_infos_[scroll_model_index]->GetInstance();
@@ -581,16 +606,21 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 			scroll->set_position_vector(XMFLOAT3{ 9999.f, 9999.f, 9999.f });
 
 			// [2] UI 바 오브젝트 생성 및 부착
+			int tex_index = texture_indices[i];
+
 			Object* ui_bar = new Object();
 			ui_bar->set_tag("Scroll_UI");
 
-			// [3] UIMeshComponent 부착
+			// 메쉬 및 머티리얼 설정
 			Mesh* mesh = Scene::FindMesh("Scroll", meshes_);
-			Material* material = Scene::FindMaterial("test_texture", materials_);
+			std::string material_name = "scroll_material_" + std::to_string(tex_index); // 인덱스별
+			Material* material = Scene::FindMaterial(material_name, materials_);
+
+			// UI 컴포넌트 생성
 			auto ui_component = new UiMeshComponent(ui_bar, mesh, material, this);
 			ui_component->set_ui_layer(UiLayer::kZero);
 			ui_component->set_is_static(false);
-			ui_bar->AddComponent(ui_component);
+			ui_component->set_position_offset({ 0.f, -200.f });
 
 			scroll->AddChild(ui_bar);
 
@@ -603,10 +633,11 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 			data.direction = XMFLOAT3(0.f, 0.f, 0.f);
 			data.moved_distance = 0.f;
 			data.is_active = false;
+			data.type = static_cast<ScrollType>(tex_index);
 
 			scrolls_.push_back(data);
 		}
-		scroll_open_.reserve(scroll_model_index);
+		scroll_open_.reserve(12);
 	}
 
 	//Create Skybox
@@ -1510,6 +1541,7 @@ bool BaseScene::ProcessInput(UINT id, WPARAM w_param, LPARAM l_param, float time
 		if (w_param == 'F')
 		{
 			f_key_ = true;
+			scroll_f_key_ = true;
 			CheckPlayerHitGun(player_);
 		}
 		// 카메라 전환 테스트
@@ -1766,8 +1798,9 @@ void BaseScene::UpdateScroll(float elapsed_time)
 	// [1] Scroll 이동 처리
 	constexpr float scroll_speed = 1.5f; // 초당 이동 거리
 
-	for (auto& data : scrolls_)
+	for (size_t i = 0; i< scrolls_.size(); ++i)
 	{
+		auto& data = scrolls_[i];
 		if (!data.is_active || !data.scroll) continue;
 
 		// [2] 방향 벡터 로드
@@ -1794,6 +1827,7 @@ void BaseScene::UpdateScroll(float elapsed_time)
 
 		// [5] 누적 거리 갱신
 		data.moved_distance += delta;
+
 	}
 }
 
@@ -2558,7 +2592,11 @@ void BaseScene::CheckPlayerHitChest(Object* object)
 	if (!object || object->is_dead()) return;
 
 	auto player_mesh_collider = Object::GetComponentInChildren<MeshColliderComponent>(object);
-	if (!player_mesh_collider) return;
+	if (!player_mesh_collider)
+	{
+		scroll_f_key_ = false;
+		return;
+	}
 
 	BoundingOrientedBox player_obb = player_mesh_collider->GetWorldOBB();
 
@@ -2578,27 +2616,55 @@ void BaseScene::CheckPlayerHitChest(Object* object)
 
 				if (!scroll_open_[i])
 				{
-					// 스크롤 2개 생성
+					// 파티클 루프 켜기
+					auto chest_particle = Object::GetComponent<ParticleComponent>(chests_[i]);
+					if (chest_particle)
+					{
+						chest_particle->set_loop(true);
+					}
+
+					// 스크롤 1개 생성
 					const XMFLOAT3 chest_pos = chest->world_position_vector();
+					
+					Object* scroll = scrolls_[i].scroll;
+					scroll->set_position_vector(chest_pos);
+					scrolls_.push_back({ scroll, XMFLOAT3(0.000f, 0.0007f, 0.f), 0.f, true });
 
-					// 왼쪽 위 대각선 방향
-					{
-						Object* scroll = scrolls_[i * 2].scroll;
-						scroll->set_position_vector(chest_pos);
-						scrolls_.push_back({ scroll, XMFLOAT3(-0.307f, 0.707f, 0.f), 0.f, true });
-					}
-
-					// 오른쪽 위 대각선 방향
-					{
-						Object* scroll = scrolls_[i * 2 + 1].scroll;
-						scroll->set_position_vector(chest_pos);
-						scrolls_.push_back({ scroll, XMFLOAT3(0.307f, 0.707f, 0.f), 0.f, true });
-					}
 					scroll_open_[i] = true;
+				}
+				if (scroll_f_key_)
+				{
+					// 스크롤 오브젝트 가져오기
+					Object* scroll = scrolls_[i].scroll;
+					if (!scroll) return;
+
+					// 스크롤 타입 얻기
+					ScrollType type = scrolls_[i].type;
+
+					// BaseScene의 scrolls_ 배열에 저장
+					for (auto& stored_scroll : store_scrolls_)
+					{
+						if (stored_scroll == ScrollType::None)
+						{
+							stored_scroll = type;
+							break;
+						}
+					}
+
+					// 스크롤 제거
+					scroll->set_is_dead(true);
+
+					// 파티클 루프 끄기
+					auto chest_particle = Object::GetComponent<ParticleComponent>(chests_[i]);
+					if (chest_particle)
+					{
+						chest_particle->set_loop(false);
+					}
 				}
 			}
 		}
 	}
+	scroll_f_key_ = false;
 }
 
 void BaseScene::CheckSpawnBoxHitPlayer()
