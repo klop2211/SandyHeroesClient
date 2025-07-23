@@ -46,6 +46,9 @@
 #include "ParticleRenderer.h"
 #include "GroundColliderComponent.h"
 #include "WallColliderComponent.h"
+#include "ScrollComponent.h"
+#include "ChestComponent.h"
+#include "ChestAnimationState.h"
 
 void BaseScene::Initialize(ID3D12Device* device, ID3D12GraphicsCommandList* command_list, 
 	ID3D12RootSignature* root_signature, GameFramework* game_framework, 
@@ -88,7 +91,6 @@ void BaseScene::BuildShader(ID3D12Device* device, ID3D12RootSignature* root_sign
 using namespace file_load_util;
 void BaseScene::BuildMesh(ID3D12Device* device, ID3D12GraphicsCommandList* command_list)
 {	
-	//������ �̸� �ε��Ǵ� �������� ������ �� �׽�Ʈ �������� �̸� �˼� ����
 	constexpr UINT kMeshCount{ 60 };
 	meshes_.reserve(kMeshCount);
 	meshes_.push_back(std::make_unique<CubeMesh>());
@@ -474,20 +476,6 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 		monster_particle->AddComponent(monster_particle_component);
 	}
 
-	// 총 발사 파티클 생성
-	//{
-	//	//particle_ = new Object();
-	//	Material* particleMaterial = std::find_if(materials_.begin(), materials_.end(), [&](const auto& material) {
-	//		return material->name() == "Trail_1";
-	//		})->get();
-	//	//ParticleComponent* particleComponent = new ParticleComponent(player_gun_particle_pivot, device, 50, ParticleComponent::Cone, particleMaterial);
-	//	ParticleComponent* particleComponent = new ParticleComponent(player_gun_particle_pivot, device, 1000, ParticleComponent::BigCone, particleMaterial);
-	//	particleComponent->set_scene(this);
-	//	particleComponent->set_color({ 0.9f,0.1f,0.1f,0.5f });
-	//	particleComponent->set_direction_pivot_object(camera_object);
-	//	player_gun_particle_pivot->AddComponent(particleComponent);
-	//}
-
 	BuildModelInfo(device);
 
 	//Set player's gun
@@ -532,7 +520,12 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 		};
 
 		chests_.reserve(kChestCount);
-		chests_open_.reserve(kChestCount);
+
+		// 스크롤 인덱스 무작위화
+		std::vector<int> scroll_index(10);
+		std::iota(scroll_index.begin(), scroll_index.end(), 0); // 0~9 채우기
+		std::shuffle(scroll_index.begin(), scroll_index.end(), kRandomGenerator);
+
 		for (int i = 0; i < kChestCount; ++i)
 		{
 			Object* chest = model_infos_[12]->GetInstance();
@@ -540,6 +533,13 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 			chest->set_position_vector(chest_positions[i]);
 			chest->set_local_rotation(chest_rotations[i]);
 			chest->set_is_movable(true);
+
+			//스크롤 추가
+			auto chest_component = new ChestComponent(chest, this);
+			//박스당 1개 사용
+			auto scroll_model = FindModelInfo("Scroll_" + std::to_string(scroll_index[0]));
+			chest_component->set_scroll_model(scroll_model);
+			chest->AddComponent(chest_component);
 
 			// 충돌용 BoxColliderComponent 부착
 			BoundingBox box_bounds{ {0.0f, 0.0f, 0.0f}, {1.5f, 1.0f, 1.5f} };
@@ -559,85 +559,8 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 
 			AddObject(chest);
 			chests_.push_back(chest);
+
 		}
-	}
-
-	// 스크롤
-	{
-		std::vector<int> texture_indices(10);
-		std::iota(texture_indices.begin(), texture_indices.end(), 0); // 0~9 채우기
-
-		// 랜덤 셔플
-		std::random_device rd;
-		std::mt19937 g(rd());
-		std::shuffle(texture_indices.begin(), texture_indices.end(), g);
-
-		const int scroll_model_index = 13;
-		const int scroll_num = 6;
-		XMFLOAT3 scroll_rotations[scroll_num] = {
-		{ -90.307f, -90.0f, -98.0f },
-		//{ -90.307f, -90.0f, -98.0f },
-		{ -90.308f, -90.0f, 24.845f },
-		//{ -90.308f, -90.0f, 24.845f },
-		{ -90.308f, -90.0f, 112.932f },
-
-		//{ -90.308f, -90.0f, 112.932f },
-		{ -90.308f, -90.0f, 90.053f },
-		//{ -90.308f, -90.0f, 90.053f },
-		{ -90.308f, -90.0f, 30.424f },
-		//{ -90.308f, -90.0f, 30.424f },
-
-		{ -90.308f, -90.0f, -91.405f }
-		//{ -90.308f, -90.0f, -91.405f }
-		};
-
-		for (int i = 0; i < scroll_num; ++i)
-		{
-			// 스크롤 오브젝트 생성
-			Object* scroll = model_infos_[scroll_model_index]->GetInstance();
-			scroll->set_name("Scroll_" + std::to_string(i));
-			scroll->set_tag("Scroll");
-			scroll->set_is_movable(true);
-
-			//XMFLOAT3 rotation = { -90.0f, -90.0f, 0.0f };
-			scroll->set_local_rotation(scroll_rotations[i]);
-
-			// 초기 위치를 숨김 처리 (화면 바깥으로)
-			scroll->set_position_vector(XMFLOAT3{ 9999.f, 9999.f, 9999.f });
-
-			// [2] UI 바 오브젝트 생성 및 부착
-			int tex_index = texture_indices[i];
-
-			Object* ui_bar = new Object();
-			ui_bar->set_tag("Scroll_UI");
-
-			// 메쉬 및 머티리얼 설정
-			Mesh* mesh = Scene::FindMesh("Scroll", meshes_);
-			std::string material_name = "scroll_material_" + std::to_string(tex_index); // 인덱스별
-			Material* material = Scene::FindMaterial(material_name, materials_);
-
-			// UI 컴포넌트 생성
-			auto ui_component = new UiMeshComponent(ui_bar, mesh, material, this);
-			ui_component->set_ui_layer(UiLayer::kZero);
-			ui_component->set_is_static(false);
-			ui_component->set_position_offset({ 0.f, -200.f });
-
-			scroll->AddChild(ui_bar);
-
-			// 씬에 추가
-			AddObject(scroll);
-
-			// ScrollData에 등록 (초기 direction은 0, 이동 안 함)
-			ScrollData data;
-			data.scroll = scroll;
-			data.direction = XMFLOAT3(0.f, 0.f, 0.f);
-			data.moved_distance = 0.f;
-			data.is_active = false;
-			data.type = static_cast<ScrollType>(tex_index);
-
-			scrolls_.push_back(data);
-		}
-		scroll_open_.reserve(12);
 	}
 
 	//Create Skybox
@@ -815,97 +738,101 @@ void BaseScene::BuildModelInfo(ID3D12Device* device)
 			});
 	}
 
-	//Hit Dragon Fix(Add Hp UI, Set CollisionType)
-	ModelInfo* hit_dragon = FindModelInfo("Hit_Dragon");
-	hit_dragon->hierarchy_root()->set_collide_type(true, true);
-	hit_dragon->hierarchy_root()->set_is_movable(true);
-	hit_dragon->hierarchy_root()->set_tag("Hit_Dragon");
-	auto ui_head_socket = hit_dragon->hierarchy_root()->FindFrame("Ui_Head");
-	auto monster_hp_ui = FindModelInfo("Monster_Hp_UI");
-	ui_head_socket->AddChild(monster_hp_ui->GetInstance());
+	//Monster Fix(Add Hp UI, Set CollisionType), Create Monster Spawner
+	{
+		//Hit Dragon Fix(Add Hp UI, Set CollisionType)
+		ModelInfo* hit_dragon = FindModelInfo("Hit_Dragon");
+		hit_dragon->hierarchy_root()->set_collide_type(true, true);
+		hit_dragon->hierarchy_root()->set_is_movable(true);
+		hit_dragon->hierarchy_root()->set_tag("Hit_Dragon");
+		auto ui_head_socket = hit_dragon->hierarchy_root()->FindFrame("Ui_Head");
+		auto monster_hp_ui = FindModelInfo("Monster_Hp_UI");
+		ui_head_socket->AddChild(monster_hp_ui->GetInstance());
 
-	auto animator = Object::GetComponentInChildren<AnimatorComponent>(hit_dragon->hierarchy_root());
-	animator->set_animation_state(new HitDragonAnimationState);
+		auto animator = Object::GetComponentInChildren<AnimatorComponent>(hit_dragon->hierarchy_root());
+		animator->set_animation_state(new HitDragonAnimationState);
 
-	//Shot Dragon Fix(Add Hp UI, Set CollisionType)
-	ModelInfo* shot_dragon = FindModelInfo("Shot_Dragon");
-	shot_dragon->hierarchy_root()->set_collide_type(true, true);
-	shot_dragon->hierarchy_root()->set_is_movable(true);
-	shot_dragon->hierarchy_root()->set_tag("Shot_Dragon");
-	ui_head_socket = shot_dragon->hierarchy_root()->FindFrame("Ui_Head");
-	ui_head_socket->AddChild(monster_hp_ui->GetInstance());
+		//Shot Dragon Fix(Add Hp UI, Set CollisionType)
+		ModelInfo* shot_dragon = FindModelInfo("Shot_Dragon");
+		shot_dragon->hierarchy_root()->set_collide_type(true, true);
+		shot_dragon->hierarchy_root()->set_is_movable(true);
+		shot_dragon->hierarchy_root()->set_tag("Shot_Dragon");
+		ui_head_socket = shot_dragon->hierarchy_root()->FindFrame("Ui_Head");
+		ui_head_socket->AddChild(monster_hp_ui->GetInstance());
 
-	animator = Object::GetComponentInChildren<AnimatorComponent>(shot_dragon->hierarchy_root());
-	animator->set_animation_state(new ShotDragonAnimationState);
+		animator = Object::GetComponentInChildren<AnimatorComponent>(shot_dragon->hierarchy_root());
+		animator->set_animation_state(new ShotDragonAnimationState);
 
-	//Bomb Dragon Fix(Add Hp UI, Set CollisionType)
-	ModelInfo* bomb_dragon = FindModelInfo("Bomb_Dragon");
-	bomb_dragon->hierarchy_root()->set_collide_type(true, true);
-	bomb_dragon->hierarchy_root()->set_is_movable(true);
-	bomb_dragon->hierarchy_root()->set_tag("Bomb_Dragon");
-	ui_head_socket = bomb_dragon->hierarchy_root()->FindFrame("Ui_Head");
-	ui_head_socket->AddChild(monster_hp_ui->GetInstance());
+		//Bomb Dragon Fix(Add Hp UI, Set CollisionType)
+		ModelInfo* bomb_dragon = FindModelInfo("Bomb_Dragon");
+		bomb_dragon->hierarchy_root()->set_collide_type(true, true);
+		bomb_dragon->hierarchy_root()->set_is_movable(true);
+		bomb_dragon->hierarchy_root()->set_tag("Bomb_Dragon");
+		ui_head_socket = bomb_dragon->hierarchy_root()->FindFrame("Ui_Head");
+		ui_head_socket->AddChild(monster_hp_ui->GetInstance());
 
-	animator = Object::GetComponentInChildren<AnimatorComponent>(bomb_dragon->hierarchy_root());
-	animator->set_animation_state(new BombDragonAnimationState);
+		animator = Object::GetComponentInChildren<AnimatorComponent>(bomb_dragon->hierarchy_root());
+		animator->set_animation_state(new BombDragonAnimationState);
 
-	//Strong Dragon Fix(Set CollisionType)
-	ModelInfo* strong_dragon = FindModelInfo("Strong_Dragon");
-	strong_dragon->hierarchy_root()->set_collide_type(true, true);
-	strong_dragon->hierarchy_root()->set_is_movable(true);
-	strong_dragon->hierarchy_root()->set_tag("Strong_Dragon");
-	animator = Object::GetComponentInChildren<AnimatorComponent>(strong_dragon->hierarchy_root());
-	animator->set_animation_state(new StrongDragonAnimationState);
+		//Strong Dragon Fix(Set CollisionType)
+		ModelInfo* strong_dragon = FindModelInfo("Strong_Dragon");
+		strong_dragon->hierarchy_root()->set_collide_type(true, true);
+		strong_dragon->hierarchy_root()->set_is_movable(true);
+		strong_dragon->hierarchy_root()->set_tag("Strong_Dragon");
+		animator = Object::GetComponentInChildren<AnimatorComponent>(strong_dragon->hierarchy_root());
+		animator->set_animation_state(new StrongDragonAnimationState);
 
-	//Create Hit Dragon Spawner
-	ModelInfo* hit_dragon_spawner = new ModelInfo();
-	hit_dragon_spawner->set_model_name("Hit_Dragon_Spawner");
-	Object* spawner = new Object();
-	auto monster_component = new MonsterComponent(nullptr);
-	monster_component->set_target(player_);
-	auto spawner_component = new SpawnerComponent(spawner, this, hit_dragon);
-	spawner_component->AddComponent(monster_component);
-	spawner_component->AddComponent(std::make_unique<MovementComponent>(nullptr));
-	spawner->AddComponent(spawner_component);
-	hit_dragon_spawner->set_hierarchy_root(spawner);
-	model_infos_.emplace_back();
-	model_infos_.back().reset(hit_dragon_spawner);	
-	
-	//Create Shot Dragon Spawner
-	ModelInfo* shot_dragon_spawner = new ModelInfo();
-	shot_dragon_spawner->set_model_name("Shot_Dragon_Spawner");
-	spawner = new Object();
-	spawner_component = new SpawnerComponent(spawner, this, shot_dragon);
-	spawner_component->AddComponent(monster_component->GetCopy());
-	spawner_component->AddComponent(std::make_unique<MovementComponent>(nullptr));
-	spawner->AddComponent(spawner_component);
-	shot_dragon_spawner->set_hierarchy_root(spawner);
-	model_infos_.emplace_back();
-	model_infos_.back().reset(shot_dragon_spawner);
+		//Create Hit Dragon Spawner
+		ModelInfo* hit_dragon_spawner = new ModelInfo();
+		hit_dragon_spawner->set_model_name("Hit_Dragon_Spawner");
+		Object* spawner = new Object();
+		auto monster_component = new MonsterComponent(nullptr);
+		monster_component->set_target(player_);
+		auto spawner_component = new SpawnerComponent(spawner, this, hit_dragon);
+		spawner_component->AddComponent(monster_component);
+		spawner_component->AddComponent(std::make_unique<MovementComponent>(nullptr));
+		spawner->AddComponent(spawner_component);
+		hit_dragon_spawner->set_hierarchy_root(spawner);
+		model_infos_.emplace_back();
+		model_infos_.back().reset(hit_dragon_spawner);
 
-	//Create Bomb Dragon Spawner
-	ModelInfo* bomb_dragon_spawner = new ModelInfo();
-	bomb_dragon_spawner->set_model_name("Bomb_Dragon_Spawner");
-	spawner = new Object();
-	spawner_component = new SpawnerComponent(spawner, this, bomb_dragon);
-	spawner_component->AddComponent(monster_component->GetCopy());
-	spawner_component->AddComponent(std::make_unique<MovementComponent>(nullptr));
-	spawner->AddComponent(spawner_component);
-	bomb_dragon_spawner->set_hierarchy_root(spawner);
-	model_infos_.emplace_back();
-	model_infos_.back().reset(bomb_dragon_spawner);
+		//Create Shot Dragon Spawner
+		ModelInfo* shot_dragon_spawner = new ModelInfo();
+		shot_dragon_spawner->set_model_name("Shot_Dragon_Spawner");
+		spawner = new Object();
+		spawner_component = new SpawnerComponent(spawner, this, shot_dragon);
+		spawner_component->AddComponent(monster_component->GetCopy());
+		spawner_component->AddComponent(std::make_unique<MovementComponent>(nullptr));
+		spawner->AddComponent(spawner_component);
+		shot_dragon_spawner->set_hierarchy_root(spawner);
+		model_infos_.emplace_back();
+		model_infos_.back().reset(shot_dragon_spawner);
 
-	//Create Strong Dragon Spawner
-	ModelInfo* strong_dragon_spawner = new ModelInfo();
-	strong_dragon_spawner->set_model_name("Strong_Dragon_Spawner");
-	spawner = new Object();
-	spawner_component = new SpawnerComponent(spawner, this, strong_dragon);
-	spawner_component->AddComponent(monster_component->GetCopy());
-	spawner_component->AddComponent(std::make_unique<MovementComponent>(nullptr));
-	spawner->AddComponent(spawner_component);
-	strong_dragon_spawner->set_hierarchy_root(spawner);
-	model_infos_.emplace_back();
-	model_infos_.back().reset(strong_dragon_spawner);
+		//Create Bomb Dragon Spawner
+		ModelInfo* bomb_dragon_spawner = new ModelInfo();
+		bomb_dragon_spawner->set_model_name("Bomb_Dragon_Spawner");
+		spawner = new Object();
+		spawner_component = new SpawnerComponent(spawner, this, bomb_dragon);
+		spawner_component->AddComponent(monster_component->GetCopy());
+		spawner_component->AddComponent(std::make_unique<MovementComponent>(nullptr));
+		spawner->AddComponent(spawner_component);
+		bomb_dragon_spawner->set_hierarchy_root(spawner);
+		model_infos_.emplace_back();
+		model_infos_.back().reset(bomb_dragon_spawner);
+
+		//Create Strong Dragon Spawner
+		ModelInfo* strong_dragon_spawner = new ModelInfo();
+		strong_dragon_spawner->set_model_name("Strong_Dragon_Spawner");
+		spawner = new Object();
+		spawner_component = new SpawnerComponent(spawner, this, strong_dragon);
+		spawner_component->AddComponent(monster_component->GetCopy());
+		spawner_component->AddComponent(std::make_unique<MovementComponent>(nullptr));
+		spawner->AddComponent(spawner_component);
+		strong_dragon_spawner->set_hierarchy_root(spawner);
+		model_infos_.emplace_back();
+		model_infos_.back().reset(strong_dragon_spawner);
+
+	}
 
 	//Create Gun Models
 	{
@@ -1125,6 +1052,61 @@ void BaseScene::BuildModelInfo(ID3D12Device* device)
 				model_infos_.emplace_back();
 				model_infos_.back().reset(gun_ui);
 			}
+		}
+	}
+
+	//Fix Scroll(Add Scroll UI)
+	{
+		const int scroll_model_index = 13;
+		const int scroll_num = 10;
+
+		for (int i = 0; i < scroll_num; ++i)
+		{
+			// 스크롤 오브젝트 생성
+			ModelInfo* scroll_model_info = new ModelInfo();
+			scroll_model_info->set_model_name("Scroll_" + std::to_string(i));
+			model_infos_.emplace_back();
+			model_infos_.back().reset(scroll_model_info);
+
+			Object* scroll = model_infos_[scroll_model_index]->GetInstance();
+			scroll_model_info->set_hierarchy_root(scroll);
+			scroll->set_name("Scroll_" + std::to_string(i));
+			scroll->set_tag("Scroll");
+			scroll->set_is_movable(true);
+
+			auto scroll_component = new ScrollComponent(scroll);
+			scroll_component->set_type(static_cast<ScrollType>(i));
+			scroll->AddComponent(scroll_component);
+
+			//scroll->set_local_rotation(scroll_rotations[0]);
+
+			Object* ui_bar = new Object();
+			ui_bar->set_tag("Scroll_UI");
+
+			// 메쉬 및 머티리얼 설정
+			Mesh* mesh = Scene::FindMesh("Scroll", meshes_);
+			std::string material_name = "scroll_material_" + std::to_string(i); // 인덱스별
+			Material* material = Scene::FindMaterial(material_name, materials_);
+
+			// UI 컴포넌트 생성
+			auto ui_component = new UiMeshComponent(ui_bar, mesh, material, this);
+			ui_bar->AddComponent(ui_component);
+			material->DeleteMeshComponent(ui_component); // 씬 렌더에서 제외
+			ui_component->set_ui_layer(UiLayer::kZero);
+			ui_component->set_is_static(false);
+			ui_component->set_position_offset({ 0.f, -200.f });
+			scroll->AddChild(ui_bar);
+		}
+	}
+
+	//Fix Chest
+	{
+		auto model_hierarchy_root = model_infos_[12]->hierarchy_root();
+		auto animator = Object::GetComponentInChildren<AnimatorComponent>(model_hierarchy_root);
+		if (animator)
+		{
+			animator->set_animation_state(new ChestAnimationState);
+			animator->set_max_change_time(0.001f);
 		}
 	}
 }
@@ -1795,40 +1777,40 @@ void BaseScene::UpdateObjectHitObject()
 
 void BaseScene::UpdateScroll(float elapsed_time)
 {
-	// [1] Scroll 이동 처리
-	constexpr float scroll_speed = 1.5f; // 초당 이동 거리
+	//// [1] Scroll 이동 처리
+	//constexpr float scroll_speed = 1.5f; // 초당 이동 거리
 
-	for (size_t i = 0; i< scrolls_.size(); ++i)
-	{
-		auto& data = scrolls_[i];
-		if (!data.is_active || !data.scroll) continue;
+	//for (size_t i = 0; i< scrolls_.size(); ++i)
+	//{
+	//	auto& data = scrolls_[i];
+	//	if (!data.is_active || !data.scroll) continue;
 
-		// [2] 방향 벡터 로드
-		XMVECTOR direction = XMLoadFloat3(&data.direction);
-		direction = XMVector3Normalize(direction);
+	//	// [2] 방향 벡터 로드
+	//	XMVECTOR direction = XMLoadFloat3(&data.direction);
+	//	direction = XMVector3Normalize(direction);
 
-		// [3] 이동 거리 계산
-		float delta = scroll_speed * elapsed_time;
+	//	// [3] 이동 거리 계산
+	//	float delta = scroll_speed * elapsed_time;
 
-		// 남은 거리보다 초과하지 않도록 제한
-		if (data.moved_distance + delta > 1.5f)
-		{
-			delta = 1.5f - data.moved_distance;
-			data.is_active = false; // 이동 완료
-		}
+	//	// 남은 거리보다 초과하지 않도록 제한
+	//	if (data.moved_distance + delta > 1.5f)
+	//	{
+	//		delta = 1.5f - data.moved_distance;
+	//		data.is_active = false; // 이동 완료
+	//	}
 
-		// [4] 위치 계산 및 적용
-		XMVECTOR pos = XMLoadFloat3(&data.scroll->position_vector());
-		pos += direction * delta;
+	//	// [4] 위치 계산 및 적용
+	//	XMVECTOR pos = XMLoadFloat3(&data.scroll->position_vector());
+	//	pos += direction * delta;
 
-		XMFLOAT3 new_pos;
-		XMStoreFloat3(&new_pos, pos);
-		data.scroll->set_position_vector(new_pos);
+	//	XMFLOAT3 new_pos;
+	//	XMStoreFloat3(&new_pos, pos);
+	//	data.scroll->set_position_vector(new_pos);
 
-		// [5] 누적 거리 갱신
-		data.moved_distance += delta;
+	//	// [5] 누적 거리 갱신
+	//	data.moved_distance += delta;
 
-	}
+	//}
 }
 
 void BaseScene::UpdateStageClear()
@@ -2612,54 +2594,16 @@ void BaseScene::CheckPlayerHitChest(Object* object)
 		{
 			if (player_obb.Intersects(box_collider->animated_box()))
 			{
-				chests_open_[i] = true;
+				auto chest_component = Object::GetComponent<ChestComponent>(chest);
+				if (!chest_component) 
+					continue;
 
-				if (!scroll_open_[i])
-				{
-					// 파티클 루프 켜기
-					auto chest_particle = Object::GetComponent<ParticleComponent>(chests_[i]);
-					if (chest_particle)
-					{
-						chest_particle->set_loop(true);
-					}
+				chest_component->HendleCollision(object);
 
-					// 스크롤 1개 생성
-					const XMFLOAT3 chest_pos = chest->world_position_vector();
-					
-					Object* scroll = scrolls_[i].scroll;
-					scroll->set_position_vector(chest_pos);
-					scrolls_.push_back({ scroll, XMFLOAT3(0.000f, 0.0007f, 0.f), 0.f, true });
-
-					scroll_open_[i] = true;
-				}
 				if (scroll_f_key_)
 				{
-					// 스크롤 오브젝트 가져오기
-					Object* scroll = scrolls_[i].scroll;
-					if (!scroll) return;
+					auto scroll_type = chest_component->TakeScroll();
 
-					// 스크롤 타입 얻기
-					ScrollType type = scrolls_[i].type;
-
-					// BaseScene의 scrolls_ 배열에 저장
-					for (auto& stored_scroll : store_scrolls_)
-					{
-						if (stored_scroll == ScrollType::None)
-						{
-							stored_scroll = type;
-							break;
-						}
-					}
-
-					// 스크롤 제거
-					scroll->set_is_dead(true);
-
-					// 파티클 루프 끄기
-					auto chest_particle = Object::GetComponent<ParticleComponent>(chests_[i]);
-					if (chest_particle)
-					{
-						chest_particle->set_loop(false);
-					}
 				}
 			}
 		}
