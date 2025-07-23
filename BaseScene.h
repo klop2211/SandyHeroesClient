@@ -57,6 +57,7 @@ public:
 	void CheckPlayerHitWall(Object* object, MovementComponent* movement);
 	void CheckObjectHitObject(Object* object);
 	void CheckObjectHitBullet(Object* object);
+	void CheckRayHitEnemy(const XMFLOAT3& ray_origin, const XMFLOAT3& ray_direction);  // 변경된 총알 충돌체크
 	void CheckObjectHitFlamethrow(Object* object);
 	void CheckPlayerHitGun(Object* object);
 	void CheckPlayerHitPyramid(Object* object);

@@ -25,6 +25,7 @@ public:
 
     //getter
     bool is_firekey_down() const;
+    Object* camera_object() const { return camera_object_; }
 
 private:
     Scene* scene_ = nullptr;

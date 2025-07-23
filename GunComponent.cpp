@@ -9,6 +9,7 @@
 #include "MeshColliderComponent.h"
 #include "Scene.h"
 #include "ParticleComponent.h"
+#include "BaseScene.h"
 
 std::unordered_map<std::string, GunInfo> GunComponent::kGunInfos{};
 
@@ -129,6 +130,13 @@ bool GunComponent::FireBullet(XMFLOAT3 direction, Object* bullet_model, Scene* s
 				};
 			bullet->OnDestroy(on_destroy_func);
             fired_bullet_list_.push_back(bullet);
+
+
+            BaseScene* base_scene = dynamic_cast<BaseScene*>(scene_);
+            if (base_scene)
+            {
+                base_scene->CheckRayHitEnemy(owner_->world_position_vector(), direction);
+            }
         }
     }
     else
@@ -170,6 +178,11 @@ void GunComponent::set_upgrade(int value)
 void GunComponent::set_element(ElementType value)
 {
     element_ = value;
+}
+
+void GunComponent::set_scene(Scene* value)
+{
+    scene_ = value;
 }
 
 GunFireType GunComponent::fire_type() const

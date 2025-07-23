@@ -45,6 +45,7 @@ public:
     void set_gun_name(std::string& value);
     void set_upgrade(int value);
     void set_element(ElementType value);
+    void set_scene(Scene* value);
 
     //getter
     GunFireType fire_type() const;
@@ -62,6 +63,9 @@ public:
     static void LoadGunInfosFromFile(const std::string& file_name); 
 
 private:
+    Scene* scene_{ nullptr };
+    Object* player_{ nullptr };
+
     static std::unordered_map<std::string, GunInfo> kGunInfos;
 
     std::list<Object*> fired_bullet_list_;
