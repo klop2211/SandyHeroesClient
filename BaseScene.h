@@ -109,40 +109,12 @@ private:
 	std::vector<Object*> dropped_guns_;
 
 	std::vector<Object*> chests_;
-	std::vector<bool> chests_open_;
-	std::vector<bool> scroll_open_;
-
-	enum class ScrollType
-	{
-		kSprinter,
-		kNinja,
-		kWeaponMaster,
-		kFlameMaster,
-		kAcidMaster,
-		kElectricMaster,
-		kFlameFrenzy,
-		kAcidFrenzy,
-		kElectricFrenzy,
-		kHardenedSkin,
-		None
-	};
-
-	struct ScrollData
-	{
-		Object* scroll = nullptr;
-		XMFLOAT3 direction = {};  // 정규화된 이동 방향
-		float moved_distance = 0.f;
-		bool is_active = true;
-		ScrollType type = ScrollType::None;
-	};
 
 	// 획득한 스크롤
-	std::array<ScrollType, 6> store_scrolls_ 
-	{ ScrollType::None, ScrollType::None, ScrollType::None,
-	  ScrollType::None, ScrollType::None, ScrollType::None };
+	//std::array<ScrollType, 6> store_scrolls_ 
+	//{ ScrollType::None, ScrollType::None, ScrollType::None,
+	//  ScrollType::None, ScrollType::None, ScrollType::None };
 
-	std::vector<ScrollData> scrolls_;
-	
 	std::vector<BoxColliderComponent*> spawn_boxs_{}; // 스테이지 몬스터 생성 체크를 위한 박스들
 
 	std::vector<CutSceneTrack> cut_scene_tracks_{};

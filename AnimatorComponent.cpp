@@ -23,7 +23,8 @@ AnimatorComponent::AnimatorComponent(Object* owner,
 }
 
 AnimatorComponent::AnimatorComponent(const AnimatorComponent& other) : Component(other), 
-	animation_tracks_(other.animation_tracks_), frame_names_(other.frame_names_), root_bone_name_(other.root_bone_name_)
+	animation_tracks_(other.animation_tracks_), frame_names_(other.frame_names_), root_bone_name_(other.root_bone_name_),
+	max_change_time_(other.max_change_time_)
 {
 	animation_state_.reset(other.animation_state_->GetCopy());
 }
@@ -41,8 +42,8 @@ void AnimatorComponent::Update(float elapsed_time)
 	// 0행렬 초기화
 	std::fill(animated_tramsforms_.begin(), animated_tramsforms_.end(), XMFLOAT4X4{});
 
-	//int track_state = animation_state_->Run(elapsed_time, owner_, animation_tracks_[track_index_].is_end(), this);
-	int track_state = animation_state_->Run(elapsed_time, owner_, animation_tracks_[0].is_end(), this);
+	int track_state = animation_state_->Run(elapsed_time, owner_, animation_tracks_[track_index_].is_end(), this);
+	//int track_state = animation_state_->Run(elapsed_time, owner_, animation_tracks_[0].is_end(), this);
 
 	if (track_state != track_index_)
 	{
