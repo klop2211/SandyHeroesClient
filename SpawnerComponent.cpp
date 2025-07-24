@@ -1,5 +1,6 @@
-#include "stdafx.h"
+﻿#include "stdafx.h"
 #include "SpawnerComponent.h"
+#include "MonsterComponent.h"
 #include "Scene.h"
 
 SpawnerComponent::SpawnerComponent(Object* owner, Scene* scene) : Component(owner), scene_(scene)
@@ -97,6 +98,13 @@ void SpawnerComponent::ForceSpawn()
 		Component* new_component = component->GetCopy();
 		new_object->AddComponent(new_component);
 		new_component->set_owner(new_object);
+	}
+
+	// ✅ [추가] MonsterComponent가 있으면 scene_ 설정
+	auto monster_component = Object::GetComponentInChildren<MonsterComponent>(new_object);
+	if (monster_component)
+	{
+		monster_component->set_scene(scene_);
 	}
 	new_object->set_position_vector(owner_->world_position_vector());
 	scene_->AddObject(new_object);

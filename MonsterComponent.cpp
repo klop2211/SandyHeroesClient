@@ -113,7 +113,7 @@ void MonsterComponent::Update(float elapsed_time)
 
         if (type == StatusEffectType::Fire) //È­¿°
         {
-            float dps = effect.fire_damage * 0.1f;
+            float dps = effect.fire_damage * 0.9f;
             HitDamage(dps * elapsed_time);
 
             if (hp_ <= 0 )
