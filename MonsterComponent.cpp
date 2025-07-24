@@ -97,14 +97,78 @@ void MonsterComponent::Update(float elapsed_time)
             }
 
 			movement->MoveXZ(direction.x, direction.z, 5.f);
-            movement->set_max_speed_xz(3.5f);
+            if (!electric_slow_applied_)
+            {
+                movement->set_max_speed_xz(3.5f);
+            }
 		}
 	}
 
+    // 상태이상 처리
+    for (auto& [type, effect] : status_effects_)
+    {
+        if (!effect.IsActive()) continue;
+
+        effect.elapsed += elapsed_time;
+
+        if (type == StatusEffectType::Fire) //화염
+        {
+            float dps = effect.fire_damage * 0.1f;
+            HitDamage(dps * elapsed_time);
+
+            if (hp_ <= 0 )
+            {
+                int a;
+                if (scene_)
+                {
+                    BaseScene* base_scene = dynamic_cast<BaseScene*>(scene_);
+                    if (base_scene)
+                    {
+                        base_scene->add_catch_monster_num(); // 함수 만들어주면 됨
+                    }
+                }
+            }
+        }
+        else if (type == StatusEffectType::Electric)    //전기
+        {
+            auto movement = Object::GetComponentInChildren<MovementComponent>(owner_);
+            if (movement)
+            {
+                if (!electric_slow_applied_)
+                {
+                    original_speed_ = movement->max_speed_xz();
+                    movement->set_max_speed_xz(original_speed_ * 0.70f);    //30% 감소
+                    electric_slow_applied_ = true;
+                }
+
+                //movement->set_max_speed_xz(3.5f * 0.85f);
+            }
+        }
+    }
+
+    // 상태이상 종료 후 복원
+    auto& electric = status_effects_[StatusEffectType::Electric];
+    if (!electric.IsActive() && electric_slow_applied_)
+    {
+        auto movement = Object::GetComponentInChildren<MovementComponent>(owner_);
+        if (movement)
+        {
+            movement->set_max_speed_xz(original_speed_); // 복구
+            electric_slow_applied_ = false;
+        }
+    }
 }
 
 void MonsterComponent::HitDamage(float damage)
 {
+    // 산성 효과
+    // 산성 상태일 경우 모든 피해 증가
+    auto it = status_effects_.find(StatusEffectType::Poison);
+    if (it != status_effects_.end() && it->second.IsActive())
+    {
+        damage *= 1.15f;
+    }
+
 	if (shield_ > 0)
 	{
 		shield_ -= damage;
@@ -122,6 +186,11 @@ void MonsterComponent::HitDamage(float damage)
 	{
 		hp_ = 0;
 	}
+}
+
+void MonsterComponent::ApplyStatusEffect(StatusEffectType type, float duration, float damage)
+{
+    status_effects_[type] = { duration, 0.f, damage };
 }
 
 void MonsterComponent::set_shield(float value)
@@ -177,6 +246,11 @@ float MonsterComponent::max_shield() const
 float MonsterComponent::attack_force() const
 {
     return attack_force_;
+}
+
+void MonsterComponent::set_scene(Scene* value)
+{
+    scene_ = value;
 }
 
 bool MonsterComponent::IsDead() const

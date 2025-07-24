@@ -56,7 +56,6 @@ public:
 	void CheckObjectIsGround(Object* object);
 	void CheckPlayerHitWall(Object* object, MovementComponent* movement);
 	void CheckObjectHitObject(Object* object);
-	void CheckObjectHitBullet(Object* object);
 	void CheckRayHitEnemy(const XMFLOAT3& ray_origin, const XMFLOAT3& ray_direction);  // 변경된 총알 충돌체크
 	void CheckObjectHitFlamethrow(Object* object);
 	void CheckPlayerHitGun(Object* object);
@@ -68,6 +67,7 @@ public:
 	std::list<MeshColliderComponent*> checking_maps_mesh_collider_list(int index);
 	int stage_clear_num();
 	void add_catch_monster_num();
+	int catch_monster_num() const;
 private:
 	//static constexpr int kStageMaxCount{ 8 };	// 게임 스테이지 총 개수
 

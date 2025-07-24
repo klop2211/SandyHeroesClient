@@ -793,6 +793,7 @@ void BaseScene::BuildModelInfo(ID3D12Device* device)
 		Object* spawner = new Object();
 		auto monster_component = new MonsterComponent(nullptr);
 		monster_component->set_target(player_);
+		monster_component->set_scene(this);
 		auto spawner_component = new SpawnerComponent(spawner, this, hit_dragon);
 		spawner_component->AddComponent(monster_component);
 		spawner_component->AddComponent(std::make_unique<MovementComponent>(nullptr));
@@ -851,6 +852,7 @@ void BaseScene::BuildModelInfo(ID3D12Device* device)
 
 			GunComponent* gun_component = new GunComponent(classic_object);
 			gun_component->LoadGunInfo("classic");
+			gun_component->set_scene(this);
 			classic_object->AddComponent(gun_component);
 			classic_object->Rotate(0, 170, -17);
 
@@ -880,6 +882,7 @@ void BaseScene::BuildModelInfo(ID3D12Device* device)
 
 			GunComponent* gun_component = new GunComponent(vandal_object);
 			gun_component->LoadGunInfo("vandal");
+			gun_component->set_scene(this);
 			vandal_object->AddComponent(gun_component);
 			vandal_object->Rotate(0, 170, -17);
 
@@ -909,6 +912,7 @@ void BaseScene::BuildModelInfo(ID3D12Device* device)
 
 			GunComponent* gun_component = new GunComponent(odin_object);
 			gun_component->LoadGunInfo("odin");
+			gun_component->set_scene(this);
 			odin_object->AddComponent(gun_component);
 			odin_object->Rotate(0, 170, -17);
 
@@ -938,6 +942,7 @@ void BaseScene::BuildModelInfo(ID3D12Device* device)
 
 			GunComponent* gun_component = new GunComponent(flamethrower_object);
 			gun_component->LoadGunInfo("flamethrower");
+			gun_component->set_scene(this);
 			flamethrower_object->AddComponent(gun_component);
 			flamethrower_object->Rotate(0, 170, -17);
 
@@ -971,6 +976,7 @@ void BaseScene::BuildModelInfo(ID3D12Device* device)
 
 			GunComponent* gun_component = new GunComponent(sherif_object);
 			gun_component->LoadGunInfo("sherif");
+			gun_component->set_scene(this);
 			sherif_object->AddComponent(gun_component);
 			sherif_object->Rotate(0, 170, -17);
 
@@ -1000,6 +1006,7 @@ void BaseScene::BuildModelInfo(ID3D12Device* device)
 
 			GunComponent* gun_component = new GunComponent(specter_object);
 			gun_component->LoadGunInfo("specter");
+			gun_component->set_scene(this);
 			specter_object->AddComponent(gun_component);
 			specter_object->Rotate(0, 170, -17);
 
@@ -1762,7 +1769,6 @@ void BaseScene::UpdateObjectHitBullet()
 			CheckPlayerHitGun(object);
 			continue;
 		}
-		CheckObjectHitBullet(object);
 		CheckObjectHitFlamethrow(object);
 	}
 }
@@ -2150,155 +2156,6 @@ void BaseScene::CheckObjectHitObject(Object* object)
 	}
 }
 
-void BaseScene::CheckObjectHitBullet(Object* object)
-{
-	//TODO: 충돌체크 함수 못 만들었으면 리턴 해제
-	return;
-
-	GunComponent* gun = Object::GetComponentInChildren<GunComponent>(player_);
-	auto& bullet_list = gun->fired_bullet_list();
-
-	auto& box_collider_list = Object::GetComponentsInChildren<BoxColliderComponent>(object);
-	if (!box_collider_list.size())
-		return;
-
-	for (auto& box_collider : box_collider_list)
-	{
-		for (auto& bullet : bullet_list)
-		{
-			if (bullet->is_dead())
-				continue;
-			BoxColliderComponent* bullet_collider = Object::GetComponent<BoxColliderComponent>(bullet);
-			if (!bullet_collider)
-				continue;
-
-			if (bullet_collider->animated_box().Intersects(box_collider->animated_box()))
-			{
-				MonsterComponent* monster = Object::GetComponent<MonsterComponent>(object);
-				if (monster && monster->IsDead())
-					continue;
-				bullet->set_is_dead(true);
-				if (monster && !monster->IsDead())
-				{
-					ParticleComponent* gun_particle = nullptr;
-					{
-						Object* flame_tip = player_->FindFrame("gun_particle_pivot");
-						if (flame_tip)
-							gun_particle = Object::GetComponent<ParticleComponent>(flame_tip);
-					}
-
-					// 몬스터 HIT 파티클 출력
-					ParticleComponent* particle_component = Object::GetComponent<ParticleComponent>(monster_hit_particles_.front());
-					particle_component->set_hit_position(monster->owner()->world_position_vector());
-					particle_component->set_color(gun_particle->color());
-					particle_component->Play(50);
-					
-					monster->HitDamage(gun->damage() * (1 + gun->upgrade() * 0.2));
-
-					if (monster->IsDead())
-					{
-						catch_monster_num_++;
-
-						// 총기 이름 목록
-						std::vector<std::string> gun_names = { "Classic", "Sherif", "Specter", "Vandal", "Odin", "Flamethrower" };
-
-						std::vector<int> drop_weights = { 15, 10, 7, 5, 3, 1 }; // 전체 합 = 41
-
-						// 드랍할지 말지: 41% 확률로 총기 드랍, 나머지 59%는 아무것도 안 떨어짐
-						if (rand() % 100 >= 41) return; // 59% 확률로 드랍 안 함
-
-						// 랜덤 엔진 및 분포 생성
-						std::random_device rd;
-						std::mt19937 gen(rd());
-						std::discrete_distribution<> dist(drop_weights.begin(), drop_weights.end());
-
-						int random_index = dist(gen);
-						std::string gun_name = gun_names[random_index];
-						Object* dropped_gun = FindModelInfo(gun_names[random_index])->GetInstance();
-
-						XMFLOAT3 drop_pos = monster->owner()->world_position_vector();
-						drop_pos.y += 0.1f;
-						dropped_gun->set_position_vector(drop_pos);
-						dropped_gun->set_is_movable(true);
-
-						BoundingBox gun_bb{ {0.f, 0.f, 0.f}, {0.5f, 0.3f, 1.0f} };
-						auto box_comp = new BoxColliderComponent(dropped_gun, gun_bb);
-						dropped_gun->AddComponent(box_comp);
-
-						// UI
-						/*Object* ui_texture = FindModelInfo("Gun_UI")->GetInstance();
-						ui_texture->set_local_position({ 0.0f, 0.5f, 0.1f });
-						dropped_gun->AddChild(ui_texture);*/
-
-						std::string dropped_name = dropped_gun->name();  // 예: "Dropped_Classic"
-
-						GunComponent* dropped_gun_component = Object::GetComponent<GunComponent>(dropped_gun);
-						std::string gun_ui_name = "Gun_UI_" + dropped_name.substr(dropped_name.find('_') + 1); // "Classic", "Sherif" 등
-
-						// 랜덤 강화, 속성
-						int upgrade = rand() % 4;
-						dropped_gun_component->set_upgrade(upgrade);
-
-						// [2] 속성 타입: 0 = Fire, 1 = Electric, 2 = Poison
-						int element_random = rand() % 3;
-						ElementType element = static_cast<ElementType>(element_random);
-						dropped_gun_component->set_element(element);
-
-						if (upgrade > 0)
-						{
-							gun_ui_name += "+" + std::to_string(upgrade);
-						}
-
-						ModelInfo* ui_model = FindModelInfo(gun_ui_name);
-						if (ui_model)
-						{
-							Object* ui_texture = ui_model->GetInstance();
-							ui_texture->set_local_position({ 0.0f, 0.5f, 0.1f }); // 위치는 필요 시 조정
-							dropped_gun->AddChild(ui_texture);
-						}
-
-						// 파티클 추가
-						Material* particle_material = std::find_if(materials_.begin(), materials_.end(), [&](const auto& material) {
-							return material->name() == "Trail_1";
-							})->get();
-						ParticleComponent* particle = new ParticleComponent(
-							dropped_gun,
-							device_,
-							100,
-							ParticleComponent::Circle,
-							particle_material
-						);
-						particle->set_scene(this);
-						particle->set_loop(true);
-						particle->set_color({ 1.0f, 1.0f, 1.0f, 1.0f });
-						switch (dropped_gun_component->element())
-						{
-						case ElementType::kFire:
-							particle->set_color({ 0.9f, 0.1f, 0.1f, 0.5f }); // Red
-							break;
-						case ElementType::kElectric:
-							particle->set_color({ 0.1f, 0.9f, 0.1f, 0.5f }); // Yellowish Green
-							break;
-						case ElementType::kPoison:
-							particle->set_color({ 0.9f, 0.9f, 0.1f, 0.5f }); // Greenish Yellow
-							break;
-						default:
-							particle->set_color({ 1.0f, 1.0f, 1.0f, 0.5f }); // fallback white
-							break;
-						}
-
-						dropped_gun->AddComponent(particle);
-						particle->Play(50);
-
-						AddObject(dropped_gun);
-						dropped_guns_.push_back(dropped_gun);
-					}
-				}
-			}
-		}
-	}
-}
-
 void BaseScene::CheckRayHitEnemy(const XMFLOAT3& ray_origin, const XMFLOAT3& ray_direction)
 {
 	XMVECTOR origin = XMLoadFloat3(&ray_origin);
@@ -2337,7 +2194,21 @@ void BaseScene::CheckRayHitEnemy(const XMFLOAT3& ray_origin, const XMFLOAT3& ray
 		MonsterComponent* monster = Object::GetComponent<MonsterComponent>(closest_monster);
 		if (!monster || monster->IsDead()) return;
 
-		monster->HitDamage(gun->damage() * (1 + gun->upgrade() * 0.2));
+		float damage = gun->damage() * (1 + gun->upgrade() * 0.2);
+		// 속성 효과
+		switch (gun->element())
+		{
+		case ElementType::kFire:
+			monster->ApplyStatusEffect(StatusEffectType::Fire, 3.0f, damage);
+			break;
+		case ElementType::kPoison:
+			monster->ApplyStatusEffect(StatusEffectType::Poison, 3.0f, 0.f);
+			break;
+		case ElementType::kElectric:
+			monster->ApplyStatusEffect(StatusEffectType::Electric, 3.0f, 0.f);
+			break;
+		}
+		monster->HitDamage(damage);
 
 		// 피격 파티클 출력
 		ParticleComponent* particle = Object::GetComponent<ParticleComponent>(monster_hit_particles_.front());
@@ -2393,7 +2264,8 @@ void BaseScene::CheckRayHitEnemy(const XMFLOAT3& ray_origin, const XMFLOAT3& ray
 			dropped_gun_component->set_upgrade(upgrade);
 
 			// [2] 속성 타입: 0 = Fire, 1 = Electric, 2 = Poison
-			int element_random = rand() % 3;
+			//int element_random = rand() % 3;
+			int element_random = 0;
 			ElementType element = static_cast<ElementType>(element_random);
 			dropped_gun_component->set_element(element);
 
@@ -2430,10 +2302,10 @@ void BaseScene::CheckRayHitEnemy(const XMFLOAT3& ray_origin, const XMFLOAT3& ray
 				particle->set_color({ 0.9f, 0.1f, 0.1f, 0.5f }); // Red
 				break;
 			case ElementType::kElectric:
-				particle->set_color({ 0.1f, 0.9f, 0.1f, 0.5f }); // Yellowish Green
+				particle->set_color({ 0.9f, 0.9f, 0.1f, 0.5f }); // Yellowish Green
 				break;
 			case ElementType::kPoison:
-				particle->set_color({ 0.9f, 0.9f, 0.1f, 0.5f }); // Greenish Yellow
+				particle->set_color({ 0.1f, 0.9f, 0.1f, 0.5f }); // Greenish Yellow
 				break;
 			default:
 				particle->set_color({ 1.0f, 1.0f, 1.0f, 0.5f }); // fallback white
@@ -2496,7 +2368,20 @@ void BaseScene::CheckObjectHitFlamethrow(Object* object)
 					particle_component->set_color(gun_particle->color());
 					particle_component->Play(50);
 
-					monster->HitDamage(gun->damage() * (1 + gun->upgrade() * 0.2));
+					float damage = gun->damage() * (1 + gun->upgrade() * 0.2);
+					switch (gun->element())
+					{
+					case ElementType::kFire:
+						monster->ApplyStatusEffect(StatusEffectType::Fire, 3.0f, damage);
+						break;
+					case ElementType::kPoison:
+						monster->ApplyStatusEffect(StatusEffectType::Poison, 3.0f, 0.f);
+						break;
+					case ElementType::kElectric:
+						monster->ApplyStatusEffect(StatusEffectType::Electric, 3.0f, 0.f);
+						break;
+					}
+					monster->HitDamage(damage);
 
 					if (monster->IsDead())
 					{
@@ -2543,7 +2428,8 @@ void BaseScene::CheckObjectHitFlamethrow(Object* object)
 						dropped_gun_component->set_upgrade(upgrade);
 
 						// [2] 속성 타입: 0 = Fire, 1 = Electric, 2 = Poison
-						int element_random = rand() % 3;
+						//int element_random = rand() % 3;
+						int element_random = 0;
 						ElementType element = static_cast<ElementType>(element_random);
 						dropped_gun_component->set_element(element);
 
@@ -2580,10 +2466,10 @@ void BaseScene::CheckObjectHitFlamethrow(Object* object)
 							particle->set_color({ 0.9f, 0.1f, 0.1f, 0.5f }); // Red
 							break;
 						case ElementType::kElectric:
-							particle->set_color({ 0.1f, 0.9f, 0.1f, 0.5f }); // Yellowish Green
+							particle->set_color({ 0.9f, 0.9f, 0.1f, 0.5f }); // Yellowish Green
 							break;
 						case ElementType::kPoison:
-							particle->set_color({ 0.9f, 0.9f, 0.1f, 0.5f }); // Greenish Yellow
+							particle->set_color({ 0.1f, 0.9f, 0.1f, 0.5f }); // Greenish Yellow
 							break;
 						default:
 							particle->set_color({ 1.0f, 1.0f, 1.0f, 0.5f }); // fallback white
@@ -2652,6 +2538,7 @@ void BaseScene::CheckPlayerHitGun(Object* object)
 			}
 
 			// 새로 장착된 총기에서 GunComponent에 능력치 적용
+			//Object* new_gun = player_gun_frame->FindFrame(gun_name);
 			Object* new_gun = player_gun_frame->FindFrame(gun_name);
 			GunComponent* new_gun_component = Object::GetComponent<GunComponent>(new_gun);
 			if (new_gun_component)
@@ -2813,4 +2700,9 @@ void BaseScene::add_catch_monster_num()
 {
 	catch_monster_num_++;
 	return ;
+}
+
+int BaseScene::catch_monster_num() const
+{
+	return catch_monster_num_;
 }
