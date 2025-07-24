@@ -531,6 +531,15 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 		std::iota(scroll_index.begin(), scroll_index.end(), 0); // 0~9 채우기
 		std::shuffle(scroll_index.begin(), scroll_index.end(), kRandomGenerator);
 
+		scroll_index = {
+			(int)ScrollType::kHardenedSkin,
+			(int)ScrollType::kNinja,
+			(int)ScrollType::kWeaponMaster,
+			(int)ScrollType::kFlameMaster,
+			(int)ScrollType::kAcidMaster,
+			(int)ScrollType::kElectricMaster
+		};
+
 		for (int i = 0; i < kChestCount; ++i)
 		{
 			Object* chest = model_infos_[12]->GetInstance();
@@ -2195,17 +2204,57 @@ void BaseScene::CheckRayHitEnemy(const XMFLOAT3& ray_origin, const XMFLOAT3& ray
 		if (!monster || monster->IsDead()) return;
 
 		float damage = gun->damage() * (1 + gun->upgrade() * 0.2);
+		// 플레이어 스크롤 효과 적용
+		PlayerComponent* player_comp = Object::GetComponent<PlayerComponent>(player_);
+		if (player_comp)
+		{
+			if (gun->element() == ElementType::kFire &&
+				player_comp->HasScroll(ScrollType::kFlameMaster))
+			{
+				damage *= 1.3f;
+			}
+			else if (gun->element() == ElementType::kPoison &&
+				player_comp->HasScroll(ScrollType::kAcidMaster))
+			{
+				damage *= 1.3f;
+			}
+			else if (gun->element() == ElementType::kElectric &&
+				player_comp->HasScroll(ScrollType::kElectricMaster))
+			{
+				damage *= 1.3f;
+			}
+		}
+		bool flame_frenzy = false;
+		bool acid_frenzy = false;
+		bool electric_frenzy = false;
+		if (player_comp)
+		{
+			if (player_comp->HasScroll(ScrollType::kFlameFrenzy))
+			{
+				flame_frenzy = true;
+			}
+			if (player_comp->HasScroll(ScrollType::kAcidFrenzy))
+			{
+				acid_frenzy = true;
+			}
+			if (player_comp->HasScroll(ScrollType::kElectricFrenzy))
+			{
+				electric_frenzy = true;
+			}
+		}
+
 		// 속성 효과
 		switch (gun->element())
 		{
 		case ElementType::kFire:
-			monster->ApplyStatusEffect(StatusEffectType::Fire, 3.0f, damage);
+			
+			monster->ApplyStatusEffect(StatusEffectType::Fire, 3.0f, damage, flame_frenzy, acid_frenzy, electric_frenzy);
 			break;
 		case ElementType::kPoison:
-			monster->ApplyStatusEffect(StatusEffectType::Poison, 3.0f, 0.f);
+			monster->ApplyStatusEffect(StatusEffectType::Poison, 3.0f, 0.f, flame_frenzy, acid_frenzy, electric_frenzy);
 			break;
 		case ElementType::kElectric:
-			monster->ApplyStatusEffect(StatusEffectType::Electric, 3.0f, 0.f);
+			monster->ApplyStatusEffect(StatusEffectType::Electric, 3.0f, 0.f, flame_frenzy, acid_frenzy, electric_frenzy);
 			break;
 		}
 		monster->HitDamage(damage);
@@ -2237,11 +2286,9 @@ void BaseScene::CheckRayHitEnemy(const XMFLOAT3& ray_origin, const XMFLOAT3& ray
 			if (rand() % 100 >= 41) return; // 59% 확률로 드랍 안 함
 
 			// 랜덤 엔진 및 분포 생성
-			std::random_device rd;
-			std::mt19937 gen(rd());
 			std::discrete_distribution<> dist(drop_weights.begin(), drop_weights.end());
 
-			int random_index = dist(gen);
+			int random_index = dist(kRandomGenerator);
 			std::string gun_name = gun_names[random_index];
 			Object* dropped_gun = FindModelInfo(gun_names[random_index])->GetInstance();
 
@@ -2264,8 +2311,8 @@ void BaseScene::CheckRayHitEnemy(const XMFLOAT3& ray_origin, const XMFLOAT3& ray
 			dropped_gun_component->set_upgrade(upgrade);
 
 			// [2] 속성 타입: 0 = Fire, 1 = Electric, 2 = Poison
-			//int element_random = rand() % 3;
-			int element_random = 0;
+			int element_random = rand() % 3;
+			//int element_random = 0;
 			ElementType element = static_cast<ElementType>(element_random);
 			dropped_gun_component->set_element(element);
 
@@ -2369,16 +2416,57 @@ void BaseScene::CheckObjectHitFlamethrow(Object* object)
 					particle_component->Play(50);
 
 					float damage = gun->damage() * (1 + gun->upgrade() * 0.2);
+					// 플레이어 스크롤 효과 적용
+					PlayerComponent* player_comp = Object::GetComponent<PlayerComponent>(player_);
+					if (player_comp)
+					{
+						if (gun->element() == ElementType::kFire &&
+							player_comp->HasScroll(ScrollType::kFlameMaster))
+						{
+							damage *= 1.3f;
+						}
+						else if (gun->element() == ElementType::kPoison &&
+							player_comp->HasScroll(ScrollType::kAcidMaster))
+						{
+							damage *= 1.3f;
+						}
+						else if (gun->element() == ElementType::kElectric &&
+							player_comp->HasScroll(ScrollType::kElectricMaster))
+						{
+							damage *= 1.3f;
+						}
+					}
+					bool flame_frenzy = false;
+					bool acid_frenzy = false;
+					bool electric_frenzy = false;
+					if (player_comp)
+					{
+						if (player_comp->HasScroll(ScrollType::kFlameFrenzy))
+						{
+							flame_frenzy = true;
+						}
+						if (player_comp->HasScroll(ScrollType::kAcidFrenzy))
+						{
+							acid_frenzy = true;
+						}
+						if (player_comp->HasScroll(ScrollType::kElectricFrenzy))
+						{
+							electric_frenzy = true;
+						}
+					}
+
+					// 속성 효과
 					switch (gun->element())
 					{
 					case ElementType::kFire:
-						monster->ApplyStatusEffect(StatusEffectType::Fire, 3.0f, damage);
+
+						monster->ApplyStatusEffect(StatusEffectType::Fire, 3.0f, damage, flame_frenzy, acid_frenzy, electric_frenzy);
 						break;
 					case ElementType::kPoison:
-						monster->ApplyStatusEffect(StatusEffectType::Poison, 3.0f, 0.f);
+						monster->ApplyStatusEffect(StatusEffectType::Poison, 3.0f, 0.f, flame_frenzy, acid_frenzy, electric_frenzy);
 						break;
 					case ElementType::kElectric:
-						monster->ApplyStatusEffect(StatusEffectType::Electric, 3.0f, 0.f);
+						monster->ApplyStatusEffect(StatusEffectType::Electric, 3.0f, 0.f, flame_frenzy, acid_frenzy, electric_frenzy);
 						break;
 					}
 					monster->HitDamage(damage);
@@ -2396,11 +2484,9 @@ void BaseScene::CheckObjectHitFlamethrow(Object* object)
 						if (rand() % 100 >= 41) return; // 59% 확률로 드랍 안 함
 
 						// 랜덤 엔진 및 분포 생성
-						std::random_device rd;
-						std::mt19937 gen(rd());
 						std::discrete_distribution<> dist(drop_weights.begin(), drop_weights.end());
 
-						int random_index = dist(gen);
+						int random_index = dist(kRandomGenerator);
 						std::string gun_name = gun_names[random_index];
 						Object* dropped_gun = FindModelInfo(gun_names[random_index])->GetInstance();
 
@@ -2428,8 +2514,8 @@ void BaseScene::CheckObjectHitFlamethrow(Object* object)
 						dropped_gun_component->set_upgrade(upgrade);
 
 						// [2] 속성 타입: 0 = Fire, 1 = Electric, 2 = Poison
-						//int element_random = rand() % 3;
-						int element_random = 0;
+						int element_random = rand() % 3;
+						//int element_random = 2;
 						ElementType element = static_cast<ElementType>(element_random);
 						dropped_gun_component->set_element(element);
 
@@ -2649,7 +2735,24 @@ void BaseScene::CheckPlayerHitChest(Object* object)
 				if (scroll_f_key_)
 				{
 					auto scroll_type = chest_component->TakeScroll();
+					PlayerComponent* player_comp = Object::GetComponent<PlayerComponent>(player_);
+					if (player_comp && scroll_type != ScrollType::None)
+					{
+						player_comp->AddScroll(scroll_type);
 
+						if (scroll_type == ScrollType::kWeaponMaster)
+						{
+							Object* player_gun_frame = player_->FindFrame("WeaponR_locator");
+							if (player_gun_frame)
+							{
+								GunComponent* gun = Object::GetComponentInChildren<GunComponent>(player_gun_frame);
+								if (gun)
+								{
+									gun->set_upgrade(4);
+								}
+							}
+						}
+					}
 				}
 			}
 		}

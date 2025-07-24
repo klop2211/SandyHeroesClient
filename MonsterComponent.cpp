@@ -113,12 +113,15 @@ void MonsterComponent::Update(float elapsed_time)
 
         if (type == StatusEffectType::Fire) //화염
         {
-            float dps = effect.fire_damage * 0.9f;
+            float dps = effect.fire_damage * 0.1f;  //10%
+            if (effect.flame_frenzy)
+            {
+                dps *= 2.0f;
+            }
             HitDamage(dps * elapsed_time);
 
             if (hp_ <= 0 )
             {
-                int a;
                 if (scene_)
                 {
                     BaseScene* base_scene = dynamic_cast<BaseScene*>(scene_);
@@ -137,7 +140,12 @@ void MonsterComponent::Update(float elapsed_time)
                 if (!electric_slow_applied_)
                 {
                     original_speed_ = movement->max_speed_xz();
-                    movement->set_max_speed_xz(original_speed_ * 0.70f);    //30% 감소
+                    float electric_frenzy = 0.0f;
+                    if (effect.electric_frenzy)
+                    {
+                        electric_frenzy = 0.3f; // 60% 감소 시키기 위한 변수
+                    }
+                    movement->set_max_speed_xz(original_speed_ * (0.70f - electric_frenzy));    // 기본 30% 감소
                     electric_slow_applied_ = true;
                 }
 
@@ -166,7 +174,14 @@ void MonsterComponent::HitDamage(float damage)
     auto it = status_effects_.find(StatusEffectType::Poison);
     if (it != status_effects_.end() && it->second.IsActive())
     {
-        damage *= 1.15f;
+        if (it->second.acid_frenzy)
+        {
+            damage *= 1.3f;
+        }
+        else
+        {
+            damage *= 1.15f;
+        }
     }
 
 	if (shield_ > 0)
@@ -188,9 +203,10 @@ void MonsterComponent::HitDamage(float damage)
 	}
 }
 
-void MonsterComponent::ApplyStatusEffect(StatusEffectType type, float duration, float damage)
+void MonsterComponent::ApplyStatusEffect(StatusEffectType type, float duration, float damage,
+    bool flame_frenzy, bool acid_frenzy, bool electric_frenzy)
 {
-    status_effects_[type] = { duration, 0.f, damage };
+    status_effects_[type] = { duration, 0.f, damage , flame_frenzy, acid_frenzy, electric_frenzy };
 }
 
 void MonsterComponent::set_shield(float value)

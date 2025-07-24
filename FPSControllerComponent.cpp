@@ -15,6 +15,7 @@
 #include "MovementComponent.h"
 #include "BaseScene.h"
 #include "MeshColliderComponent.h"
+#include "PlayerComponent.h"
 
 FPSControllerComponent::FPSControllerComponent(Object* owner) : InputControllerComponent(owner)
 {
@@ -200,6 +201,12 @@ void FPSControllerComponent::Update(float elapsed_time)
 
 	XMFLOAT3 velocity{ 0,0,0 };
 	float speed = 5.5f;
+
+	auto player_component = Object::GetComponent<PlayerComponent>(owner_);
+	if (player_component && player_component->HasScroll(ScrollType::kSprinter))
+	{
+		speed *= 1.20f; // 20% 증가
+	}
 	XMFLOAT3 look = owner_->look_vector();
 	XMFLOAT3 right = owner_->right_vector();
 	look.y = 0.f; // xz 평면을 따라 이동

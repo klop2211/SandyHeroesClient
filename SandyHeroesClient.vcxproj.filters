@@ -175,6 +175,15 @@
     <Filter Include="Animation\State\Chest">
       <UniqueIdentifier>{4182a86c-e9f4-42bf-9c76-a10cdef60d76}</UniqueIdentifier>
     </Filter>
+    <Filter Include="7.Component\Player">
+      <UniqueIdentifier>{7008d224-e1b9-4a30-90f0-868571d4735b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="7.Component\Chest/Scroll">
+      <UniqueIdentifier>{d99a625a-a7f5-4ca6-9182-3f37f83a8735}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="7.Component\Particle">
+      <UniqueIdentifier>{2ce9bb97-92f0-4798-b8f3-327c64fd9222}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="targetver.h">
@@ -369,16 +378,10 @@
     <ClInclude Include="UiComponent.h">
       <Filter>7.Component\UI</Filter>
     </ClInclude>
-    <ClInclude Include="PlayerComponent.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
     <ClInclude Include="ProgressBarComponent.h">
       <Filter>7.Component\UI\ProgressBar</Filter>
     </ClInclude>
     <ClInclude Include="TextFormat.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="ParticleComponent.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="SkinnedShadowShader.h">
@@ -409,10 +412,16 @@
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="ChestComponent.h">
-      <Filter>헤더 파일</Filter>
+      <Filter>7.Component\Chest/Scroll</Filter>
     </ClInclude>
     <ClInclude Include="ScrollComponent.h">
-      <Filter>헤더 파일</Filter>
+      <Filter>7.Component\Chest/Scroll</Filter>
+    </ClInclude>
+    <ClInclude Include="PlayerComponent.h">
+      <Filter>7.Component\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="ParticleComponent.h">
+      <Filter>7.Component\Particle</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -593,16 +602,10 @@
     <ClCompile Include="UiComponent.cpp">
       <Filter>7.Component\UI</Filter>
     </ClCompile>
-    <ClCompile Include="PlayerComponent.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
     <ClCompile Include="ProgressBarComponent.cpp">
       <Filter>7.Component\UI\ProgressBar</Filter>
     </ClCompile>
     <ClCompile Include="TextFormat.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="ParticleComponent.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="SkinnedShadowShader.cpp">
@@ -632,11 +635,17 @@
     <ClCompile Include="CharacterComponent.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="ChestComponent.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
     <ClCompile Include="ScrollComponent.cpp">
-      <Filter>소스 파일</Filter>
+      <Filter>7.Component\Chest/Scroll</Filter>
+    </ClCompile>
+    <ClCompile Include="ChestComponent.cpp">
+      <Filter>7.Component\Chest/Scroll</Filter>
+    </ClCompile>
+    <ClCompile Include="PlayerComponent.cpp">
+      <Filter>7.Component\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="ParticleComponent.cpp">
+      <Filter>7.Component\Particle</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
