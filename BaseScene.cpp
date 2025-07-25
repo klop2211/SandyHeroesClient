@@ -49,6 +49,8 @@
 #include "ScrollComponent.h"
 #include "ChestComponent.h"
 #include "ChestAnimationState.h"
+#include "SoundComponent.h"
+#include "FMODSoundManager.h"
 
 void BaseScene::Initialize(ID3D12Device* device, ID3D12GraphicsCommandList* command_list, 
 	ID3D12RootSignature* root_signature, GameFramework* game_framework, 
@@ -482,6 +484,7 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 	Object* player_gun_frame = player->FindFrame("WeaponR_locator");
 	player_gun_frame->AddChild(FindModelInfo("Classic")->GetInstance());
 	GunComponent* gun = Object::GetComponentInChildren<GunComponent>(player);
+
 	if (gun)
 	{
 		gun->set_scene(this);        // BaseScene을 전달
@@ -568,6 +571,27 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 		}
 	}
 
+	// 사운드
+	{
+		FMODSoundManager::Instance().Initialize();
+		Object* sound_object = new Object();
+		auto sound_comp = new SoundComponent(sound_object);
+		sound_comp->Load("gun_fire", "Resource/Fmod/sound/gun_fire.wav", false);
+		sound_comp->Load("flamethrower", "Resource/Fmod/sound/flamethrower.wav", true);
+		sound_comp->Load("chest", "Resource/Fmod/sound/chest.wav", false);
+		sound_comp->Load("get_drop_gun", "Resource/Fmod/sound/get_drop_gun.wav", false);
+		sound_comp->Load("scroll_pickup", "Resource/Fmod/sound/scroll_pickup.wav", false);
+		sound_comp->Load("bgm", "Resource/Fmod/sound/bgm.wav", true);
+		sound_comp->Load("reload", "Resource/Fmod/sound/reload.wav", false);
+		sound_comp->Load("grunt", "Resource/Fmod/sound/grunt.wav", false);
+		sound_comp->Load("hit", "Resource/Fmod/sound/hit.wav", false);
+		sound_object->AddComponent(sound_comp);
+		sounds_.push_back(sound_object);
+		AddObject(sound_object);
+
+		FMODSoundManager::Instance().PlaySound("bgm", true, 0.3f); // loop=true, volume 조절 가능
+	}
+
 	//Create Skybox
 	Object* skybox = new Object();
 	skybox->AddComponent(new MeshComponent(skybox, 
@@ -644,6 +668,7 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 			}
 		}
 	}
+
 
 	Scene::UpdateObjectWorldMatrix();
 
@@ -1655,6 +1680,8 @@ void BaseScene::Update(float elapsed_time)
 
 	Scene::Update(elapsed_time);
 
+	FMODSoundManager::Instance().system()->update();
+
 	//particle_system_->Update(elapsed_time);
 	//particle_->Update(elapsed_time);
 
@@ -2188,6 +2215,8 @@ void BaseScene::CheckRayHitEnemy(const XMFLOAT3& ray_origin, const XMFLOAT3& ray
 
 	if (closest_monster)
 	{
+		FMODSoundManager::Instance().PlaySound("hit", false, 0.3f);
+
 		GunComponent* gun = Object::GetComponentInChildren<GunComponent>(player_);
 		if (!gun) return;
 
@@ -2584,6 +2613,9 @@ void BaseScene::CheckPlayerHitGun(Object* object)
 
 		if (player_obb.Intersects(gun_box->animated_box()) && f_key_)
 		{
+
+			FMODSoundManager::Instance().PlaySound("get_drop_gun", false, 0.3f);
+
 			GunComponent* gun_component = Object::GetComponent<GunComponent>(gun);
 			if (!gun_component) { ++it; continue; }
 

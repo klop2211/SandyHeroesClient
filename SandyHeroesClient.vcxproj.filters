@@ -184,6 +184,9 @@
     <Filter Include="7.Component\Particle">
       <UniqueIdentifier>{2ce9bb97-92f0-4798-b8f3-327c64fd9222}</UniqueIdentifier>
     </Filter>
+    <Filter Include="7.Component\Sound">
+      <UniqueIdentifier>{7312fe43-58a4-4c15-bd41-bdca3b9fe747}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="targetver.h">
@@ -402,9 +405,6 @@
     <ClInclude Include="ParticleShader.h">
       <Filter>3.Shader\Particle</Filter>
     </ClInclude>
-    <ClInclude Include="WallColliderComponent.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
     <ClInclude Include="ChestAnimationState.h">
       <Filter>Animation\State\Chest</Filter>
     </ClInclude>
@@ -422,6 +422,15 @@
     </ClInclude>
     <ClInclude Include="ParticleComponent.h">
       <Filter>7.Component\Particle</Filter>
+    </ClInclude>
+    <ClInclude Include="WallColliderComponent.h">
+      <Filter>7.Component\Collider</Filter>
+    </ClInclude>
+    <ClInclude Include="SoundComponent.h">
+      <Filter>7.Component\Sound</Filter>
+    </ClInclude>
+    <ClInclude Include="FMODSoundManager.h">
+      <Filter>7.Component\Sound</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -626,9 +635,6 @@
     <ClCompile Include="ParticleShader.cpp">
       <Filter>3.Shader\Particle</Filter>
     </ClCompile>
-    <ClCompile Include="WallColliderComponent.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
     <ClCompile Include="ChestAnimationState.cpp">
       <Filter>Animation\State\Chest</Filter>
     </ClCompile>
@@ -646,6 +652,15 @@
     </ClCompile>
     <ClCompile Include="ParticleComponent.cpp">
       <Filter>7.Component\Particle</Filter>
+    </ClCompile>
+    <ClCompile Include="WallColliderComponent.cpp">
+      <Filter>7.Component\Collider</Filter>
+    </ClCompile>
+    <ClCompile Include="SoundComponent.cpp">
+      <Filter>7.Component\Sound</Filter>
+    </ClCompile>
+    <ClCompile Include="FMODSoundManager.cpp">
+      <Filter>7.Component\Sound</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

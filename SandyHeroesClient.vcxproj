@@ -111,10 +111,13 @@
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalIncludeDirectories>D:\SandyHeroesClient\Resource\Fmod\inc</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>D:\SandyHeroesClient\Resource\Fmod\lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>$(CoreLibraryDependencies);fmod_vc.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -126,12 +129,15 @@
       <PreprocessorDefinitions>NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalIncludeDirectories>D:\SandyHeroesClient\Resource\Fmod\inc</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>D:\SandyHeroesClient\Resource\Fmod\lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>$(CoreLibraryDependencies);fmod_vc.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -156,6 +162,7 @@
     <ClInclude Include="DebugMeshComponent.h" />
     <ClInclude Include="DebugShader.h" />
     <ClInclude Include="DescriptorManager.h" />
+    <ClInclude Include="FMODSoundManager.h" />
     <ClInclude Include="FPSControllerComponent.h" />
     <ClInclude Include="FrameResource.h" />
     <ClInclude Include="FrameResourceManager.h" />
@@ -187,6 +194,7 @@
     <ClInclude Include="ShadowShader.h" />
     <ClInclude Include="ShotDragonAnimationState.h" />
     <ClInclude Include="SkinnedShadowShader.h" />
+    <ClInclude Include="SoundComponent.h" />
     <ClInclude Include="SpawnerComponent.h" />
     <ClInclude Include="StrongDragonAnimationState.h" />
     <ClInclude Include="TestAnimationState.h" />
@@ -236,6 +244,7 @@
     <ClCompile Include="DebugMeshComponent.cpp" />
     <ClCompile Include="DebugShader.cpp" />
     <ClCompile Include="DescriptorManager.cpp" />
+    <ClCompile Include="FMODSoundManager.cpp" />
     <ClCompile Include="FPSControllerComponent.cpp" />
     <ClCompile Include="FrameResourceManager.cpp" />
     <ClCompile Include="GameFramework.cpp" />
@@ -266,6 +275,7 @@
     <ClCompile Include="ShadowShader.cpp" />
     <ClCompile Include="ShotDragonAnimationState.cpp" />
     <ClCompile Include="SkinnedShadowShader.cpp" />
+    <ClCompile Include="SoundComponent.cpp" />
     <ClCompile Include="SpawnerComponent.cpp" />
     <ClCompile Include="StrongDragonAnimationState.cpp" />
     <ClCompile Include="TestAnimationState.cpp" />

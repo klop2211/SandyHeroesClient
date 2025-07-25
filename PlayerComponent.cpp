@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "PlayerComponent.h"
 #include "ScrollComponent.h"
+#include "FMODSoundManager.h"
 
 PlayerComponent::PlayerComponent(Object* owner)
 	: Component(owner)
@@ -90,6 +91,9 @@ void PlayerComponent::HealShield(float heal_amount)
 
 void PlayerComponent::HitDamage(float damage)
 {
+
+	FMODSoundManager::Instance().PlaySound("grunt", false, 0.3f);
+
 	if (HasScroll(ScrollType::kHardenedSkin))
 	{
 		damage *= 0.9f;

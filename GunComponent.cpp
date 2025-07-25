@@ -10,6 +10,8 @@
 #include "Scene.h"
 #include "ParticleComponent.h"
 #include "BaseScene.h"
+#include "SoundComponent.h"
+#include "FMODSoundManager.h"
 
 std::unordered_map<std::string, GunInfo> GunComponent::kGunInfos{};
 
@@ -74,11 +76,14 @@ void GunComponent::ReloadBullets()
     //TODO: 재장전 애니메이션 수행
     if (!is_reload_)
     {
+        if (!(bullet_type_ == BulletType::kSpecial))
+        {
+            FMODSoundManager::Instance().PlaySound("reload", false, 0.3f); // loop=true, volume 조절 가능
+        }
         //TODO: 데모 버젼 노쿨
         loading_time_ = reload_time_;
         //loading_time_ = reload_time_;
         is_reload_ = true;
-
     }
 }
 
@@ -99,6 +104,11 @@ bool GunComponent::FireBullet(XMFLOAT3 direction, Object* bullet_model, Scene* s
             {
                 particle->Play(25);
 			}
+
+            if (!(bullet_type_ == BulletType::kSpecial))
+            {
+                FMODSoundManager::Instance().PlaySound("gun_fire", false, 0.3f);
+            }
 
             --loaded_bullets_;
 
