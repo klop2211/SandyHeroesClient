@@ -531,15 +531,6 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 		std::iota(scroll_index.begin(), scroll_index.end(), 0); // 0~9 채우기
 		std::shuffle(scroll_index.begin(), scroll_index.end(), kRandomGenerator);
 
-		scroll_index = {
-			(int)ScrollType::kHardenedSkin,
-			(int)ScrollType::kNinja,
-			(int)ScrollType::kWeaponMaster,
-			(int)ScrollType::kFlameMaster,
-			(int)ScrollType::kAcidMaster,
-			(int)ScrollType::kElectricMaster
-		};
-
 		for (int i = 0; i < kChestCount; ++i)
 		{
 			Object* chest = model_infos_[12]->GetInstance();
@@ -2312,7 +2303,6 @@ void BaseScene::CheckRayHitEnemy(const XMFLOAT3& ray_origin, const XMFLOAT3& ray
 
 			// [2] 속성 타입: 0 = Fire, 1 = Electric, 2 = Poison
 			int element_random = rand() % 3;
-			//int element_random = 0;
 			ElementType element = static_cast<ElementType>(element_random);
 			dropped_gun_component->set_element(element);
 
@@ -2515,7 +2505,6 @@ void BaseScene::CheckObjectHitFlamethrow(Object* object)
 
 						// [2] 속성 타입: 0 = Fire, 1 = Electric, 2 = Poison
 						int element_random = rand() % 3;
-						//int element_random = 2;
 						ElementType element = static_cast<ElementType>(element_random);
 						dropped_gun_component->set_element(element);
 
