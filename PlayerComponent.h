@@ -41,9 +41,12 @@ public:
 	const std::unordered_set<ScrollType>& acquired_scrolls() const;
 	float main_skill_gage() const { return main_skill_gage_; }
 	float main_skill_max_gage() const { return main_skill_max_gage_; }
+	float dash_gage() const { return dash_gage_; }
+	float dash_max_gage() const { return dash_max_gage_; }
 
 	//setter
 	void set_scene(Scene* scene) { scene_ = scene; }	//플레이어가 속한 씬 설정
+	void set_dash_gage(float gage) { dash_gage_ = gage; }
 
 private:
 	Scene* scene_ = nullptr;	//플레이어가 속한 씬
@@ -63,5 +66,8 @@ private:
 	float main_skill_razer_shot_time_ = 0.f;	//플레이어 메인 스킬 레이저 발사 후 지난 시간
 	float main_skill_razer_cool_time_ = 0.3f;	//플레이어 메인 스킬 레이저 발사 간격
 	float main_skill_range_ = 20.f;	//플레이어 메인 스킬 레이저 사거리
+
+	float dash_gage_ = 0.0f;	// 대쉬 게이지
+	float dash_max_gage_ = 5.0f;	// 대쉬 쿨타임 최대 시간
 };
 

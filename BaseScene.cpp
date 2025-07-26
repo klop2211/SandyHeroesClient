@@ -133,6 +133,14 @@ void BaseScene::BuildMesh(ID3D12Device* device, ID3D12GraphicsCommandList* comma
 	meshes_.push_back(std::make_unique<UIMesh>(ui_x, ui_y, ui_width, ui_height));
 	meshes_.back().get()->set_name("Star");
 
+	//Dash Icon
+	ui_width = client_size.x / 16.f;
+	ui_height = client_size.y / 9.f;
+	ui_x = ui_width * 1.0f;
+	ui_y = client_size.y - ui_height * 2.5f;
+	meshes_.push_back(std::make_unique<UIMesh>(ui_x, ui_y, ui_width, ui_height));
+	meshes_.back().get()->set_name("Dash");
+
 	//Player Hp, Shield Bar
 	ui_width = client_size.x / 16.f * 3.f;
 	ui_height = client_size.y / 9.f * 0.8f;
@@ -411,6 +419,25 @@ void BaseScene::BuildMaterial(ID3D12Device* device, ID3D12GraphicsCommandList* c
 		material = new Material{ "Razer", (int)ShaderType::kRazer };
 		materials_.emplace_back();
 		materials_.back().reset(material);
+	}
+
+	// Dash UI용 Material 추가
+	{
+		// 배경 (dash_background.dds)
+		Material* dash_background_material = new Material{ "Dash_Background", (int)ShaderType::kUI };
+		textures_.push_back(std::make_unique<Texture>());
+		textures_.back()->name = "dash_background";
+		textures_.back()->type = TextureType::kAlbedoMap;
+		dash_background_material->AddTexture(textures_.back().get());
+		materials_.emplace_back().reset(dash_background_material);
+
+		// 전면 (dash.dds)
+		Material* dash_material = new Material{ "Dash", (int)ShaderType::kUI };
+		textures_.push_back(std::make_unique<Texture>());
+		textures_.back()->name = "dash";
+		textures_.back()->type = TextureType::kAlbedoMap;
+		dash_material->AddTexture(textures_.back().get());
+		materials_.emplace_back().reset(dash_material);
 	}
 
 	Scene::BuildMaterial(device, command_list);
@@ -1234,6 +1261,45 @@ void BaseScene::CreatePlayerUI()
 			});
 		star_icon->AddComponent(progress_bar);
 		AddObject(star_icon);
+	}
+
+	//Create Dash
+	{
+		Object* dash_icon = new Object();
+		Object* dash_icon_background = new Object();
+		dash_icon->AddChild(dash_icon_background);
+
+		// 배경 설정 (dash_background.dds)
+		dash_icon_background->set_name("Dash_Icon_Background");
+		auto dash_background_material = Scene::FindMaterial("Dash_Background", materials_);
+		auto dash_mesh = Scene::FindMesh("Dash", meshes_); // Star와 동일 크기 mesh 재사용
+		auto dash_back_comp = new UiMeshComponent(dash_icon_background, dash_mesh, dash_background_material, this);
+		dash_back_comp->set_is_static(true);
+		dash_back_comp->set_ui_layer(UiLayer::kOne);
+		dash_icon_background->AddComponent(dash_back_comp);
+
+		// 전면 설정 (dash.dds)
+		dash_icon->set_name("Dash_Icon");
+		auto dash_material = Scene::FindMaterial("Dash", materials_);
+		auto dash_comp = new UiMeshComponent(dash_icon, dash_mesh, dash_material, this);
+		dash_comp->set_is_static(true);
+		dash_icon->AddComponent(dash_comp);
+
+		// ProgressBarComponent
+		auto progress_bar = new ProgressBarComponent(dash_icon);
+		progress_bar->set_type(UiType::kProgressBarY); // 위에서 아래로 차오르게
+		progress_bar->set_view(player_);
+		progress_bar->set_get_max_value_func([](Object* object) -> float {
+			auto player_component = Object::GetComponent<PlayerComponent>(object);
+			return player_component->dash_max_gage();
+			});
+		progress_bar->set_get_current_value_func([](Object* object) -> float {
+			auto player_component = Object::GetComponent<PlayerComponent>(object);
+			return player_component->dash_gage();
+			});
+		dash_icon->AddComponent(progress_bar);
+
+		AddObject(dash_icon);
 	}
 
 	//Create Player Hp, Shield Bar

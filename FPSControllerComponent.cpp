@@ -139,10 +139,14 @@ bool FPSControllerComponent::ProcessInput(UINT message_id, WPARAM w_param, LPARA
 		}
 			break; 
 		case VK_SHIFT:
-			if (dash_cool_delta_time_ <= 0)
+		{
+			//if (dash_cool_delta_time_ <= 0)
+			auto player_component = Object::GetComponent<PlayerComponent>(owner_);
+			if (player_component && player_component->dash_gage() >= player_component->dash_max_gage())
 			{
 				is_dash_pressed_ = true;
 				dash_cool_delta_time_ = dash_cool_time_;
+				player_component->set_dash_gage(0.0f);
 				dash_velocity_ = { 0,0,0 };
 				dash_length_ = 5.0f;
 				dash_before_position_ = owner_->position_vector();
@@ -171,6 +175,7 @@ bool FPSControllerComponent::ProcessInput(UINT message_id, WPARAM w_param, LPARA
 					dash_velocity_ += look;
 				}
 			}
+		}
 			break;
 		default:
 			return false;

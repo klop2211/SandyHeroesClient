@@ -25,6 +25,7 @@ Component* PlayerComponent::GetCopy()
 
 void PlayerComponent::Update(float elapsed_time)
 {
+	dash_gage_ += elapsed_time;
 	main_skill_gage_ += elapsed_time;
 
 	if (main_skill_activation_time_ < main_skill_max_activation_time_)
