@@ -55,6 +55,7 @@
 #include "RazerMesh.h"
 #include "BillboardMeshComponent.h"
 #include "SuperDragonAnimationState.h"
+#include "FadeInUIComponent.h"
 
 
 void BaseScene::Initialize(ID3D12Device* device, ID3D12GraphicsCommandList* command_list, 
@@ -136,21 +137,21 @@ void BaseScene::BuildMesh(ID3D12Device* device, ID3D12GraphicsCommandList* comma
 		meshes_.push_back(std::make_unique<UIMesh>(ui_x, ui_y, ui_width, ui_height));
 		meshes_.back().get()->set_name("Star");
 
-	//Dash Icon
-	ui_width = client_size.x / 16.f;
-	ui_height = client_size.y / 9.f;
-	ui_x = ui_width * 1.0f;
-	ui_y = client_size.y - ui_height * 2.5f;
-	meshes_.push_back(std::make_unique<UIMesh>(ui_x, ui_y, ui_width, ui_height));
-	meshes_.back().get()->set_name("Dash");
+		//Dash Icon
+		ui_width = client_size.x / 16.f;
+		ui_height = client_size.y / 9.f;
+		ui_x = ui_width * 1.0f;
+		ui_y = client_size.y - ui_height * 2.5f;
+		meshes_.push_back(std::make_unique<UIMesh>(ui_x, ui_y, ui_width, ui_height));
+		meshes_.back().get()->set_name("Dash");
 
-	//Player Hp, Shield Bar
-	ui_width = client_size.x / 16.f * 3.f;
-	ui_height = client_size.y / 9.f * 0.8f;
-	ui_x = client_size.x / 16.f;
-	ui_y = client_size.y - (client_size.y / 9.f * 1.5f);
-	meshes_.push_back(std::make_unique<UIMesh>(ui_x, ui_y, ui_width, ui_height));
-	meshes_.back().get()->set_name("PlayerHpBar");
+		//Player Hp, Shield Bar
+		ui_width = client_size.x / 16.f * 3.f;
+		ui_height = client_size.y / 9.f * 0.8f;
+		ui_x = client_size.x / 16.f;
+		ui_y = client_size.y - (client_size.y / 9.f * 1.5f);
+		meshes_.push_back(std::make_unique<UIMesh>(ui_x, ui_y, ui_width, ui_height));
+		meshes_.back().get()->set_name("PlayerHpBar");
 
 		//Scroll
 		constexpr float scroll_width = 150.f;
@@ -159,6 +160,14 @@ void BaseScene::BuildMesh(ID3D12Device* device, ID3D12GraphicsCommandList* comma
 		ui_height = scroll_height;
 		meshes_.push_back(std::make_unique<UIMesh>(ui_width, ui_height));
 		meshes_.back().get()->set_name("Scroll");
+
+		//SandyHeroes
+		ui_width = client_size.x;
+		ui_height = client_size.y;
+		ui_x = 0.f;
+		ui_y = 0.f;
+		meshes_.push_back(std::make_unique<UIMesh>(ui_x, ui_y, ui_width, ui_height));
+		meshes_.back()->set_name("SandyHeroesMesh");
 	}
 
 	//skybox
@@ -445,6 +454,16 @@ void BaseScene::BuildMaterial(ID3D12Device* device, ID3D12GraphicsCommandList* c
 		textures_.back()->type = TextureType::kAlbedoMap;
 		dash_material->AddTexture(textures_.back().get());
 		materials_.emplace_back().reset(dash_material);
+	}
+
+	// Ending UI용 Material
+	{
+		Material* sandy_heroes_mat = new Material{ "SandyHeroes", (int)ShaderType::kUI };
+		textures_.push_back(std::make_unique<Texture>());
+		textures_.back()->name = "SandyHeroes";
+		textures_.back()->type = TextureType::kAlbedoMap;
+		sandy_heroes_mat->AddTexture(textures_.back().get());
+		materials_.emplace_back().reset(sandy_heroes_mat);
 	}
 
 	Scene::BuildMaterial(device, command_list);
@@ -1458,6 +1477,21 @@ void BaseScene::CreatePlayerUI()
 		player_->AddChild(player_shield_text);
 
 	}
+
+	//Create SandyHeroes
+	//{
+	//	Object* sandy_ui = new Object();
+	//	Mesh* mesh = Scene::FindMesh("SandyHeroesMesh", meshes_);
+	//	Material* material = Scene::FindMaterial("SandyHeroes", materials_);
+
+	//	auto ui_comp = new UiMeshComponent(sandy_ui, mesh, material, this);
+	//	ui_comp->set_is_static(true); // 화면 고정
+	//	ui_comp->set_ui_layer(UiLayer::kZero); // 다른 UI 위/아래 조정 가능
+
+	//	sandy_ui->AddComponent(ui_comp);
+	//	sandy_ui->AddComponent(new FadeInUIComponent(sandy_ui, 5.0f));
+	//	AddObject(sandy_ui);
+	//}
 }
 
 void BaseScene::CreateMonsterSpawner()
@@ -1767,6 +1801,11 @@ bool BaseScene::ProcessInput(UINT id, WPARAM w_param, LPARAM l_param, float time
 			player_->set_position_vector(pos.x, pos.y + 10.f, pos.z);
 			return true;
 		}
+		if (w_param == 'U')
+		{
+			ShowSandyHeroesUI();
+			return true;
+		}
 		if (w_param == VK_OEM_COMMA) // ,
 		{
 			auto player_component = Object::GetComponent<PlayerComponent>(player_);
@@ -1808,9 +1847,6 @@ void BaseScene::Update(float elapsed_time)
 	Scene::Update(elapsed_time);
 
 	FMODSoundManager::Instance().system()->update();
-
-	//particle_system_->Update(elapsed_time);
-	//particle_->Update(elapsed_time);
 
 	UpdateObjectHitWall();
 	
@@ -2974,6 +3010,29 @@ void BaseScene::CheckRazerHitEnemy(RazerComponent* razer_component, MonsterCompo
 			particle_component->Play(50);
 		}
 	}
+}
+
+void BaseScene::ShowSandyHeroesUI()
+{
+	// 이미 생성되었는지 체크
+	if (FindObject("SandyHeroesUI"))
+		return;
+
+	Object* sandy_ui = new Object();
+	sandy_ui->set_name("SandyHeroesUI");
+
+	Mesh* mesh = FindMesh("SandyHeroesMesh", meshes_);
+	Material* material = FindMaterial("SandyHeroes", materials_);
+
+	auto ui_comp = new UiMeshComponent(sandy_ui, mesh, material, this);
+	ui_comp->set_is_static(true);
+	ui_comp->set_ui_layer(UiLayer::kZero);
+	ui_comp->set_alpha(0.f); // 시작은 완전 투명
+
+	sandy_ui->AddComponent(ui_comp);
+	sandy_ui->AddComponent(new FadeInUIComponent(sandy_ui, 5.0f));
+
+	AddObject(sandy_ui);
 }
 
 

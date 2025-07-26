@@ -68,6 +68,8 @@ public:
 	void CheckSpawnBoxHitPlayer();
 	void CheckRazerHitEnemy(RazerComponent* razer_component, MonsterComponent* monster_component);
 
+	void ShowSandyHeroesUI();
+
 	//getter
 	int stage_clear_num();
 	void add_catch_monster_num();
