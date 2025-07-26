@@ -19,7 +19,8 @@ enum class ShaderType
 	kBreathing, 
 	kShadow, 
 	kSkinnedShadow,
-	kParticle
+	kParticle,
+	kRazer
 };
 
 class Shader

@@ -49,6 +49,10 @@
 #include "ScrollComponent.h"
 #include "ChestComponent.h"
 #include "ChestAnimationState.h"
+#include "RazerShader.h"
+#include "RazerMesh.h"
+#include "BillboardMeshComponent.h"
+
 
 void BaseScene::Initialize(ID3D12Device* device, ID3D12GraphicsCommandList* command_list, 
 	ID3D12RootSignature* root_signature, GameFramework* game_framework, 
@@ -69,7 +73,7 @@ void BaseScene::Initialize(ID3D12Device* device, ID3D12GraphicsCommandList* comm
 
 void BaseScene::BuildShader(ID3D12Device* device, ID3D12RootSignature* root_signature)
 {
-	constexpr int shader_count = 9;
+	constexpr int shader_count = 10;
 	shaders_.reserve(shader_count);
 
 	shaders_[(int)ShaderType::kStandardMesh] = std::make_unique<StandardMeshShader>();
@@ -81,6 +85,7 @@ void BaseScene::BuildShader(ID3D12Device* device, ID3D12RootSignature* root_sign
 	shaders_[(int)ShaderType::kShadow] = std::make_unique<ShadowShader>();
 	shaders_[(int)ShaderType::kSkinnedShadow] = std::make_unique<SkinnedShadowShader>();
 	shaders_[(int)ShaderType::kParticle] = std::make_unique<ParticleShader>();
+	shaders_[(int)ShaderType::kRazer] = std::make_unique<RazerShader>();
 
 	for (const auto& [type, shader] : shaders_)
 	{
@@ -153,6 +158,9 @@ void BaseScene::BuildMesh(ID3D12Device* device, ID3D12GraphicsCommandList* comma
 	debug_mesh->set_name("Debug_Mesh");
 	meshes_.emplace_back();
 	meshes_.back().reset(debug_mesh);
+
+	//RazerMesh
+	meshes_.push_back(std::make_unique<RazerMesh>(0.08f, 50.f));
 
 	constexpr UINT kModelInfoCount{ 40 };
 	model_infos_.reserve(kModelInfoCount);
@@ -350,15 +358,6 @@ void BaseScene::BuildMaterial(ID3D12Device* device, ID3D12GraphicsCommandList* c
 	}
 
 	// 총기 강화 수치 UI
-	/*material = new Material{ "Classic+1", (int)ShaderType::kUI };
-	textures_.push_back(std::make_unique<Texture>());
-	textures_.back()->name = "Classic+1";
-	textures_.back()->type = TextureType::kAlbedoMap;
-	material->AddTexture(textures_.back().get());
-	materials_.emplace_back();
-	materials_.back().reset(material);*/
-
-	// 총기 강화 수치 UI
 	{
 		std::vector<std::string> gun_names = {
 		"Classic", "Sherif", "Specter", "Vandal", "Odin", "Flamethrower"
@@ -405,6 +404,12 @@ void BaseScene::BuildMaterial(ID3D12Device* device, ID3D12GraphicsCommandList* c
 		materials_.emplace_back(material);
 	}
 	
+	// Razer Material
+	{
+		material = new Material{ "Razer", (int)ShaderType::kRazer };
+		materials_.emplace_back();
+		materials_.back().reset(material);
+	}
 
 	Scene::BuildMaterial(device, command_list);
 }
@@ -418,6 +423,22 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 
 	ShowCursor(false);
 
+	//Razer Mesh Test
+	{
+		//for(int i = 0; i < 10; ++i)
+		//{
+		//	Object* test_razer = new Object("TestRazer" + std::to_string(i));
+		//	test_razer->set_position_vector(XMFLOAT3{ 0, 0, 0 });
+		//	//test_razer->set_local_rotation(XMFLOAT3{ 0, 0, -5.f + (i * 2.f) });
+		//	auto mesh_component = new BillboardMeshComponent(test_razer, FindMesh("RazerMesh", meshes_), FindMaterial("Razer", materials_), this);
+		//	auto razer_component = new RazerComponent(test_razer);
+		//	razer_component->InitRazer({ 0,0,0 }, { 0,1,1 });
+		//	test_razer->AddComponent(mesh_component);
+		//	test_razer->set_is_movable(true);
+		//	AddObject(test_razer);
+		//}
+	}
+
 	//플레이어 생성
 	Object* player = model_infos_[0]->GetInstance();
 	player->set_name("Player");
@@ -428,6 +449,7 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 	AnimatorComponent* animator = Object::GetComponent<AnimatorComponent>(player);
 	animator->set_animation_state(new PlayerAnimationState);
 	auto player_component = new PlayerComponent(player);
+	player_component->set_scene(this);
 	player->AddComponent(player_component);
 	player_ = player;
 
@@ -627,7 +649,7 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 		}
 	}
 	PrepareGroundChecking();
-	for (const auto& collider : checking_maps_mesh_collider_list_[3])
+	for (const auto& collider : stage_ground_collider_list_[3])
 	{
 		auto object = collider->owner();
 
@@ -1121,6 +1143,23 @@ void BaseScene::BuildModelInfo(ID3D12Device* device)
 			animator->set_max_change_time(0.001f);
 		}
 	}
+
+	//Create Razer Model
+	{
+		ModelInfo* razer_model = new ModelInfo();
+		auto razer_object = new Object("Razer");
+		auto razer_component = new RazerComponent(razer_object);
+		auto mesh_component = new BillboardMeshComponent(razer_object, 
+			FindMesh("RazerMesh", meshes_), FindMaterial("Razer", materials_), this);
+		FindMaterial("Razer", materials_)->DeleteMeshComponent(mesh_component);
+		razer_object->AddComponent(mesh_component);
+		razer_object->AddComponent(razer_component);
+		razer_object->set_is_movable(true);
+		razer_model->set_hierarchy_root(razer_object);
+		razer_model->set_model_name("Razer");
+		model_infos_.emplace_back();
+		model_infos_.back().reset(razer_model);
+	}
 }
 
 void BaseScene::CreatePlayerUI()
@@ -1155,12 +1194,17 @@ void BaseScene::CreatePlayerUI()
 		ui_mesh_component->set_is_static(true);
 		star_icon->AddComponent(ui_mesh_component);
 		ProgressBarComponent* progress_bar = new ProgressBarComponent(star_icon);
-		progress_bar->set_max_value(10.f);
 		progress_bar->set_type(UiType::kProgressBarY);
 		progress_bar->set_view(player_);
+		progress_bar->set_get_max_value_func([](Object * object) -> float
+		{
+			auto player_component = Object::GetComponent<PlayerComponent>(object);
+			return player_component->main_skill_max_gage();
+		});
 		progress_bar->set_get_current_value_func([](Object* object) -> float
 			{
-				return object->position_vector().y;
+				auto player_component = Object::GetComponent<PlayerComponent>(object);
+				return player_component->main_skill_gage();
 			});
 		star_icon->AddComponent(progress_bar);
 		AddObject(star_icon);
@@ -1646,6 +1690,11 @@ bool BaseScene::ProcessInput(UINT id, WPARAM w_param, LPARAM l_param, float time
 	}
 }
 
+const std::list<MeshComponent*>& BaseScene::GetShadowMeshList(int index)
+{
+	return stage_mesh_list_[index];
+}
+
 void BaseScene::Update(float elapsed_time)
 {
 	for (auto& cut_scene_track : cut_scene_tracks_)
@@ -1668,6 +1717,8 @@ void BaseScene::Update(float elapsed_time)
 
 	UpdateObjectHitObject();
 
+	UpdateRazerHitEnemy();
+
 	DeleteDeadObjects();
 
 	UpdateStageClear();
@@ -1676,7 +1727,6 @@ void BaseScene::Update(float elapsed_time)
 
 	CheckPlayerHitChest(player_);
 
-	UpdateScroll(elapsed_time);
 }
 
 void BaseScene::RenderText(ID2D1DeviceContext2* d2d_device_context)
@@ -1698,6 +1748,18 @@ void BaseScene::AddObject(Object* object)
 		auto movement = Object::GetComponentInChildren<MovementComponent>(object);
 		if(movement)
 			wall_check_object_list_.emplace_back(object, movement);
+	}
+
+	auto monster_component = Object::GetComponent<MonsterComponent>(object);
+	if (monster_component)
+	{
+		monster_list_.push_back(monster_component);
+	}
+
+	auto razer_component = Object::GetComponent<RazerComponent>(object);
+	if (razer_component)
+	{
+		razer_list_.push_back(razer_component);
 	}
 }
 
@@ -1726,6 +1788,12 @@ void BaseScene::DeleteDeadObjects()
 		});
 	wall_check_object_list_.remove_if([](const WallCheckObject& wall_check_object) {
 		return wall_check_object.object->is_dead();
+		});
+	monster_list_.remove_if([](const MonsterComponent* monster_component) {
+		return monster_component->owner()->is_dead();
+		});
+	razer_list_.remove_if([](const RazerComponent* razer_component) {
+		return razer_component->owner()->is_dead();
 		});
 	Scene::DeleteDeadObjects();
 }
@@ -1784,44 +1852,6 @@ void BaseScene::UpdateObjectHitObject()
 		auto movement = Object::GetComponentInChildren<MovementComponent>(object);
 		CheckObjectHitObject(object);
 	}
-}
-
-void BaseScene::UpdateScroll(float elapsed_time)
-{
-	//// [1] Scroll 이동 처리
-	//constexpr float scroll_speed = 1.5f; // 초당 이동 거리
-
-	//for (size_t i = 0; i< scrolls_.size(); ++i)
-	//{
-	//	auto& data = scrolls_[i];
-	//	if (!data.is_active || !data.scroll) continue;
-
-	//	// [2] 방향 벡터 로드
-	//	XMVECTOR direction = XMLoadFloat3(&data.direction);
-	//	direction = XMVector3Normalize(direction);
-
-	//	// [3] 이동 거리 계산
-	//	float delta = scroll_speed * elapsed_time;
-
-	//	// 남은 거리보다 초과하지 않도록 제한
-	//	if (data.moved_distance + delta > 1.5f)
-	//	{
-	//		delta = 1.5f - data.moved_distance;
-	//		data.is_active = false; // 이동 완료
-	//	}
-
-	//	// [4] 위치 계산 및 적용
-	//	XMVECTOR pos = XMLoadFloat3(&data.scroll->position_vector());
-	//	pos += direction * delta;
-
-	//	XMFLOAT3 new_pos;
-	//	XMStoreFloat3(&new_pos, pos);
-	//	data.scroll->set_position_vector(new_pos);
-
-	//	// [5] 누적 거리 갱신
-	//	data.moved_distance += delta;
-
-	//}
 }
 
 void BaseScene::UpdateStageClear()
@@ -1893,6 +1923,17 @@ void BaseScene::UpdateStageClear()
 
 	is_activate_spawner_ = false;
 
+}
+
+void BaseScene::UpdateRazerHitEnemy()
+{
+	for(auto& razer : razer_list_)
+	{
+		for (auto& monster : monster_list_)
+		{
+			CheckRazerHitEnemy(razer, monster);
+		}
+	}
 }
 
 void BaseScene::CheckObjectIsGround(Object* object)
@@ -1979,7 +2020,14 @@ void BaseScene::PrepareGroundChecking()
 	for (int i = 0; i < stage_names.size(); ++i)
 	{
 		Object* object = Scene::FindObject(stage_names[i]);
-		checking_maps_mesh_collider_list_[i] = Object::GetComponentsInChildren<MeshColliderComponent>(object);
+		stage_mesh_list_[i] = Object::GetComponentsInChildren<MeshComponent>(object);
+		stage_mesh_list_[i].remove_if([](MeshComponent* mesh_component) {
+				return mesh_component->GetMaterial()->shader_type() != (int)ShaderType::kStandardMesh;
+			});
+		stage_mesh_list_[i].remove_if([](MeshComponent* mesh_component) {
+			return mesh_component->GetMesh()->name() == "Cube";
+			});
+
 		stage_ground_collider_list_[i] = Object::GetComponentsInChildren<GroundColliderComponent>(object);
 		stage_wall_collider_list_[i] = Object::GetComponentsInChildren<WallColliderComponent>(object);
 	}
@@ -2212,7 +2260,8 @@ void BaseScene::CheckRayHitEnemy(const XMFLOAT3& ray_origin, const XMFLOAT3& ray
 
 		// 피격 파티클 출력
 		ParticleComponent* particle = Object::GetComponent<ParticleComponent>(monster_hit_particles_.front());
-		particle->set_hit_position(closest_monster->world_position_vector());
+		XMFLOAT3 hit_position = ray_origin + (ray_direction * closest_t);
+		particle->set_hit_position(hit_position);
 
 		Object* flame_tip = player_->FindFrame("gun_particle_pivot");
 		if (flame_tip)
@@ -2585,34 +2634,35 @@ void BaseScene::CheckPlayerHitPyramid(Object* object)
 
 	BoundingOrientedBox player_obb = mesh_collider->GetWorldOBB();
 
-	for (auto& pyramid_collider : checking_maps_mesh_collider_list_[6])
-	{
-		if (!pyramid_collider || !pyramid_collider->mesh()) continue;
+	//TODO: 피라미드 선별 코드 필요!!
+	//for (auto& pyramid_collider : checking_maps_mesh_collider_list_[6])
+	//{
+	//	if (!pyramid_collider || !pyramid_collider->mesh()) continue;
 
-		auto name = pyramid_collider->mesh()->name();
+	//	auto name = pyramid_collider->mesh()->name();
 
-		if (name != "Pyramid_01") continue;
-		BoundingOrientedBox pyramid_obb = pyramid_collider->GetWorldOBB();
+	//	if (name != "Pyramid_01") continue;
+	//	BoundingOrientedBox pyramid_obb = pyramid_collider->GetWorldOBB();
 
-		if (player_obb.Intersects(pyramid_obb))
-		{
-			// 피라미드 획득 처리
-			get_key_num_++;
+	//	if (player_obb.Intersects(pyramid_obb))
+	//	{
+	//		// 피라미드 획득 처리
+	//		get_key_num_++;
 
-			// 피라미드 제거 (Scene과 충돌 리스트에서 제거)
-			Object* pyramid_object = pyramid_collider->owner();
-			MeshComponent* mesh_component = Object::GetComponent<MeshComponent>(pyramid_object);
-			MeshColliderComponent* mesh_collider_component = Object::GetComponent<MeshColliderComponent>(pyramid_object);
-			mesh_component->set_is_visible(false);
-			//DeleteObject(pyramid_object); // Scene::DeleteObject 호출 포함됨
-			auto& mesh_list = checking_maps_mesh_collider_list_[6];
-			mesh_list.remove_if([&](MeshColliderComponent* collider) {
-				return collider == mesh_collider_component;
-				});
+	//		// 피라미드 제거 (Scene과 충돌 리스트에서 제거)
+	//		Object* pyramid_object = pyramid_collider->owner();
+	//		MeshComponent* mesh_component = Object::GetComponent<MeshComponent>(pyramid_object);
+	//		MeshColliderComponent* mesh_collider_component = Object::GetComponent<MeshColliderComponent>(pyramid_object);
+	//		mesh_component->set_is_visible(false);
+	//		//DeleteObject(pyramid_object); // Scene::DeleteObject 호출 포함됨
+	//		auto& mesh_list = checking_maps_mesh_collider_list_[6];
+	//		mesh_list.remove_if([&](MeshColliderComponent* collider) {
+	//			return collider == mesh_collider_component;
+	//			});
 
-			break;
-		}
-	}
+	//		break;
+	//	}
+	//}
 }
 
 void BaseScene::CheckPlayerHitChest(Object* object)
@@ -2686,10 +2736,35 @@ void BaseScene::CheckSpawnBoxHitPlayer()
 	}
 }
 
-std::list<MeshColliderComponent*> BaseScene::checking_maps_mesh_collider_list(int index)
+void BaseScene::CheckRazerHitEnemy(RazerComponent* razer_component, MonsterComponent* monster_component)
 {
-	return checking_maps_mesh_collider_list_[index];
+	if (!razer_component || !monster_component || 
+		monster_component->IsDead() || !razer_component->is_collision_active() || razer_component->is_collided())
+		return;
+
+	XMVECTOR ray_origin = XMLoadFloat3(&razer_component->end_position());
+	XMVECTOR ray_direction = XMLoadFloat3(&xmath_util_float3::Normalize(razer_component->start_position() - razer_component->end_position()));
+
+	// 레이저가 몬스터와 충돌했는지 확인
+	auto monster_box_list = Object::GetComponentsInChildren<BoxColliderComponent>(monster_component->owner());
+	for (auto& monster_box : monster_box_list)
+	{
+		float t{};
+		if (monster_box->animated_box().Intersects(ray_origin, ray_direction, t))
+		{
+			monster_component->HitDamage(razer_component->damage());
+			razer_component->set_is_collided(true);
+
+			ParticleComponent* particle_component = Object::GetComponent<ParticleComponent>(monster_hit_particles_.front());
+			XMFLOAT3 hit_position;
+			XMStoreFloat3(&hit_position, ray_origin + (ray_direction * t));
+			particle_component->set_hit_position(hit_position);
+			particle_component->set_color({1.f, 0.f, 0.f, 1.f});
+			particle_component->Play(50);
+		}
+	}
 }
+
 
 int BaseScene::stage_clear_num()
 {
@@ -2705,4 +2780,9 @@ void BaseScene::add_catch_monster_num()
 int BaseScene::catch_monster_num() const
 {
 	return catch_monster_num_;
+}
+
+std::list<MonsterComponent*> BaseScene::monster_list() const
+{
+	return monster_list_;
 }

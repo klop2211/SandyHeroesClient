@@ -12,7 +12,6 @@ class Mesh
 public:
 	Mesh() {}
 	virtual ~Mesh();
-	// �޽� ������ ����� ������ ����
 	Mesh(const Mesh&) = delete;
 	Mesh& operator=(const Mesh&) = delete;
 
@@ -23,7 +22,6 @@ public:
 
 	virtual void ReleaseUploadBuffer();
 
-	//�� �޽��� ����ϴ� object�� ������ŭ cb�� ������Ʈ
 	virtual void UpdateConstantBuffer(FrameResource* curr_frame_resource, int& start_index);
 	virtual void UpdateConstantBufferForShadow(FrameResource* curr_frame_resource, int& start_index);
 
@@ -31,7 +29,6 @@ public:
 
 	void LoadMeshFromFile(std::ifstream& file);
 
-	//���� ������ �Է� ���̾ƿ��� ���߱� ���� ������ �Ϻ� ������ �����ϴ� �Լ���
 	void ClearColors();
 	void ClearUvs();
 	void ClearNormals();
@@ -79,8 +76,6 @@ protected:
 
 	std::vector<D3D12_VERTEX_BUFFER_VIEW> vertex_buffer_views_;
 
-	//��κ��� �޽��� 1���� �ε��� ���۸� ��������� 
-	//�Ϻ� �޽��� ��� ������ ������ä�� �ε��� ���۰� �������� ��찡 ����
 	std::vector<std::vector<UINT>> indices_array_;					
 	std::vector<ComPtr<ID3D12Resource>> d3d_index_buffers_;
 	std::vector<ComPtr<ID3D12Resource>> d3d_index_upload_buffers_;
@@ -90,7 +85,6 @@ protected:
 
 	BoundingBox bounds_{};
 
-	// �� �޽��� �������� ������Ʈ ����Ʈ
 	std::list<MeshComponent*> mesh_component_list_;
 };
 

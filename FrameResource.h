@@ -45,6 +45,8 @@ struct CBShadow
 struct CBObject
 {
 	XMFLOAT4X4 world_matrix;
+	float time;
+	float padding[3]; // padding to make it 16 bytes aligned
 };
 
 // 스킨 메쉬를 사용하는 오브젝트의 bone transform 행렬

@@ -37,6 +37,7 @@ public:
 	bool is_in_view_frustum() const;
 
     Mesh* GetMesh() const;
+    Material* GetMaterial(int index = 0) const;
 
     void set_mesh(Mesh* mesh);
 

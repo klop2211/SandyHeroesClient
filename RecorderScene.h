@@ -18,6 +18,7 @@ public:
 
 	virtual void Update(float elapsed_time) override;
 
+
 private:
 	std::unique_ptr<CutSceneRecorder> cut_scene_recorder_{ nullptr };
 

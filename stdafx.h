@@ -324,25 +324,21 @@ namespace file_load_util
 // for particle
 namespace RANDOM {
 	static XMVECTOR InsideUnitSphere() {
-		std::random_device rd;
 		std::uniform_real_distribution<float> uidF(-1.0f, 1.0f);
-		std::default_random_engine dre(rd());
 
-		XMVECTOR vec = XMVectorSet(uidF(dre), uidF(dre), uidF(dre), 0.0f);
+		XMVECTOR vec = XMVectorSet(uidF(kRandomGenerator), uidF(kRandomGenerator), uidF(kRandomGenerator), 0.0f);
 		vec = XMVector3Normalize(vec);
 		return vec;
 	}
 
 	static XMVECTOR DirectionInCone(XMVECTOR baseDir, float angleRadians)
 	{
-		std::random_device rd;
-		std::default_random_engine dre(rd());
 		std::uniform_real_distribution<float> distZ(cosf(angleRadians), 1.0f);
 		std::uniform_real_distribution<float> distTheta(0.0f, XM_2PI);
 
 		//float z = std::cos(angleRadians);
-		float z = distZ(dre);
-		float theta = distTheta(dre);
+		float z = distZ(kRandomGenerator);
+		float theta = distTheta(kRandomGenerator);
 
 		float r = sqrtf(1.0f - z * z);
 		float x = r * cosf(theta);
@@ -362,19 +358,15 @@ namespace RANDOM {
 	}
 
 	static float GetRandomValue(float minVal, float maxVal) {
-		std::random_device rd;
 		std::uniform_real_distribution<float> uidF(minVal, maxVal);
-		std::default_random_engine dre(rd());
 
-		return uidF(dre);
+		return uidF(kRandomGenerator);
 	}
 
 	static XMVECTOR CircleEdgePoint(XMVECTOR axis, const float radius, XMVECTOR* direction = nullptr) {
-		std::random_device rd;
-		std::default_random_engine dre(rd());
 		std::uniform_real_distribution<float> distTheta(0.0f, XM_2PI);
 
-		float theta = distTheta(dre);
+		float theta = distTheta(kRandomGenerator);
 
 		XMVECTOR up = XMVectorSet(0, 1, 0, 0);
 		if (fabsf(XMVectorGetX(XMVector3Dot(axis, up))) > 0.99f)

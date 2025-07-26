@@ -48,5 +48,6 @@ private:
     XMFLOAT3 dash_velocity_{ 0,0,0 };           // 대쉬 속도(실제 적용되는 "속도"임)
     float dash_length_{ 10.f };                  // 대쉬 거리
     XMFLOAT3 dash_before_position_{ 0,0,0 };    // 대쉬 시작위치
+
 };
 

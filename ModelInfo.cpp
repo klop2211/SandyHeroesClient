@@ -41,7 +41,10 @@ void ModelInfo::LoadModelInfoFromFile(const std::string& file_name, std::vector<
 	model_name_ = file_name.substr(last_slash + 1, last_dot - last_slash - 1);
 
 	std::ifstream model_file{ file_name, std::ios::binary };
+	if(model_file.fail())
+	{
 
+	}
 	std::string load_token; 
 
 	ReadStringFromFile(model_file, load_token);

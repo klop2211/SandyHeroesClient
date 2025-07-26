@@ -15,6 +15,8 @@
 #include "MovementComponent.h"
 #include "BaseScene.h"
 #include "MeshColliderComponent.h"
+#include "PlayerComponent.h"
+#include "WallColliderComponent.h"
 
 FPSControllerComponent::FPSControllerComponent(Object* owner) : InputControllerComponent(owner)
 {
@@ -116,6 +118,15 @@ bool FPSControllerComponent::ProcessInput(UINT message_id, WPARAM w_param, LPARA
 			break;
 		case 'D':
 			is_key_down_['D'] = true;
+			break;
+		case 'E':
+		{
+			auto player_component = Object::GetComponent<PlayerComponent>(owner_);
+			if (player_component)
+			{
+				player_component->ActivateMainSkill();
+			}
+		}
 			break;
 
 		case VK_SPACE:
@@ -240,7 +251,7 @@ void FPSControllerComponent::Update(float elapsed_time)
 
 		float distance{ std::numeric_limits<float>::max() };
 		BaseScene* base_scene = dynamic_cast<BaseScene*>(scene_);
-		for (auto& mesh_collider : base_scene->checking_maps_mesh_collider_list(base_scene->stage_clear_num()))
+		for (auto& mesh_collider : base_scene->stage_wall_collider_list(base_scene->stage_clear_num()))
 		{
 			float t{};
 			if (mesh_collider->CollisionCheckByRay(ray_origin, ray_direction, t))
@@ -290,7 +301,7 @@ void FPSControllerComponent::Update(float elapsed_time)
 			Object* picked_object = nullptr;
 
 			//TODO: 피킹 처리 디버깅 후 아래 코드를 피킹된 좌표로 변경
-			XMVECTOR picking_point_w = XMLoadFloat3(&(camera_object_->world_position_vector() + (camera_object_->world_look_vector() * 100.f)));
+			XMVECTOR picking_point_w = XMLoadFloat3(&(camera_object_->world_position_vector() + (camera_object_->world_look_vector() * 25.f)));
 
 
 			// 3. 1번에서 2번을 향하는 총알 발사

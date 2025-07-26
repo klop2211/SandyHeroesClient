@@ -124,9 +124,6 @@
     <Filter Include="2.Scene\Recorder">
       <UniqueIdentifier>{0f5d1cc9-d56c-4578-ab12-5832039f449c}</UniqueIdentifier>
     </Filter>
-    <Filter Include="3.Shader\ShadowShader">
-      <UniqueIdentifier>{8f917bd3-7cf7-40ca-94ac-41af533b59b9}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Animation\State\HitDragon">
       <UniqueIdentifier>{3e506701-8d07-4d35-bcde-212381278248}</UniqueIdentifier>
     </Filter>
@@ -174,6 +171,39 @@
     </Filter>
     <Filter Include="Animation\State\Chest">
       <UniqueIdentifier>{4182a86c-e9f4-42bf-9c76-a10cdef60d76}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="7.Component\Player">
+      <UniqueIdentifier>{38f3e38a-ed89-4b67-b9a8-46b85c1da9f9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="7.Component\Mesh\BillboardMesh">
+      <UniqueIdentifier>{27a1b304-abf8-4764-a6c0-1feda25bb285}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="7.Component\Character">
+      <UniqueIdentifier>{f72821ef-b9db-4535-a2cc-3eb06d1fb6f8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="4.Mesh\Razer">
+      <UniqueIdentifier>{91e1198b-5c5b-4f36-a2d8-c6e5520b2f86}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="7.Component\Razer">
+      <UniqueIdentifier>{4538e5d3-dc39-4051-b3ff-a8ba7fd2d37b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="3.Shader\Razer">
+      <UniqueIdentifier>{d1959568-ced8-4e1e-ac5b-3fb94d1c1018}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="3.Shader\Transparent">
+      <UniqueIdentifier>{7a97e2f1-cabd-44ce-8f1c-392f8058eca6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="3.Shader\Shadow">
+      <UniqueIdentifier>{8f917bd3-7cf7-40ca-94ac-41af533b59b9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="7.Component\Chest">
+      <UniqueIdentifier>{103465f9-87d4-482c-9b4b-9c07d06bcae2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="7.Component\Particle">
+      <UniqueIdentifier>{89e3117a-20c8-4d4c-98c1-2eff0790ac8c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="7.Component\Scroll">
+      <UniqueIdentifier>{682a77d2-e350-4d3d-9159-b52183dba33e}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -318,20 +348,14 @@
     <ClInclude Include="PlayerAnimationState.h">
       <Filter>Animation\State\Player</Filter>
     </ClInclude>
-    <ClInclude Include="RecordingScene.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
     <ClInclude Include="ParticleSystem.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="RecorderScene.h">
       <Filter>2.Scene\Recorder</Filter>
     </ClInclude>
-    <ClInclude Include="TransparentShader.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
     <ClInclude Include="ShadowShader.h">
-      <Filter>3.Shader\ShadowShader</Filter>
+      <Filter>3.Shader\Shadow</Filter>
     </ClInclude>
     <ClInclude Include="HitDragonAnimationState.h">
       <Filter>Animation\State\HitDragon</Filter>
@@ -369,19 +393,10 @@
     <ClInclude Include="UiComponent.h">
       <Filter>7.Component\UI</Filter>
     </ClInclude>
-    <ClInclude Include="PlayerComponent.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
     <ClInclude Include="ProgressBarComponent.h">
       <Filter>7.Component\UI\ProgressBar</Filter>
     </ClInclude>
     <ClInclude Include="TextFormat.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="ParticleComponent.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="SkinnedShadowShader.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="ParticleRenderer.h">
@@ -399,20 +414,44 @@
     <ClInclude Include="ParticleShader.h">
       <Filter>3.Shader\Particle</Filter>
     </ClInclude>
-    <ClInclude Include="WallColliderComponent.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
     <ClInclude Include="ChestAnimationState.h">
       <Filter>Animation\State\Chest</Filter>
     </ClInclude>
+    <ClInclude Include="PlayerComponent.h">
+      <Filter>7.Component\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="BillboardMeshComponent.h">
+      <Filter>7.Component\Mesh\BillboardMesh</Filter>
+    </ClInclude>
+    <ClInclude Include="RazerMesh.h">
+      <Filter>4.Mesh\Razer</Filter>
+    </ClInclude>
+    <ClInclude Include="RazerComponent.h">
+      <Filter>7.Component\Razer</Filter>
+    </ClInclude>
     <ClInclude Include="CharacterComponent.h">
-      <Filter>헤더 파일</Filter>
+      <Filter>7.Component\Character</Filter>
+    </ClInclude>
+    <ClInclude Include="RazerShader.h">
+      <Filter>3.Shader\Razer</Filter>
+    </ClInclude>
+    <ClInclude Include="TransparentShader.h">
+      <Filter>3.Shader\Transparent</Filter>
+    </ClInclude>
+    <ClInclude Include="SkinnedShadowShader.h">
+      <Filter>3.Shader\Shadow</Filter>
     </ClInclude>
     <ClInclude Include="ChestComponent.h">
-      <Filter>헤더 파일</Filter>
+      <Filter>7.Component\Chest</Filter>
+    </ClInclude>
+    <ClInclude Include="ParticleComponent.h">
+      <Filter>7.Component\Particle</Filter>
     </ClInclude>
     <ClInclude Include="ScrollComponent.h">
-      <Filter>헤더 파일</Filter>
+      <Filter>7.Component\Scroll</Filter>
+    </ClInclude>
+    <ClInclude Include="WallColliderComponent.h">
+      <Filter>7.Component\Collider</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -542,20 +581,14 @@
     <ClCompile Include="PlayerAnimationState.cpp">
       <Filter>Animation\State\Player</Filter>
     </ClCompile>
-    <ClCompile Include="RecordingScene.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
     <ClCompile Include="ParticleSystem.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="RecorderScene.cpp">
       <Filter>2.Scene\Recorder</Filter>
     </ClCompile>
-    <ClCompile Include="TransparentShader.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
     <ClCompile Include="ShadowShader.cpp">
-      <Filter>3.Shader\ShadowShader</Filter>
+      <Filter>3.Shader\Shadow</Filter>
     </ClCompile>
     <ClCompile Include="HitDragonAnimationState.cpp">
       <Filter>Animation\State\HitDragon</Filter>
@@ -593,19 +626,10 @@
     <ClCompile Include="UiComponent.cpp">
       <Filter>7.Component\UI</Filter>
     </ClCompile>
-    <ClCompile Include="PlayerComponent.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
     <ClCompile Include="ProgressBarComponent.cpp">
       <Filter>7.Component\UI\ProgressBar</Filter>
     </ClCompile>
     <ClCompile Include="TextFormat.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="ParticleComponent.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="SkinnedShadowShader.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="ParticleRenderer.cpp">
@@ -623,20 +647,44 @@
     <ClCompile Include="ParticleShader.cpp">
       <Filter>3.Shader\Particle</Filter>
     </ClCompile>
-    <ClCompile Include="WallColliderComponent.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
     <ClCompile Include="ChestAnimationState.cpp">
       <Filter>Animation\State\Chest</Filter>
     </ClCompile>
+    <ClCompile Include="PlayerComponent.cpp">
+      <Filter>7.Component\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="BillboardMeshComponent.cpp">
+      <Filter>7.Component\Mesh\BillboardMesh</Filter>
+    </ClCompile>
+    <ClCompile Include="RazerMesh.cpp">
+      <Filter>4.Mesh\Razer</Filter>
+    </ClCompile>
+    <ClCompile Include="RazerComponent.cpp">
+      <Filter>7.Component\Razer</Filter>
+    </ClCompile>
     <ClCompile Include="CharacterComponent.cpp">
-      <Filter>소스 파일</Filter>
+      <Filter>7.Component\Character</Filter>
+    </ClCompile>
+    <ClCompile Include="RazerShader.cpp">
+      <Filter>3.Shader\Razer</Filter>
+    </ClCompile>
+    <ClCompile Include="TransparentShader.cpp">
+      <Filter>3.Shader\Transparent</Filter>
+    </ClCompile>
+    <ClCompile Include="SkinnedShadowShader.cpp">
+      <Filter>3.Shader\Shadow</Filter>
     </ClCompile>
     <ClCompile Include="ChestComponent.cpp">
-      <Filter>소스 파일</Filter>
+      <Filter>7.Component\Chest</Filter>
+    </ClCompile>
+    <ClCompile Include="ParticleComponent.cpp">
+      <Filter>7.Component\Particle</Filter>
     </ClCompile>
     <ClCompile Include="ScrollComponent.cpp">
-      <Filter>소스 파일</Filter>
+      <Filter>7.Component\Scroll</Filter>
+    </ClCompile>
+    <ClCompile Include="WallColliderComponent.cpp">
+      <Filter>7.Component\Collider</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -664,5 +712,6 @@
     <FxCompile Include="Shadow.hlsl" />
     <FxCompile Include="ParticleShader.hlsl" />
     <FxCompile Include="SkinnedShadow.hlsl" />
+    <FxCompile Include="RazerShader.hlsl" />
   </ItemGroup>
 </Project>

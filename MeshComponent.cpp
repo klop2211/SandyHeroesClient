@@ -63,9 +63,10 @@ void MeshComponent::UpdateConstantBuffer(FrameResource* current_frame_resource, 
 	if (cb_index == -1) cb_index = constant_buffer_index_;
 	constant_buffer_index_ = cb_index;
 
-	CBObject object_buffer{};
+	CBObject object_buffer{}; 
 	XMStoreFloat4x4(&object_buffer.world_matrix,
 		XMMatrixTranspose(XMLoadFloat4x4(&owner_->world_matrix())));
+	object_buffer.time = owner_->life_time();
 
 	UploadBuffer<CBObject>* object_cb = current_frame_resource->cb_object.get();
 	object_cb->CopyData(cb_index, object_buffer);
@@ -151,6 +152,11 @@ bool MeshComponent::is_in_view_frustum() const
 Mesh* MeshComponent::GetMesh() const
 {
 	return mesh_;
+}
+
+Material* MeshComponent::GetMaterial(int index) const
+{
+	return materials_[index];
 }
 
 void MeshComponent::set_mesh(Mesh* mesh)
