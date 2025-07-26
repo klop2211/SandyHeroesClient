@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "RazerComponent.h"
 #include "Object.h"
+#include "FMODSoundManager.h"
 
 RazerComponent::RazerComponent(Object* owner) : Component(owner)
 {
@@ -27,6 +28,10 @@ void RazerComponent::Update(float elapsed_time)
 
     if(life_time_ / max_life_time_ > 0.8f)
     {
+        if (!is_collision_active_)
+        {
+            FMODSoundManager::Instance().PlaySound("lazer", false, 0.05f);
+        }
         is_collision_active_ = true;
 	}
 

@@ -607,6 +607,7 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 		sound_comp->Load("reload", "Resource/Fmod/sound/reload.wav", false);
 		sound_comp->Load("grunt", "Resource/Fmod/sound/grunt.wav", false);
 		sound_comp->Load("hit", "Resource/Fmod/sound/hit.wav", false);
+		sound_comp->Load("lazer", "Resource/Fmod/sound/lazer.wav", false);
 		sound_object->AddComponent(sound_comp);
 		sounds_.push_back(sound_object);
 		AddObject(sound_object);
@@ -2049,7 +2050,13 @@ void BaseScene::PrepareGroundChecking()
 		Object* object = Scene::FindObject(stage_names[i]);
 		stage_mesh_list_[i] = Object::GetComponentsInChildren<MeshComponent>(object);
 		stage_mesh_list_[i].remove_if([](MeshComponent* mesh_component) {
+			auto material = mesh_component->GetMaterial();
+			if (material)
+			{
 				return mesh_component->GetMaterial()->shader_type() != (int)ShaderType::kStandardMesh;
+			}
+			else
+				return true;
 			});
 		stage_mesh_list_[i].remove_if([](MeshComponent* mesh_component) {
 			return mesh_component->GetMesh()->name() == "Cube";
