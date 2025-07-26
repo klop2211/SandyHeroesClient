@@ -57,6 +57,7 @@
 #pragma comment(lib, "d2d1.lib")
 #pragma comment(lib, "dwrite.lib")
 #pragma comment(lib, "d3d11.lib")
+#pragma comment(lib, "fmod_vc.lib")
 
 #include "d3dx12.h"
 
