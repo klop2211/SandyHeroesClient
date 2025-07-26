@@ -156,7 +156,10 @@ Mesh* MeshComponent::GetMesh() const
 
 Material* MeshComponent::GetMaterial(int index) const
 {
-	return materials_[index];
+	if (index < materials_.size())
+		return materials_[index];
+	else
+		return nullptr;
 }
 
 void MeshComponent::set_mesh(Mesh* mesh)

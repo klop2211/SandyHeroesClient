@@ -54,6 +54,7 @@
 #include "RazerShader.h"
 #include "RazerMesh.h"
 #include "BillboardMeshComponent.h"
+#include "SuperDragonAnimationState.h"
 
 
 void BaseScene::Initialize(ID3D12Device* device, ID3D12GraphicsCommandList* command_list, 
@@ -103,51 +104,54 @@ void BaseScene::BuildMesh(ID3D12Device* device, ID3D12GraphicsCommandList* comma
 	meshes_.push_back(std::make_unique<CubeMesh>());
 	meshes_.back().get()->set_name("green_cube");
 
-	//CrossHair
-	constexpr float cross_hair_size = 64.f;
-	float ui_width = cross_hair_size;
-	float ui_height = cross_hair_size;
-	XMFLOAT2 client_size = game_framework_->client_size();
-	float ui_x = client_size.x / 2.f - ui_width / 2.f;
-	float ui_y = client_size.y / 2.f - ui_height / 2.f;
-	meshes_.push_back(std::make_unique<UIMesh>(ui_x, ui_y, ui_width, ui_height));
-	meshes_.back().get()->set_name("CrossHair");
+	//UI Mesh
+	{
+		//CrossHair
+		constexpr float cross_hair_size = 64.f;
+		float ui_width = cross_hair_size;
+		float ui_height = cross_hair_size;
+		XMFLOAT2 client_size = game_framework_->client_size();
+		float ui_x = client_size.x / 2.f - ui_width / 2.f;
+		float ui_y = client_size.y / 2.f - ui_height / 2.f;
+		meshes_.push_back(std::make_unique<UIMesh>(ui_x, ui_y, ui_width, ui_height));
+		meshes_.back().get()->set_name("CrossHair");
 
-	//Hp, Shield Bar
-	constexpr float hp_bar_width = 100.f;
-	constexpr float hp_bar_height = 15.f;
-	ui_width = hp_bar_width;
-	ui_height = hp_bar_height;
-	meshes_.push_back(std::make_unique<UIMesh>(ui_width, ui_height));
-	meshes_.back().get()->set_name("ProgressBarBackground");
-	ui_width = hp_bar_width - 5;
-	ui_height = hp_bar_height - 5;
-	meshes_.push_back(std::make_unique<UIMesh>(ui_width, ui_height));
-	meshes_.back().get()->set_name("ProgressBar");
+		//Hp, Shield Bar
+		constexpr float hp_bar_width = 100.f;
+		constexpr float hp_bar_height = 15.f;
+		ui_width = hp_bar_width;
+		ui_height = hp_bar_height;
+		meshes_.push_back(std::make_unique<UIMesh>(ui_width, ui_height));
+		meshes_.back().get()->set_name("ProgressBarBackground");
+		ui_width = hp_bar_width - 5;
+		ui_height = hp_bar_height - 5;
+		meshes_.push_back(std::make_unique<UIMesh>(ui_width, ui_height));
+		meshes_.back().get()->set_name("ProgressBar");
 
-	//Main Skill Star Icon
-	ui_width =  client_size.x / 16.f;
-	ui_height = client_size.y / 9.f;
-	ui_x = client_size.x / 2.f - ui_width / 2.f;
-	ui_y = client_size.y - (client_size.y / 9.f) - ui_height / 2.f;
-	meshes_.push_back(std::make_unique<UIMesh>(ui_x, ui_y, ui_width, ui_height));
-	meshes_.back().get()->set_name("Star");
+		//Main Skill Star Icon
+		ui_width = client_size.x / 16.f;
+		ui_height = client_size.y / 9.f;
+		ui_x = client_size.x / 2.f - ui_width / 2.f;
+		ui_y = client_size.y - (client_size.y / 9.f) - ui_height / 2.f;
+		meshes_.push_back(std::make_unique<UIMesh>(ui_x, ui_y, ui_width, ui_height));
+		meshes_.back().get()->set_name("Star");
 
-	//Player Hp, Shield Bar
-	ui_width = client_size.x / 16.f * 3.f;
-	ui_height = client_size.y / 9.f * 0.8f;
-	ui_x = client_size.x / 16.f;
-	ui_y = client_size.y - (client_size.y / 9.f * 1.5f);
-	meshes_.push_back(std::make_unique<UIMesh>(ui_x, ui_y, ui_width, ui_height));
-	meshes_.back().get()->set_name("PlayerHpBar");
+		//Player Hp, Shield Bar
+		ui_width = client_size.x / 16.f * 3.f;
+		ui_height = client_size.y / 9.f * 0.8f;
+		ui_x = client_size.x / 16.f;
+		ui_y = client_size.y - (client_size.y / 9.f * 1.5f);
+		meshes_.push_back(std::make_unique<UIMesh>(ui_x, ui_y, ui_width, ui_height));
+		meshes_.back().get()->set_name("PlayerHpBar");
 
-	//Scroll
-	constexpr float scroll_width = 150.f;
-	constexpr float scroll_height = 250.f;
-	ui_width = scroll_width;
-	ui_height = scroll_height;
-	meshes_.push_back(std::make_unique<UIMesh>(ui_width, ui_height));
-	meshes_.back().get()->set_name("Scroll");
+		//Scroll
+		constexpr float scroll_width = 150.f;
+		constexpr float scroll_height = 250.f;
+		ui_width = scroll_width;
+		ui_height = scroll_height;
+		meshes_.push_back(std::make_unique<UIMesh>(ui_width, ui_height));
+		meshes_.back().get()->set_name("Scroll");
+	}
 
 	//skybox
 	meshes_.push_back(std::make_unique<SkyboxMesh>(meshes_[0].get()));
@@ -182,6 +186,9 @@ void BaseScene::BuildMesh(ID3D12Device* device, ID3D12GraphicsCommandList* comma
 
 	model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/Object/Chest.bin", meshes_, materials_, textures_));	//12 상자
 	model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/Object/Scroll.bin", meshes_, materials_, textures_));	//13 스크롤
+
+	model_infos_.push_back(std::make_unique<ModelInfo>("./Resource/Model/Monster/Super_Dragon.bin", meshes_, materials_, textures_));
+
 
 	//BuildScene("Base");
 
@@ -425,21 +432,15 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 
 	ShowCursor(false);
 
-	//Razer Mesh Test
+	//SuperDragon Model Test
 	{
-		//for(int i = 0; i < 10; ++i)
-		//{
-		//	Object* test_razer = new Object("TestRazer" + std::to_string(i));
-		//	test_razer->set_position_vector(XMFLOAT3{ 0, 0, 0 });
-		//	//test_razer->set_local_rotation(XMFLOAT3{ 0, 0, -5.f + (i * 2.f) });
-		//	auto mesh_component = new BillboardMeshComponent(test_razer, FindMesh("RazerMesh", meshes_), FindMaterial("Razer", materials_), this);
-		//	auto razer_component = new RazerComponent(test_razer);
-		//	razer_component->InitRazer({ 0,0,0 }, { 0,1,1 });
-		//	test_razer->AddComponent(mesh_component);
-		//	test_razer->set_is_movable(true);
-		//	AddObject(test_razer);
-		//}
+		auto dragon = model_infos_[14]->GetInstance();
+		dragon->set_is_movable(true);
+		auto animator = Object::GetComponent<AnimatorComponent>(dragon);
+		animator->set_animation_state(new SuperDragonAnimationState());
+		AddObject(dragon);
 	}
+
 
 	//플레이어 생성
 	Object* player = model_infos_[0]->GetInstance();
@@ -2049,7 +2050,13 @@ void BaseScene::PrepareGroundChecking()
 		Object* object = Scene::FindObject(stage_names[i]);
 		stage_mesh_list_[i] = Object::GetComponentsInChildren<MeshComponent>(object);
 		stage_mesh_list_[i].remove_if([](MeshComponent* mesh_component) {
-				return mesh_component->GetMaterial()->shader_type() != (int)ShaderType::kStandardMesh;
+			auto material = mesh_component->GetMaterial();
+			if (material)
+			{
+				return material->shader_type() != (int)ShaderType::kStandardMesh;
+			}
+			else
+				return true;
 			});
 		stage_mesh_list_[i].remove_if([](MeshComponent* mesh_component) {
 			return mesh_component->GetMesh()->name() == "Cube";

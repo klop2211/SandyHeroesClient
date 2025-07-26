@@ -20,6 +20,8 @@ AnimatorComponent::AnimatorComponent(Object* owner,
 	frame_names_ = frame_names;
 	root_bone_name_ = root_bone_name;
 	animation_state_.reset(animation_state);
+
+	animation_tracks_[animation_state_->animation_track()].Start((AnimationLoopType)animation_state_->animation_loop_type());
 }
 
 AnimatorComponent::AnimatorComponent(const AnimatorComponent& other) : Component(other), 
@@ -27,6 +29,7 @@ AnimatorComponent::AnimatorComponent(const AnimatorComponent& other) : Component
 	max_change_time_(other.max_change_time_)
 {
 	animation_state_.reset(other.animation_state_->GetCopy());
+	animation_tracks_[animation_state_->animation_track()].Start((AnimationLoopType)animation_state_->animation_loop_type());
 }
 
 Component* AnimatorComponent::GetCopy()
@@ -55,6 +58,7 @@ void AnimatorComponent::Update(float elapsed_time)
 			before_track_index_ = track_index_;
 		}
 		animation_tracks_[track_index_].Start((AnimationLoopType)animation_state_->animation_loop_type());
+		animation_tracks_[before_track_index_].Start((AnimationLoopType)animation_state_->animation_loop_type());
 	}
 
 	XMFLOAT3 before_root_bone_position = root_bone_frame_->position_vector();
@@ -102,6 +106,7 @@ void AnimatorComponent::AttachBoneFrames()
 void AnimatorComponent::set_animation_state(AnimationState* value)
 {
 	animation_state_.reset(value);
+	animation_tracks_[animation_state_->animation_track()].Start((AnimationLoopType)animation_state_->animation_loop_type());
 }
 
 void AnimatorComponent::set_speed_scale(float value)
