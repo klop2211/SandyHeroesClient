@@ -1,5 +1,9 @@
 #pragma once
 #include "Component.h"
+#include "ScrollComponent.h"
+
+//class ScrollComponent;
+
 
 class Scene;
 class ModelInfo;
@@ -24,6 +28,9 @@ public:
 
 	void HitDamage(float damage);	//플레이어에 데미지를 입히는 함수
 
+	void AddScroll(ScrollType type);
+	bool HasScroll(ScrollType type) const;
+
 	void ActivateMainSkill();	//플레이어 메인 스킬 활성화 함수
 
 	//getter
@@ -31,6 +38,7 @@ public:
 	float hp() const { return hp_; }		//플레이어 현재 체력
 	float max_shield() const { return max_shield_; }	//플레이어 최대 방패
 	float shield() const { return shield_; }	//플레이어 현재 방패
+	const std::unordered_set<ScrollType>& acquired_scrolls() const;
 	float main_skill_gage() const { return main_skill_gage_; }
 	float main_skill_max_gage() const { return main_skill_max_gage_; }
 
@@ -44,6 +52,8 @@ private:
 	float hp_ = 100.f;		//플레이어 현재 체력
 	float max_shield_ = 100.f;	//플레이어 최대 방패
 	float shield_ = 100.f;	//플레이어 현재 방패
+
+	std::unordered_set<ScrollType> acquired_scrolls_;
 
 	ModelInfo* razer_model_info_ = nullptr;	//플레이어 레이저 모델 정보
 	float main_skill_gage_ = 0.f;	//플레이어 메인 스킬 게이지

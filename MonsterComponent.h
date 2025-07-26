@@ -11,6 +11,10 @@ struct StatusEffect
 	float elapsed = 0.f;
 	float fire_damage = 0.0f;
 
+	bool flame_frenzy = false;
+	bool acid_frenzy = false;
+	bool electric_frenzy = false;
+
 	bool IsActive() const { return elapsed < duration; }
 };
 
@@ -29,7 +33,7 @@ public:
 
 	void HitDamage(float damage); //몬스터에 데미지를 입힘
 
-	void ApplyStatusEffect(StatusEffectType type, float duration, float base_damage);	// 속성 효과 적용
+	void ApplyStatusEffect(StatusEffectType type, float duration, float base_damage, bool flame_frenzy, bool acid_frenzy, bool electric_frenzy);	// 속성 효과 적용
 
 	//setter
 	void set_shield(float value);

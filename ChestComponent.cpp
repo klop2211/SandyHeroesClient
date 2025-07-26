@@ -7,6 +7,7 @@
 #include "ParticleComponent.h"
 #include "ScrollComponent.h"
 #include "Scene.h"
+#include "FMODSoundManager.h"
 
 ChestComponent::ChestComponent(Object* owner, Scene* scene)
 	: CharacterComponent(owner), is_open_(false), scene_(scene)
@@ -45,6 +46,8 @@ void ChestComponent::HendleCollision(Object* other_object)
 	animator_->animation_state()->ChangeAnimationTrack(
 		(int)ChestAnimationTrack::kCloseToOpen, owner_, animator_);
 
+	FMODSoundManager::Instance().PlaySound("chest", false, 0.3f);
+
 	// 파티클 루프 켜기
 	auto chest_particle = Object::GetComponent<ParticleComponent>(owner_);
 	if (chest_particle)
@@ -81,6 +84,8 @@ ScrollType ChestComponent::TakeScroll()
 	auto type = scroll_comp->type();
 	scroll_object_->set_is_dead(true); // 스크롤 오브젝트 제거
 	scroll_object_ = nullptr;
+
+	FMODSoundManager::Instance().PlaySound("scroll_pickup", true, 0.3f);
 
 	//animator_->animation_state()->ChangeAnimationTrack(
 	//	(int)ChestAnimationTrack::kOpenToClose, owner_, animator_);

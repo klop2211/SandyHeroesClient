@@ -122,10 +122,7 @@ private:
 
 	std::vector<Object*> chests_;
 
-	// 획득한 스크롤
-	//std::array<ScrollType, 6> store_scrolls_ 
-	//{ ScrollType::None, ScrollType::None, ScrollType::None,
-	//  ScrollType::None, ScrollType::None, ScrollType::None };
+	std::vector<Object*> sounds_;
 
 	std::vector<BoxColliderComponent*> spawn_boxs_{}; // 스테이지 몬스터 생성 체크를 위한 박스들
 

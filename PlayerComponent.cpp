@@ -1,5 +1,7 @@
 #include "stdafx.h"
 #include "PlayerComponent.h"
+#include "ScrollComponent.h"
+#include "FMODSoundManager.h"
 #include "Scene.h"
 #include "RazerComponent.h"
 #include "BaseScene.h"
@@ -133,6 +135,13 @@ void PlayerComponent::HealShield(float heal_amount)
 
 void PlayerComponent::HitDamage(float damage)
 {
+
+	FMODSoundManager::Instance().PlaySound("grunt", false, 0.3f);
+
+	if (HasScroll(ScrollType::kHardenedSkin))
+	{
+		damage *= 0.9f;
+	}
 	if (shield_ > 0.f)
 	{
 		shield_ -= damage;
@@ -150,6 +159,23 @@ void PlayerComponent::HitDamage(float damage)
 	{
 		hp_ = 0.f; // hp가 음수로 내려가지 않도록
 	}
+}
+
+void PlayerComponent::AddScroll(ScrollType type)
+{
+	if (type == ScrollType::None) return;
+
+	acquired_scrolls_.insert(type);
+}
+
+bool PlayerComponent::HasScroll(ScrollType type) const
+{
+	return acquired_scrolls_.count(type) > 0;
+}
+
+const std::unordered_set<ScrollType>& PlayerComponent::acquired_scrolls() const
+{
+	return acquired_scrolls_;
 }
 
 void PlayerComponent::ActivateMainSkill()

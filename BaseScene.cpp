@@ -49,6 +49,8 @@
 #include "ScrollComponent.h"
 #include "ChestComponent.h"
 #include "ChestAnimationState.h"
+#include "SoundComponent.h"
+#include "FMODSoundManager.h"
 #include "RazerShader.h"
 #include "RazerMesh.h"
 #include "BillboardMeshComponent.h"
@@ -504,6 +506,7 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 	Object* player_gun_frame = player->FindFrame("WeaponR_locator");
 	player_gun_frame->AddChild(FindModelInfo("Classic")->GetInstance());
 	GunComponent* gun = Object::GetComponentInChildren<GunComponent>(player);
+
 	if (gun)
 	{
 		gun->set_scene(this);        // BaseScene을 전달
@@ -590,6 +593,27 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 		}
 	}
 
+	// 사운드
+	{
+		FMODSoundManager::Instance().Initialize();
+		Object* sound_object = new Object();
+		auto sound_comp = new SoundComponent(sound_object);
+		sound_comp->Load("gun_fire", "Resource/Fmod/sound/gun_fire.wav", false);
+		sound_comp->Load("flamethrower", "Resource/Fmod/sound/flamethrower.wav", true);
+		sound_comp->Load("chest", "Resource/Fmod/sound/chest.wav", false);
+		sound_comp->Load("get_drop_gun", "Resource/Fmod/sound/get_drop_gun.wav", false);
+		sound_comp->Load("scroll_pickup", "Resource/Fmod/sound/scroll_pickup.wav", false);
+		sound_comp->Load("bgm", "Resource/Fmod/sound/bgm.wav", true);
+		sound_comp->Load("reload", "Resource/Fmod/sound/reload.wav", false);
+		sound_comp->Load("grunt", "Resource/Fmod/sound/grunt.wav", false);
+		sound_comp->Load("hit", "Resource/Fmod/sound/hit.wav", false);
+		sound_object->AddComponent(sound_comp);
+		sounds_.push_back(sound_object);
+		AddObject(sound_object);
+
+		FMODSoundManager::Instance().PlaySound("bgm", true, 0.3f); // loop=true, volume 조절 가능
+	}
+
 	//Create Skybox
 	Object* skybox = new Object();
 	skybox->AddComponent(new MeshComponent(skybox, 
@@ -666,6 +690,7 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 			}
 		}
 	}
+
 
 	Scene::UpdateObjectWorldMatrix();
 
@@ -1704,6 +1729,8 @@ void BaseScene::Update(float elapsed_time)
 
 	Scene::Update(elapsed_time);
 
+	FMODSoundManager::Instance().system()->update();
+
 	//particle_system_->Update(elapsed_time);
 	//particle_->Update(elapsed_time);
 
@@ -2236,6 +2263,8 @@ void BaseScene::CheckRayHitEnemy(const XMFLOAT3& ray_origin, const XMFLOAT3& ray
 
 	if (closest_monster)
 	{
+		FMODSoundManager::Instance().PlaySound("hit", false, 0.3f);
+
 		GunComponent* gun = Object::GetComponentInChildren<GunComponent>(player_);
 		if (!gun) return;
 
@@ -2243,17 +2272,57 @@ void BaseScene::CheckRayHitEnemy(const XMFLOAT3& ray_origin, const XMFLOAT3& ray
 		if (!monster || monster->IsDead()) return;
 
 		float damage = gun->damage() * (1 + gun->upgrade() * 0.2);
+		// 플레이어 스크롤 효과 적용
+		PlayerComponent* player_comp = Object::GetComponent<PlayerComponent>(player_);
+		if (player_comp)
+		{
+			if (gun->element() == ElementType::kFire &&
+				player_comp->HasScroll(ScrollType::kFlameMaster))
+			{
+				damage *= 1.3f;
+			}
+			else if (gun->element() == ElementType::kPoison &&
+				player_comp->HasScroll(ScrollType::kAcidMaster))
+			{
+				damage *= 1.3f;
+			}
+			else if (gun->element() == ElementType::kElectric &&
+				player_comp->HasScroll(ScrollType::kElectricMaster))
+			{
+				damage *= 1.3f;
+			}
+		}
+		bool flame_frenzy = false;
+		bool acid_frenzy = false;
+		bool electric_frenzy = false;
+		if (player_comp)
+		{
+			if (player_comp->HasScroll(ScrollType::kFlameFrenzy))
+			{
+				flame_frenzy = true;
+			}
+			if (player_comp->HasScroll(ScrollType::kAcidFrenzy))
+			{
+				acid_frenzy = true;
+			}
+			if (player_comp->HasScroll(ScrollType::kElectricFrenzy))
+			{
+				electric_frenzy = true;
+			}
+		}
+
 		// 속성 효과
 		switch (gun->element())
 		{
 		case ElementType::kFire:
-			monster->ApplyStatusEffect(StatusEffectType::Fire, 3.0f, damage);
+			
+			monster->ApplyStatusEffect(StatusEffectType::Fire, 3.0f, damage, flame_frenzy, acid_frenzy, electric_frenzy);
 			break;
 		case ElementType::kPoison:
-			monster->ApplyStatusEffect(StatusEffectType::Poison, 3.0f, 0.f);
+			monster->ApplyStatusEffect(StatusEffectType::Poison, 3.0f, 0.f, flame_frenzy, acid_frenzy, electric_frenzy);
 			break;
 		case ElementType::kElectric:
-			monster->ApplyStatusEffect(StatusEffectType::Electric, 3.0f, 0.f);
+			monster->ApplyStatusEffect(StatusEffectType::Electric, 3.0f, 0.f, flame_frenzy, acid_frenzy, electric_frenzy);
 			break;
 		}
 		monster->HitDamage(damage);
@@ -2286,11 +2355,9 @@ void BaseScene::CheckRayHitEnemy(const XMFLOAT3& ray_origin, const XMFLOAT3& ray
 			if (rand() % 100 >= 41) return; // 59% 확률로 드랍 안 함
 
 			// 랜덤 엔진 및 분포 생성
-			std::random_device rd;
-			std::mt19937 gen(rd());
 			std::discrete_distribution<> dist(drop_weights.begin(), drop_weights.end());
 
-			int random_index = dist(gen);
+			int random_index = dist(kRandomGenerator);
 			std::string gun_name = gun_names[random_index];
 			Object* dropped_gun = FindModelInfo(gun_names[random_index])->GetInstance();
 
@@ -2313,8 +2380,7 @@ void BaseScene::CheckRayHitEnemy(const XMFLOAT3& ray_origin, const XMFLOAT3& ray
 			dropped_gun_component->set_upgrade(upgrade);
 
 			// [2] 속성 타입: 0 = Fire, 1 = Electric, 2 = Poison
-			//int element_random = rand() % 3;
-			int element_random = 0;
+			int element_random = rand() % 3;
 			ElementType element = static_cast<ElementType>(element_random);
 			dropped_gun_component->set_element(element);
 
@@ -2418,16 +2484,57 @@ void BaseScene::CheckObjectHitFlamethrow(Object* object)
 					particle_component->Play(50);
 
 					float damage = gun->damage() * (1 + gun->upgrade() * 0.2);
+					// 플레이어 스크롤 효과 적용
+					PlayerComponent* player_comp = Object::GetComponent<PlayerComponent>(player_);
+					if (player_comp)
+					{
+						if (gun->element() == ElementType::kFire &&
+							player_comp->HasScroll(ScrollType::kFlameMaster))
+						{
+							damage *= 1.3f;
+						}
+						else if (gun->element() == ElementType::kPoison &&
+							player_comp->HasScroll(ScrollType::kAcidMaster))
+						{
+							damage *= 1.3f;
+						}
+						else if (gun->element() == ElementType::kElectric &&
+							player_comp->HasScroll(ScrollType::kElectricMaster))
+						{
+							damage *= 1.3f;
+						}
+					}
+					bool flame_frenzy = false;
+					bool acid_frenzy = false;
+					bool electric_frenzy = false;
+					if (player_comp)
+					{
+						if (player_comp->HasScroll(ScrollType::kFlameFrenzy))
+						{
+							flame_frenzy = true;
+						}
+						if (player_comp->HasScroll(ScrollType::kAcidFrenzy))
+						{
+							acid_frenzy = true;
+						}
+						if (player_comp->HasScroll(ScrollType::kElectricFrenzy))
+						{
+							electric_frenzy = true;
+						}
+					}
+
+					// 속성 효과
 					switch (gun->element())
 					{
 					case ElementType::kFire:
-						monster->ApplyStatusEffect(StatusEffectType::Fire, 3.0f, damage);
+
+						monster->ApplyStatusEffect(StatusEffectType::Fire, 3.0f, damage, flame_frenzy, acid_frenzy, electric_frenzy);
 						break;
 					case ElementType::kPoison:
-						monster->ApplyStatusEffect(StatusEffectType::Poison, 3.0f, 0.f);
+						monster->ApplyStatusEffect(StatusEffectType::Poison, 3.0f, 0.f, flame_frenzy, acid_frenzy, electric_frenzy);
 						break;
 					case ElementType::kElectric:
-						monster->ApplyStatusEffect(StatusEffectType::Electric, 3.0f, 0.f);
+						monster->ApplyStatusEffect(StatusEffectType::Electric, 3.0f, 0.f, flame_frenzy, acid_frenzy, electric_frenzy);
 						break;
 					}
 					monster->HitDamage(damage);
@@ -2445,11 +2552,9 @@ void BaseScene::CheckObjectHitFlamethrow(Object* object)
 						if (rand() % 100 >= 41) return; // 59% 확률로 드랍 안 함
 
 						// 랜덤 엔진 및 분포 생성
-						std::random_device rd;
-						std::mt19937 gen(rd());
 						std::discrete_distribution<> dist(drop_weights.begin(), drop_weights.end());
 
-						int random_index = dist(gen);
+						int random_index = dist(kRandomGenerator);
 						std::string gun_name = gun_names[random_index];
 						Object* dropped_gun = FindModelInfo(gun_names[random_index])->GetInstance();
 
@@ -2477,8 +2582,7 @@ void BaseScene::CheckObjectHitFlamethrow(Object* object)
 						dropped_gun_component->set_upgrade(upgrade);
 
 						// [2] 속성 타입: 0 = Fire, 1 = Electric, 2 = Poison
-						//int element_random = rand() % 3;
-						int element_random = 0;
+						int element_random = rand() % 3;
 						ElementType element = static_cast<ElementType>(element_random);
 						dropped_gun_component->set_element(element);
 
@@ -2558,6 +2662,9 @@ void BaseScene::CheckPlayerHitGun(Object* object)
 
 		if (player_obb.Intersects(gun_box->animated_box()) && f_key_)
 		{
+
+			FMODSoundManager::Instance().PlaySound("get_drop_gun", false, 0.3f);
+
 			GunComponent* gun_component = Object::GetComponent<GunComponent>(gun);
 			if (!gun_component) { ++it; continue; }
 
@@ -2699,7 +2806,24 @@ void BaseScene::CheckPlayerHitChest(Object* object)
 				if (scroll_f_key_)
 				{
 					auto scroll_type = chest_component->TakeScroll();
+					PlayerComponent* player_comp = Object::GetComponent<PlayerComponent>(player_);
+					if (player_comp && scroll_type != ScrollType::None)
+					{
+						player_comp->AddScroll(scroll_type);
 
+						if (scroll_type == ScrollType::kWeaponMaster)
+						{
+							Object* player_gun_frame = player_->FindFrame("WeaponR_locator");
+							if (player_gun_frame)
+							{
+								GunComponent* gun = Object::GetComponentInChildren<GunComponent>(player_gun_frame);
+								if (gun)
+								{
+									gun->set_upgrade(4);
+								}
+							}
+						}
+					}
 				}
 			}
 		}

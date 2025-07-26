@@ -16,6 +16,8 @@
 #include "BaseScene.h"
 #include "MeshColliderComponent.h"
 #include "PlayerComponent.h"
+#include "FMODSoundManager.h"
+#include "PlayerComponent.h"
 #include "WallColliderComponent.h"
 
 FPSControllerComponent::FPSControllerComponent(Object* owner) : InputControllerComponent(owner)
@@ -70,11 +72,13 @@ bool FPSControllerComponent::ProcessInput(UINT message_id, WPARAM w_param, LPARA
 		mouse_xy_.y = HIWORD(l_param);
 		{		
 			GunComponent* gun = Object::GetComponentInChildren<GunComponent>(owner_);
-		//if (!gun) // 원본
-		//if (!gun || gun->bullet_type() == BulletType::kSpecial)
 		if (!gun || gun->gun_name() == "flamethrower")
 		{
-			break;
+			if (!is_flamethrower_sound_playing_)
+			{
+				FMODSoundManager::Instance().PlaySound("flamethrower", true, 0.3f);
+			}
+			is_flamethrower_sound_playing_ = true;
 		}
 			// 1. 총구 위치
 			XMFLOAT3 gun_shoting_point{ gun->owner()->world_position_vector() };
@@ -87,22 +91,18 @@ bool FPSControllerComponent::ProcessInput(UINT message_id, WPARAM w_param, LPARA
 			//TODO: 피킹 처리 디버깅 후 아래 코드를 피킹된 좌표로 변경
 			XMVECTOR picking_point_w = XMLoadFloat3(&(camera_object_->world_position_vector() + (camera_object_->world_look_vector() * 100.f)));
 
-
 			// 3. 1번에서 2번을 향하는 총알 발사
 			XMFLOAT3 bullet_dir{};
 			XMStoreFloat3(&bullet_dir, XMVector3Normalize(picking_point_w - XMLoadFloat3(&gun_shoting_point)));
 			auto bullet_mesh = scene_->FindModelInfo("SM_Bullet_01")->GetInstance();
 			gun->FireBullet(bullet_dir, bullet_mesh, scene_);
 
-			//BaseScene* base_scene = dynamic_cast<BaseScene*>(scene_);
-			//if (base_scene)
-			//{
-			//	base_scene->CheckRayHitEnemy(gun_shoting_point, bullet_dir);
-			//}
 		}
 		break;
 	case WM_LBUTTONUP:
 		is_firekey_down_ = false;
+		is_flamethrower_sound_playing_ = false;
+		FMODSoundManager::Instance().StopSound("flamethrower");
 		break;
 	case WM_KEYDOWN:
 		switch (w_param)
@@ -211,6 +211,12 @@ void FPSControllerComponent::Update(float elapsed_time)
 
 	XMFLOAT3 velocity{ 0,0,0 };
 	float speed = 5.5f;
+
+	auto player_component = Object::GetComponent<PlayerComponent>(owner_);
+	if (player_component && player_component->HasScroll(ScrollType::kSprinter))
+	{
+		speed *= 1.20f; // 20% 증가
+	}
 	XMFLOAT3 look = owner_->look_vector();
 	XMFLOAT3 right = owner_->right_vector();
 	look.y = 0.f; // xz 평면을 따라 이동
