@@ -580,18 +580,18 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 
 		// 스크롤 인덱스 무작위화
 		std::vector<int> scroll_index(10);
-		//std::iota(scroll_index.begin(), scroll_index.end(), 0); // 0~9 채우기
-		//std::shuffle(scroll_index.begin(), scroll_index.end(), kRandomGenerator);
+		std::iota(scroll_index.begin(), scroll_index.end(), 0); // 0~9 채우기
+		std::shuffle(scroll_index.begin(), scroll_index.end(), kRandomGenerator);
 
 		//테스트용
-		scroll_index = {
+		/*scroll_index = {
 			(int)ScrollType::kNinja,
 			(int)ScrollType::kSprinter,
 			(int)ScrollType::kWeaponMaster,
 			(int)ScrollType::kFlameMaster,
 			(int)ScrollType::kAcidMaster,
 			(int)ScrollType::kElectricMaster
-		};
+		};*/
 
 		for (int i = 0; i < kChestCount; ++i)
 		{
@@ -604,7 +604,7 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 			//스크롤 추가
 			auto chest_component = new ChestComponent(chest, this);
 			//박스당 1개 사용
-			auto scroll_model = FindModelInfo("Scroll_" + std::to_string(scroll_index[0]));
+			auto scroll_model = FindModelInfo("Scroll_" + std::to_string(scroll_index[i]));
 			chest_component->set_scroll_model(scroll_model);
 			chest->AddComponent(chest_component);
 
@@ -2435,7 +2435,8 @@ void BaseScene::CheckRayHitEnemy(const XMFLOAT3& ray_origin, const XMFLOAT3& ray
 			std::vector<int> drop_weights = { 15, 10, 7, 5, 3, 1 }; // 전체 합 = 41
 
 			// 드랍할지 말지: 41% 확률로 총기 드랍, 나머지 59%는 아무것도 안 떨어짐
-			if (rand() % 100 >= 41) return; // 59% 확률로 드랍 안 함
+			std::uniform_int_distribution<int> drop_chance_dist(0, 99);
+			if (drop_chance_dist(kRandomGenerator) >= 41) return; // 59% 확률로 드랍 안 함
 
 			// 랜덤 엔진 및 분포 생성
 			std::discrete_distribution<> dist(drop_weights.begin(), drop_weights.end());
@@ -2459,11 +2460,14 @@ void BaseScene::CheckRayHitEnemy(const XMFLOAT3& ray_origin, const XMFLOAT3& ray
 			std::string gun_ui_name = "Gun_UI_" + dropped_name.substr(dropped_name.find('_') + 1); // "Classic", "Sherif" 등
 
 			// 랜덤 강화, 속성
-			int upgrade = rand() % 4;
+			std::vector<int> upgrade_weights = { 50, 25, 15, 10 };
+			std::discrete_distribution<int> upgrade_dist(upgrade_weights.begin(), upgrade_weights.end());
+			int upgrade = upgrade_dist(kRandomGenerator);
 			dropped_gun_component->set_upgrade(upgrade);
 
 			// [2] 속성 타입: 0 = Fire, 1 = Electric, 2 = Poison
-			int element_random = rand() % 3;
+			std::uniform_int_distribution<int> element_dist(0, 2);
+			int element_random = element_dist(kRandomGenerator);
 			ElementType element = static_cast<ElementType>(element_random);
 			dropped_gun_component->set_element(element);
 
@@ -2632,7 +2636,8 @@ void BaseScene::CheckObjectHitFlamethrow(Object* object)
 						std::vector<int> drop_weights = { 15, 10, 7, 5, 3, 1 }; // 전체 합 = 41
 
 						// 드랍할지 말지: 41% 확률로 총기 드랍, 나머지 59%는 아무것도 안 떨어짐
-						if (rand() % 100 >= 41) return; // 59% 확률로 드랍 안 함
+						std::uniform_int_distribution<int> drop_chance_dist(0, 99);
+						if (drop_chance_dist(kRandomGenerator) >= 41) return; // 59% 확률로 드랍 안 함
 
 						// 랜덤 엔진 및 분포 생성
 						std::discrete_distribution<> dist(drop_weights.begin(), drop_weights.end());
@@ -2650,22 +2655,20 @@ void BaseScene::CheckObjectHitFlamethrow(Object* object)
 						auto box_comp = new BoxColliderComponent(dropped_gun, gun_bb);
 						dropped_gun->AddComponent(box_comp);
 
-						// UI
-						/*Object* ui_texture = FindModelInfo("Gun_UI")->GetInstance();
-						ui_texture->set_local_position({ 0.0f, 0.5f, 0.1f });
-						dropped_gun->AddChild(ui_texture);*/
-
 						std::string dropped_name = dropped_gun->name();  // 예: "Dropped_Classic"
 
 						GunComponent* dropped_gun_component = Object::GetComponent<GunComponent>(dropped_gun);
 						std::string gun_ui_name = "Gun_UI_" + dropped_name.substr(dropped_name.find('_') + 1); // "Classic", "Sherif" 등
 
 						// 랜덤 강화, 속성
-						int upgrade = rand() % 4;
+						std::vector<int> upgrade_weights = { 50, 25, 15, 10 };
+						std::discrete_distribution<int> upgrade_dist(upgrade_weights.begin(), upgrade_weights.end());
+						int upgrade = upgrade_dist(kRandomGenerator);
 						dropped_gun_component->set_upgrade(upgrade);
 
 						// [2] 속성 타입: 0 = Fire, 1 = Electric, 2 = Poison
-						int element_random = rand() % 3;
+						std::uniform_int_distribution<int> element_dist(0, 2);
+						int element_random = element_dist(kRandomGenerator);
 						ElementType element = static_cast<ElementType>(element_random);
 						dropped_gun_component->set_element(element);
 
