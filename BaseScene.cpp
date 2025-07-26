@@ -136,13 +136,21 @@ void BaseScene::BuildMesh(ID3D12Device* device, ID3D12GraphicsCommandList* comma
 		meshes_.push_back(std::make_unique<UIMesh>(ui_x, ui_y, ui_width, ui_height));
 		meshes_.back().get()->set_name("Star");
 
-		//Player Hp, Shield Bar
-		ui_width = client_size.x / 16.f * 3.f;
-		ui_height = client_size.y / 9.f * 0.8f;
-		ui_x = client_size.x / 16.f;
-		ui_y = client_size.y - (client_size.y / 9.f * 1.5f);
-		meshes_.push_back(std::make_unique<UIMesh>(ui_x, ui_y, ui_width, ui_height));
-		meshes_.back().get()->set_name("PlayerHpBar");
+	//Dash Icon
+	ui_width = client_size.x / 16.f;
+	ui_height = client_size.y / 9.f;
+	ui_x = ui_width * 1.0f;
+	ui_y = client_size.y - ui_height * 2.5f;
+	meshes_.push_back(std::make_unique<UIMesh>(ui_x, ui_y, ui_width, ui_height));
+	meshes_.back().get()->set_name("Dash");
+
+	//Player Hp, Shield Bar
+	ui_width = client_size.x / 16.f * 3.f;
+	ui_height = client_size.y / 9.f * 0.8f;
+	ui_x = client_size.x / 16.f;
+	ui_y = client_size.y - (client_size.y / 9.f * 1.5f);
+	meshes_.push_back(std::make_unique<UIMesh>(ui_x, ui_y, ui_width, ui_height));
+	meshes_.back().get()->set_name("PlayerHpBar");
 
 		//Scroll
 		constexpr float scroll_width = 150.f;
@@ -420,6 +428,25 @@ void BaseScene::BuildMaterial(ID3D12Device* device, ID3D12GraphicsCommandList* c
 		materials_.back().reset(material);
 	}
 
+	// Dash UI용 Material 추가
+	{
+		// 배경 (dash_background.dds)
+		Material* dash_background_material = new Material{ "Dash_Background", (int)ShaderType::kUI };
+		textures_.push_back(std::make_unique<Texture>());
+		textures_.back()->name = "dash_background";
+		textures_.back()->type = TextureType::kAlbedoMap;
+		dash_background_material->AddTexture(textures_.back().get());
+		materials_.emplace_back().reset(dash_background_material);
+
+		// 전면 (dash.dds)
+		Material* dash_material = new Material{ "Dash", (int)ShaderType::kUI };
+		textures_.push_back(std::make_unique<Texture>());
+		textures_.back()->name = "dash";
+		textures_.back()->type = TextureType::kAlbedoMap;
+		dash_material->AddTexture(textures_.back().get());
+		materials_.emplace_back().reset(dash_material);
+	}
+
 	Scene::BuildMaterial(device, command_list);
 }
 
@@ -557,6 +584,16 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 		std::iota(scroll_index.begin(), scroll_index.end(), 0); // 0~9 채우기
 		std::shuffle(scroll_index.begin(), scroll_index.end(), kRandomGenerator);
 
+		//테스트용
+		/*scroll_index = {
+			(int)ScrollType::kNinja,
+			(int)ScrollType::kSprinter,
+			(int)ScrollType::kWeaponMaster,
+			(int)ScrollType::kFlameMaster,
+			(int)ScrollType::kAcidMaster,
+			(int)ScrollType::kElectricMaster
+		};*/
+
 		for (int i = 0; i < kChestCount; ++i)
 		{
 			Object* chest = model_infos_[12]->GetInstance();
@@ -568,7 +605,7 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 			//스크롤 추가
 			auto chest_component = new ChestComponent(chest, this);
 			//박스당 1개 사용
-			auto scroll_model = FindModelInfo("Scroll_" + std::to_string(scroll_index[0]));
+			auto scroll_model = FindModelInfo("Scroll_" + std::to_string(scroll_index[i]));
 			chest_component->set_scroll_model(scroll_model);
 			chest->AddComponent(chest_component);
 
@@ -608,6 +645,7 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 		sound_comp->Load("reload", "Resource/Fmod/sound/reload.wav", false);
 		sound_comp->Load("grunt", "Resource/Fmod/sound/grunt.wav", false);
 		sound_comp->Load("hit", "Resource/Fmod/sound/hit.wav", false);
+		sound_comp->Load("lazer", "Resource/Fmod/sound/lazer.wav", false);
 		sound_object->AddComponent(sound_comp);
 		sounds_.push_back(sound_object);
 		AddObject(sound_object);
@@ -1234,6 +1272,45 @@ void BaseScene::CreatePlayerUI()
 			});
 		star_icon->AddComponent(progress_bar);
 		AddObject(star_icon);
+	}
+
+	//Create Dash
+	{
+		Object* dash_icon = new Object();
+		Object* dash_icon_background = new Object();
+		dash_icon->AddChild(dash_icon_background);
+
+		// 배경 설정 (dash_background.dds)
+		dash_icon_background->set_name("Dash_Icon_Background");
+		auto dash_background_material = Scene::FindMaterial("Dash_Background", materials_);
+		auto dash_mesh = Scene::FindMesh("Dash", meshes_); // Star와 동일 크기 mesh 재사용
+		auto dash_back_comp = new UiMeshComponent(dash_icon_background, dash_mesh, dash_background_material, this);
+		dash_back_comp->set_is_static(true);
+		dash_back_comp->set_ui_layer(UiLayer::kOne);
+		dash_icon_background->AddComponent(dash_back_comp);
+
+		// 전면 설정 (dash.dds)
+		dash_icon->set_name("Dash_Icon");
+		auto dash_material = Scene::FindMaterial("Dash", materials_);
+		auto dash_comp = new UiMeshComponent(dash_icon, dash_mesh, dash_material, this);
+		dash_comp->set_is_static(true);
+		dash_icon->AddComponent(dash_comp);
+
+		// ProgressBarComponent
+		auto progress_bar = new ProgressBarComponent(dash_icon);
+		progress_bar->set_type(UiType::kProgressBarY); // 위에서 아래로 차오르게
+		progress_bar->set_view(player_);
+		progress_bar->set_get_max_value_func([](Object* object) -> float {
+			auto player_component = Object::GetComponent<PlayerComponent>(object);
+			return player_component->dash_max_gage();
+			});
+		progress_bar->set_get_current_value_func([](Object* object) -> float {
+			auto player_component = Object::GetComponent<PlayerComponent>(object);
+			return player_component->dash_gage();
+			});
+		dash_icon->AddComponent(progress_bar);
+
+		AddObject(dash_icon);
 	}
 
 	//Create Player Hp, Shield Bar
@@ -2359,7 +2436,8 @@ void BaseScene::CheckRayHitEnemy(const XMFLOAT3& ray_origin, const XMFLOAT3& ray
 			std::vector<int> drop_weights = { 15, 10, 7, 5, 3, 1 }; // 전체 합 = 41
 
 			// 드랍할지 말지: 41% 확률로 총기 드랍, 나머지 59%는 아무것도 안 떨어짐
-			if (rand() % 100 >= 41) return; // 59% 확률로 드랍 안 함
+			std::uniform_int_distribution<int> drop_chance_dist(0, 99);
+			if (drop_chance_dist(kRandomGenerator) >= 41) return; // 59% 확률로 드랍 안 함
 
 			// 랜덤 엔진 및 분포 생성
 			std::discrete_distribution<> dist(drop_weights.begin(), drop_weights.end());
@@ -2383,11 +2461,14 @@ void BaseScene::CheckRayHitEnemy(const XMFLOAT3& ray_origin, const XMFLOAT3& ray
 			std::string gun_ui_name = "Gun_UI_" + dropped_name.substr(dropped_name.find('_') + 1); // "Classic", "Sherif" 등
 
 			// 랜덤 강화, 속성
-			int upgrade = rand() % 4;
+			std::vector<int> upgrade_weights = { 50, 25, 15, 10 };
+			std::discrete_distribution<int> upgrade_dist(upgrade_weights.begin(), upgrade_weights.end());
+			int upgrade = upgrade_dist(kRandomGenerator);
 			dropped_gun_component->set_upgrade(upgrade);
 
 			// [2] 속성 타입: 0 = Fire, 1 = Electric, 2 = Poison
-			int element_random = rand() % 3;
+			std::uniform_int_distribution<int> element_dist(0, 2);
+			int element_random = element_dist(kRandomGenerator);
 			ElementType element = static_cast<ElementType>(element_random);
 			dropped_gun_component->set_element(element);
 
@@ -2556,7 +2637,8 @@ void BaseScene::CheckObjectHitFlamethrow(Object* object)
 						std::vector<int> drop_weights = { 15, 10, 7, 5, 3, 1 }; // 전체 합 = 41
 
 						// 드랍할지 말지: 41% 확률로 총기 드랍, 나머지 59%는 아무것도 안 떨어짐
-						if (rand() % 100 >= 41) return; // 59% 확률로 드랍 안 함
+						std::uniform_int_distribution<int> drop_chance_dist(0, 99);
+						if (drop_chance_dist(kRandomGenerator) >= 41) return; // 59% 확률로 드랍 안 함
 
 						// 랜덤 엔진 및 분포 생성
 						std::discrete_distribution<> dist(drop_weights.begin(), drop_weights.end());
@@ -2574,22 +2656,20 @@ void BaseScene::CheckObjectHitFlamethrow(Object* object)
 						auto box_comp = new BoxColliderComponent(dropped_gun, gun_bb);
 						dropped_gun->AddComponent(box_comp);
 
-						// UI
-						/*Object* ui_texture = FindModelInfo("Gun_UI")->GetInstance();
-						ui_texture->set_local_position({ 0.0f, 0.5f, 0.1f });
-						dropped_gun->AddChild(ui_texture);*/
-
 						std::string dropped_name = dropped_gun->name();  // 예: "Dropped_Classic"
 
 						GunComponent* dropped_gun_component = Object::GetComponent<GunComponent>(dropped_gun);
 						std::string gun_ui_name = "Gun_UI_" + dropped_name.substr(dropped_name.find('_') + 1); // "Classic", "Sherif" 등
 
 						// 랜덤 강화, 속성
-						int upgrade = rand() % 4;
+						std::vector<int> upgrade_weights = { 50, 25, 15, 10 };
+						std::discrete_distribution<int> upgrade_dist(upgrade_weights.begin(), upgrade_weights.end());
+						int upgrade = upgrade_dist(kRandomGenerator);
 						dropped_gun_component->set_upgrade(upgrade);
 
 						// [2] 속성 타입: 0 = Fire, 1 = Electric, 2 = Poison
-						int element_random = rand() % 3;
+						std::uniform_int_distribution<int> element_dist(0, 2);
+						int element_random = element_dist(kRandomGenerator);
 						ElementType element = static_cast<ElementType>(element_random);
 						dropped_gun_component->set_element(element);
 
