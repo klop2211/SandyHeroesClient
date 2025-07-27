@@ -25,6 +25,14 @@ Component* PlayerComponent::GetCopy()
 
 void PlayerComponent::Update(float elapsed_time)
 {
+	if (hp_ <= 0.f)
+	{
+		auto base_scene = dynamic_cast<BaseScene*>(scene_);
+		if (base_scene && !scene_->FindObject("DieUI")) // 중복 방지
+		{
+			base_scene->ShowDieUI();
+		}
+	}
 	if (HasScroll(ScrollType::kNinja))
 	{
 		dash_gage_ += elapsed_time * 1.15f;

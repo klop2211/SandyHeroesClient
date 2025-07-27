@@ -70,6 +70,7 @@ public:
 
 	void ShowSandyHeroesUI();
 	void ShowIntroUI();
+	void ShowDieUI();
 
 	//getter
 	int stage_clear_num();
