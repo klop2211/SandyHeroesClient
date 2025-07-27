@@ -684,6 +684,15 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 		FMODSoundManager::Instance().PlaySound("bgm", true, 0.3f); // loop=true, volume 조절 가능
 	}
 
+	// 스테이지3 클리어 트리거 박스 생성
+	{
+		XMFLOAT3 box_pos = { 63.25f, 0.98f, -113.28f };
+		XMFLOAT3 box_scale = { 7.1f, 1.9f, 5.3f };
+		stage3_clear_box_.Center = box_pos;
+		stage3_clear_box_.Extents = box_scale;
+		stage3_clear_box_.Orientation = XMFLOAT4(0.f, 0.f, 0.f, 1.f);
+	}
+
 	//Create Skybox
 	Object* skybox = new Object();
 	skybox->AddComponent(new MeshComponent(skybox, 
@@ -2039,10 +2048,15 @@ void BaseScene::UpdateStageClear()
 		if (catch_monster_num_ < 14)
 			return;
 		break;
-	case 3:		
-		if (catch_monster_num_ < 1)
+	case 3:
+	{
+		auto player_collider = Object::GetComponentInChildren<MeshColliderComponent>(player_);
+		if (!player_collider) return;
+
+		BoundingOrientedBox player_box = player_collider->GetWorldOBB();
+		if (!stage3_clear_box_.Intersects(player_box))
 			return;
-		//TODO: 스테이지 3번은 투명발판을 밟아 다음 스테이지로 진행해야 클리어
+	}
 		break;
 	case 4:
 		if (catch_monster_num_ < 1)

@@ -111,6 +111,8 @@ private:
 		}
 	};
 
+	BoundingOrientedBox stage3_clear_box_;
+
 	std::list<WallCheckObject> wall_check_object_list_;	//벽 체크가 필요한 객체들의 리스트(플레이어, monster, NPC)
 
 	std::array<std::list<GroundColliderComponent*>, 8> stage_ground_collider_list_;	//스테이지 바닥 콜라이더 리스트
