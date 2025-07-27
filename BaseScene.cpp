@@ -56,6 +56,7 @@
 #include "BillboardMeshComponent.h"
 #include "SuperDragonAnimationState.h"
 #include "FadeInUIComponent.h"
+#include "FadeOutUIComponent.h"
 
 
 void BaseScene::Initialize(ID3D12Device* device, ID3D12GraphicsCommandList* command_list, 
@@ -466,6 +467,16 @@ void BaseScene::BuildMaterial(ID3D12Device* device, ID3D12GraphicsCommandList* c
 		materials_.emplace_back().reset(sandy_heroes_mat);
 	}
 
+	// Intro UI용 Material
+	{
+		Material* intro_material = new Material("Intro", (int)ShaderType::kUI);
+		textures_.push_back(std::make_unique<Texture>());
+		textures_.back()->name = "Intro";
+		textures_.back()->type = TextureType::kAlbedoMap;
+		intro_material->AddTexture(textures_.back().get());
+		materials_.emplace_back().reset(intro_material);
+	}
+
 	Scene::BuildMaterial(device, command_list);
 }
 
@@ -564,7 +575,8 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 
 	CreateMonsterSpawner();
 
-	CreatePlayerUI();
+	// 인트로가 끝나면 나오도록 함
+	//CreatePlayerUI();
 
 	//Set Spawn Boxs
 	constexpr int kSpawnBoxCount = 5;
@@ -748,6 +760,8 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 			}
 		}
 	}
+
+	ShowIntroUI();
 
 
 	Scene::UpdateObjectWorldMatrix();
@@ -1842,6 +1856,16 @@ void BaseScene::Update(float elapsed_time)
 	for (auto& cut_scene_track : cut_scene_tracks_)
 	{
 		cut_scene_track.Run(elapsed_time);
+	}
+
+	if (intro_ui_ready_ && !has_created_player_ui_)
+	{
+		Object* intro_ui = FindObject("IntroUI");
+		if (!intro_ui) // UI가 완전히 사라졌다면
+		{
+			CreatePlayerUI(); // ✨ UI 등장
+			has_created_player_ui_ = true;
+		}
 	}
 
 	Scene::Update(elapsed_time);
@@ -3033,6 +3057,32 @@ void BaseScene::ShowSandyHeroesUI()
 	sandy_ui->AddComponent(new FadeInUIComponent(sandy_ui, 5.0f));
 
 	AddObject(sandy_ui);
+}
+
+void BaseScene::ShowIntroUI()
+{
+	Object* intro_ui = new Object();
+	intro_ui->set_name("IntroUI");
+
+	Mesh* mesh = FindMesh("SandyHeroesMesh", meshes_);
+	Material* material = FindMaterial("Intro", materials_);
+
+	auto ui_comp = new UiMeshComponent(intro_ui, mesh, material, this);
+	ui_comp->set_is_static(true);
+	ui_comp->set_ui_layer(UiLayer::kTwo); // 가장 앞에!
+
+	ui_comp->set_alpha(1.0f); // 완전 불투명
+	intro_ui->AddComponent(ui_comp);
+
+	// 3초 동안 페이드 아웃
+	auto fade_out = new FadeOutUIComponent(intro_ui, 3.0f);
+	intro_ui->AddComponent(fade_out);
+
+	AddObject(intro_ui);
+
+	// UI 사라지고 나면 CreatePlayerUI() 호출
+	
+	intro_ui_ready_ = true; // UI 사라졌는지 체크용
 }
 
 

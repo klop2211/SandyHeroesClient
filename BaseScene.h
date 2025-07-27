@@ -69,6 +69,7 @@ public:
 	void CheckRazerHitEnemy(RazerComponent* razer_component, MonsterComponent* monster_component);
 
 	void ShowSandyHeroesUI();
+	void ShowIntroUI();
 
 	//getter
 	int stage_clear_num();
@@ -95,6 +96,10 @@ private:
 	
 	//현재 스테이지의 스포터를 활성화 했는가?
 	bool is_activate_spawner_ = false;
+
+	// 인트로 사라지고 나서 CreatePlayerUI 호출용 변수
+	bool intro_ui_ready_{ false };
+	bool has_created_player_ui_{ false };
 
 	struct WallCheckObject
 	{

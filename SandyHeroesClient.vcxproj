@@ -164,6 +164,7 @@
     <ClInclude Include="DebugShader.h" />
     <ClInclude Include="DescriptorManager.h" />
     <ClInclude Include="FadeInUIComponent.h" />
+    <ClInclude Include="FadeOutUIComponent.h" />
     <ClInclude Include="FMODSoundManager.h" />
     <ClInclude Include="FPSControllerComponent.h" />
     <ClInclude Include="FrameResource.h" />
@@ -251,6 +252,7 @@
     <ClCompile Include="DebugShader.cpp" />
     <ClCompile Include="DescriptorManager.cpp" />
     <ClCompile Include="FadeInUIComponent.cpp" />
+    <ClCompile Include="FadeOutUIComponent.cpp" />
     <ClCompile Include="FMODSoundManager.cpp" />
     <ClCompile Include="FPSControllerComponent.cpp" />
     <ClCompile Include="FrameResourceManager.cpp" />
