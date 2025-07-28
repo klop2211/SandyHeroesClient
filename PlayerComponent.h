@@ -43,6 +43,7 @@ public:
 	float main_skill_max_gage() const { return main_skill_max_gage_; }
 	float dash_gage() const { return dash_gage_; }
 	float dash_max_gage() const { return dash_max_gage_; }
+	bool is_dead() const { return hp_ <= 0.0f; }
 
 	//setter
 	void set_scene(Scene* scene) { scene_ = scene; }	//플레이어가 속한 씬 설정

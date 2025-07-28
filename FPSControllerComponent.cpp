@@ -38,6 +38,11 @@ Component* FPSControllerComponent::GetCopy()
 
 bool FPSControllerComponent::ProcessInput(UINT message_id, WPARAM w_param, LPARAM l_param, float message_time)
 {
+	auto player = Object::GetComponent<PlayerComponent>(owner_);
+	if (player && player->is_dead())
+	{
+		return false; // 죽었으면 이동, 회전, 점프 등 무시
+	}
 	switch (message_id)
 	{
 	case WM_MOUSEMOVE:
@@ -212,6 +217,12 @@ bool FPSControllerComponent::ProcessInput(UINT message_id, WPARAM w_param, LPARA
 
 void FPSControllerComponent::Update(float elapsed_time)
 {
+	auto player = Object::GetComponent<PlayerComponent>(owner_);
+	if (player && player->is_dead())
+	{
+		return; // 죽었으면 이동, 회전, 점프 등 무시
+	}
+
 	const auto& movement = Object::GetComponent<MovementComponent>(owner_);
 
 	XMFLOAT3 velocity{ 0,0,0 };

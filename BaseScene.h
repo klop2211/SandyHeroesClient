@@ -70,6 +70,7 @@ public:
 
 	void ShowSandyHeroesUI();
 	void ShowIntroUI();
+	void ShowDieUI();
 
 	//getter
 	int stage_clear_num();
@@ -110,6 +111,8 @@ private:
 			: object(obj), movement(move) {
 		}
 	};
+
+	BoundingOrientedBox stage3_clear_box_;
 
 	std::list<WallCheckObject> wall_check_object_list_;	//벽 체크가 필요한 객체들의 리스트(플레이어, monster, NPC)
 

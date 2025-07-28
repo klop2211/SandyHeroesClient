@@ -477,6 +477,16 @@ void BaseScene::BuildMaterial(ID3D12Device* device, ID3D12GraphicsCommandList* c
 		materials_.emplace_back().reset(intro_material);
 	}
 
+	// Die UI용 Material
+	{
+		Material* die_material = new Material("Die", (int)ShaderType::kUI);
+		textures_.push_back(std::make_unique<Texture>());
+		textures_.back()->name = "Die";
+		textures_.back()->type = TextureType::kAlbedoMap;
+		die_material->AddTexture(textures_.back().get());
+		materials_.emplace_back().reset(die_material);
+	}
+
 	Scene::BuildMaterial(device, command_list);
 }
 
@@ -682,6 +692,15 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 		AddObject(sound_object);
 
 		FMODSoundManager::Instance().PlaySound("bgm", true, 0.3f); // loop=true, volume 조절 가능
+	}
+
+	// 스테이지3 클리어 트리거 박스 생성
+	{
+		XMFLOAT3 box_pos = { 63.25f, 0.98f, -113.28f };
+		XMFLOAT3 box_scale = { 7.1f, 1.9f, 5.3f };
+		stage3_clear_box_.Center = box_pos;
+		stage3_clear_box_.Extents = box_scale;
+		stage3_clear_box_.Orientation = XMFLOAT4(0.f, 0.f, 0.f, 1.f);
 	}
 
 	//Create Skybox
@@ -1627,6 +1646,34 @@ void BaseScene::CreateMonsterSpawner()
 		AddObject(spawner);
 		stage_monster_spawner_list_[3].push_back(spawner_component);
 	}
+
+	//Stage 5
+	/*{
+		spawner = create_spawner(hit_dragon_spawner, hit_spawner_id, XMFLOAT3{ 109.0f, 0.8f, -160.0f }, 3, 3.f, 5.f);
+		spawner_component = Object::GetComponent<SpawnerComponent>(spawner);
+		AddObject(spawner);
+		stage_monster_spawner_list_[4].push_back(spawner_component);
+
+		spawner = create_spawner(hit_dragon_spawner, hit_spawner_id, XMFLOAT3{ 114.0f, 2.7f, -169.0f }, 3, 4.f, 4.f);
+		spawner_component = Object::GetComponent<SpawnerComponent>(spawner);
+		AddObject(spawner);
+		stage_monster_spawner_list_[4].push_back(spawner_component);
+
+		spawner = create_spawner(hit_dragon_spawner, hit_spawner_id, XMFLOAT3{ 105.5f, 2.4f, -149.5f }, 3, 5.f, 3.f);
+		spawner_component = Object::GetComponent<SpawnerComponent>(spawner);
+		AddObject(spawner);
+		stage_monster_spawner_list_[4].push_back(spawner_component);
+
+		spawner = create_spawner(bomb_dragon_spawner, bomb_spawner_id, XMFLOAT3{ 115.54f, 2.73f, -158.6f }, 1, 9.f, 5.f);
+		spawner_component = Object::GetComponent<SpawnerComponent>(spawner);
+		AddObject(spawner);
+		stage_monster_spawner_list_[4].push_back(spawner_component);
+
+		spawner = create_spawner(bomb_dragon_spawner, bomb_spawner_id, XMFLOAT3{ 115.54f, 2.73f, -167.0f }, 1, 11.f, 5.f);
+		spawner_component = Object::GetComponent<SpawnerComponent>(spawner);
+		AddObject(spawner);
+		stage_monster_spawner_list_[4].push_back(spawner_component);
+	}*/
 }
 
 void BaseScene::ActivateStageMonsterSpawner(int stage_num)
@@ -1652,6 +1699,13 @@ bool BaseScene::ProcessInput(UINT id, WPARAM w_param, LPARAM l_param, float time
 				return true;
 		}
 	}
+	//if (player_)
+	//{
+	//	auto player_comp = Object::GetComponent<PlayerComponent>(player_);
+	//	if (player_comp && player_comp->is_dead())
+	//		return false; // 총 안 쏨
+	//}
+
 	std::vector<std::string> guns{ "Classic", "Sherif", "Specter", "Vandal", "Odin", "Flamethrower" };
 	switch (id)
 	{
@@ -1818,6 +1872,11 @@ bool BaseScene::ProcessInput(UINT id, WPARAM w_param, LPARAM l_param, float time
 		if (w_param == 'U')
 		{
 			ShowSandyHeroesUI();
+			return true;
+		}
+		if (w_param == 'I')
+		{
+			ShowDieUI();
 			return true;
 		}
 		if (w_param == VK_OEM_COMMA) // ,
@@ -2039,17 +2098,22 @@ void BaseScene::UpdateStageClear()
 		if (catch_monster_num_ < 14)
 			return;
 		break;
-	case 3:		
-		if (catch_monster_num_ < 1)
+	case 3:
+	{
+		auto player_collider = Object::GetComponentInChildren<MeshColliderComponent>(player_);
+		if (!player_collider) return;
+
+		BoundingOrientedBox player_box = player_collider->GetWorldOBB();
+		if (!stage3_clear_box_.Intersects(player_box))
 			return;
-		//TODO: 스테이지 3번은 투명발판을 밟아 다음 스테이지로 진행해야 클리어
+	}
 		break;
 	case 4:
 		if (catch_monster_num_ < 1)
 			return;
 		break;
 	case 5:
-		if (catch_monster_num_ < 10)
+		if (catch_monster_num_ < 11)
 			return;
 		break;
 	case 6:
@@ -2071,6 +2135,7 @@ void BaseScene::UpdateStageClear()
 	case 7:
 		// TODO: 게임클리어!
 		if (catch_monster_num_ < 1)
+			ShowSandyHeroesUI();
 			return;
 		break;
 	default:
@@ -2982,6 +3047,8 @@ void BaseScene::CheckSpawnBoxHitPlayer()
 {
 	if (stage_clear_num_ < 1)
 		return;
+	/*if (stage_clear_num_ > 5)
+		return;*/
 	const auto& const spawn_box = spawn_boxs_[stage_clear_num_ - 1];
 	auto& player_meshes = Object::GetComponentsInChildren<MeshComponent>(player_);
 	for (const auto& mesh : player_meshes)
@@ -3083,6 +3150,31 @@ void BaseScene::ShowIntroUI()
 	// UI 사라지고 나면 CreatePlayerUI() 호출
 	
 	intro_ui_ready_ = true; // UI 사라졌는지 체크용
+}
+
+void BaseScene::ShowDieUI()
+{
+	if(FindObject("DieUI")) return;
+
+	// UI off
+	//shaders_[(int)ShaderType::kUI]->set_is_render(false);
+	//text_renderer_->set_is_render(false);
+
+	// Die UI 생성
+	Object* die_ui = new Object();
+	die_ui->set_name("DieUI");
+
+	Mesh* mesh = FindMesh("SandyHeroesMesh", meshes_);
+	Material* material = FindMaterial("Die", materials_);
+
+	auto ui_comp = new UiMeshComponent(die_ui, mesh, material, this);
+	ui_comp->set_is_static(true);
+	ui_comp->set_ui_layer(UiLayer::kOne);
+	ui_comp->set_alpha(0.0f);
+	die_ui->AddComponent(ui_comp);
+	die_ui->AddComponent(new FadeInUIComponent(die_ui, 3.0f));
+
+	AddObject(die_ui);
 }
 
 
