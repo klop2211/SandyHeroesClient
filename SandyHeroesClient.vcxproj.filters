@@ -713,9 +713,6 @@
     <ClCompile Include="SoundComponent.cpp">
       <Filter>Sound</Filter>
     </ClCompile>
-    <ClCompile Include="발표까지D-1.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
     <ClCompile Include="SuperDragonAnimationState.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>

@@ -490,13 +490,13 @@ void BaseScene::BuildObject(ID3D12Device* device, ID3D12GraphicsCommandList* com
 	ShowCursor(false);
 
 	//SuperDragon Model Test
-	{
-		auto dragon = model_infos_[14]->GetInstance();
-		dragon->set_is_movable(true);
-		auto animator = Object::GetComponent<AnimatorComponent>(dragon);
-		animator->set_animation_state(new SuperDragonAnimationState());
-		AddObject(dragon);
-	}
+	//{
+	//	auto dragon = model_infos_[14]->GetInstance();
+	//	dragon->set_is_movable(true);
+	//	auto animator = Object::GetComponent<AnimatorComponent>(dragon);
+	//	animator->set_animation_state(new SuperDragonAnimationState());
+	//	AddObject(dragon);
+	//}
 
 
 	//플레이어 생성
