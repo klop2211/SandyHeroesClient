@@ -145,6 +145,7 @@
     <ClInclude Include="AnimationState.h" />
     <ClInclude Include="AnimationTrack.h" />
     <ClInclude Include="AnimatorComponent.h" />
+    <ClInclude Include="AStar.h" />
     <ClInclude Include="BaseScene.h" />
     <ClInclude Include="BillboardMeshComponent.h" />
     <ClInclude Include="BombDragonAnimationState.h" />
@@ -234,6 +235,7 @@
     <ClCompile Include="AnimationState.cpp" />
     <ClCompile Include="AnimationTrack.cpp" />
     <ClCompile Include="AnimatorComponent.cpp" />
+    <ClCompile Include="AStar.cpp" />
     <ClCompile Include="BaseScene.cpp" />
     <ClCompile Include="BillboardMeshComponent.cpp" />
     <ClCompile Include="BombDragonAnimationState.cpp" />

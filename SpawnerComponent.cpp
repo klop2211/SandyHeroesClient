@@ -106,6 +106,8 @@ void SpawnerComponent::ForceSpawn()
 	{
 		monster_component->set_scene(scene_);
 	}
+
 	new_object->set_position_vector(owner_->world_position_vector());
+
 	scene_->AddObject(new_object);
 }

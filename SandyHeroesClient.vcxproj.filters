@@ -211,6 +211,9 @@
     <Filter Include="7.Component\FadeInOutUI">
       <UniqueIdentifier>{b89ce26d-7ed5-4342-afde-bdd9af4266fd}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Astar">
+      <UniqueIdentifier>{9bb0e01f-c09c-49b1-ae14-ebb1ee8145ea}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="targetver.h">
@@ -474,6 +477,9 @@
     <ClInclude Include="FadeOutUIComponent.h">
       <Filter>7.Component\FadeInOutUI</Filter>
     </ClInclude>
+    <ClInclude Include="AStar.h">
+      <Filter>Astar</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="SandyHeroesClient.cpp">
@@ -724,6 +730,9 @@
     </ClCompile>
     <ClCompile Include="FadeOutUIComponent.cpp">
       <Filter>7.Component\FadeInOutUI</Filter>
+    </ClCompile>
+    <ClCompile Include="AStar.cpp">
+      <Filter>Astar</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

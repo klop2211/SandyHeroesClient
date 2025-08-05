@@ -57,6 +57,7 @@
 #include "SuperDragonAnimationState.h"
 #include "FadeInUIComponent.h"
 #include "FadeOutUIComponent.h"
+#include "AStar.h"
 
 
 void BaseScene::Initialize(ID3D12Device* device, ID3D12GraphicsCommandList* command_list, 
@@ -486,6 +487,8 @@ void BaseScene::BuildMaterial(ID3D12Device* device, ID3D12GraphicsCommandList* c
 		die_material->AddTexture(textures_.back().get());
 		materials_.emplace_back().reset(die_material);
 	}
+
+	a_star::ConnectNodes(kNodeConnectors);
 
 	Scene::BuildMaterial(device, command_list);
 }

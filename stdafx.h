@@ -32,6 +32,8 @@
 #include <random>
 #include <algorithm>
 #include <ranges>
+#include <queue>
+#include <unordered_set>
 
 // DirectX 관련 헤더 파일 및 선언문
 #include <wrl.h>
