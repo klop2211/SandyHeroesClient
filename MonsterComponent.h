@@ -1,6 +1,7 @@
 #pragma once
 #include "Component.h"
 #include "BaseScene.h"
+#include "AStar.h"
 
 enum class MonsterType { kNormal, kBoss, kMiniBoss };
 enum class StatusEffectType { None, Fire, Poison, Electric };
@@ -83,5 +84,11 @@ private:
 	std::unordered_map<StatusEffectType, StatusEffect> status_effects_; //다중 속성 효과 적용
 
 	//TODO: 몬스터를 움직일 AI 추가
+	// 멤버 변수
+	std::vector<Node*> current_path_;
+	int current_path_index_ = 1;
+	float path_recalc_timer_ = 0.f;
+	float path_recalc_interval_ = 1.0f; // 1초에 한 번 재계산
+	bool is_following_direct_ = false;
 };
 

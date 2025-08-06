@@ -30,7 +30,7 @@ void a_star::ConnectNodes(const std::vector<NodeConnector>& node_connectors)
     }
     OutputDebugString(L"Complate Node Connect! \n");
 
-   /* for (int stage = 0; stage < 8; ++stage)
+    for (int stage = 0; stage < 8; ++stage)
     {
         int count = 0;
         for (const auto& node : kStageNodeBuffers[stage])
@@ -41,7 +41,7 @@ void a_star::ConnectNodes(const std::vector<NodeConnector>& node_connectors)
             ++count;
         }
         OutputDebugString((L"[NodeDump] Stage " + std::to_wstring(stage) + L" Total Nodes: " + std::to_wstring(count) + L"\n").c_str());
-    }*/
+    }
 
 }
 
