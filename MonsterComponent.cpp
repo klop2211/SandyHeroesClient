@@ -62,140 +62,86 @@ void MonsterComponent::Update(float elapsed_time)
 	//EX) ai->Update(owner_, elapsed_time);
     if (target_)
     {
-		//auto movement = Object::GetComponentInChildren<MovementComponent>(owner_);
-		//if (movement)
-		//{
-		//	XMFLOAT3 look = owner_->look_vector();
-  //          look.y = 0.f;
-		//	look = xmath_util_float3::Normalize(look);
-		//	XMFLOAT3 direction = target_->world_position_vector() - owner_->world_position_vector();
-		//	direction.y = 0.f;
-		//	direction = xmath_util_float3::Normalize(direction);
-		//	float angle = xmath_util_float3::AngleBetween(look, direction);
-  //          if (angle > XM_PI / 180.f * 5.f)
-  //          {
-  //              //회전 방향 연산
-		//		XMFLOAT3 cross = xmath_util_float3::CrossProduct(look, direction);
-		//		if (cross.y < 0)
-		//		{
-		//			angle = -angle;
-		//		}
-		//		angle = XMConvertToDegrees(angle);
-		//		owner_->Rotate(0.f, angle, 0.f);
-  //          }
-  //          if (owner_->tag() == "Shot_Dragon")
-  //          {
-  //              auto animator = Object::GetComponent<AnimatorComponent>(owner_);
-  //              auto animation_state = animator->animation_state();
-  //              animation_state->ChangeAnimationTrack((int)ShotDragonAnimationTrack::kAttack, owner_, animator);
-  //              animation_state->set_animation_loop_type(0); // Loop
-
-  //              return;
-  //          }
-  //          if (owner_->tag() == "Strong_Dragon")
-  //          {
-  //              return;
-  //          }
-
-		//	movement->MoveXZ(direction.x, direction.z, 5.f);
-  //          if (!electric_slow_applied_)
-  //          {
-  //              movement->set_max_speed_xz(3.5f);
-  //          }
-		//}
-
-
-
-        BaseScene* base_scene = dynamic_cast<BaseScene*>(scene_);
-        if (!base_scene) return;
-
-        auto movement = Object::GetComponentInChildren<MovementComponent>(owner_);
-        if (!movement) return;
-         
-        // 현재 스테이지에서 사용 가능한 노드 리스트
-        const int stage_index = base_scene->stage_clear_num();
-        const auto& node_list = kStageNodeBuffers[stage_index];
-        if (node_list.empty()) return;
-
-        // 현재 위치와 목표 위치
-        const XMFLOAT3 monster_pos = owner_->world_position_vector();
-        const XMFLOAT3 player_pos = target_->world_position_vector();
-
-        // 가장 가까운 노드 찾기
-        auto HorizontalDistance = [](const XMFLOAT3& a, const XMFLOAT3& b) -> float {
-            float dx = a.x - b.x;
-            float dz = a.z - b.z;
-            return sqrtf(dx * dx + dz * dz);
-            };
-
-        auto FindClosestNode = [&](const XMFLOAT3& pos, const std::list<Node>& nodes) -> Node*
+		auto movement = Object::GetComponentInChildren<MovementComponent>(owner_);
+		if (movement)
+		{
+			XMFLOAT3 look = owner_->look_vector();
+            look.y = 0.f;
+			look = xmath_util_float3::Normalize(look);
+            auto base_scene = dynamic_cast<BaseScene*>(scene_);
+            const auto& current_stage_node_buffer = kStageNodeBuffers[base_scene->stage_clear_num()];
+            Node* start_node = nullptr;
+            Node* goal_node = nullptr;
+            float start_min_distance_sq = FLT_MAX;
+            float goal_min_distance_sq = FLT_MAX;
+            for (const auto& node : current_stage_node_buffer)
             {
-                float min_dist = FLT_MAX;
-                Node* closest = nullptr;
-                for (auto& node : nodes)
+                float start_distance_sq = xmath_util_float3::LengthSq(node.position - owner_->world_position_vector());
+                if (start_distance_sq < start_min_distance_sq)
                 {
-                    float dist = HorizontalDistance(node.position, pos);
-
-                    if (dist < min_dist)
-                    {
-                        min_dist = dist;
-                        closest = const_cast<Node*>(&node);
-                    }
+                    start_min_distance_sq = start_distance_sq;
+                    start_node = const_cast<Node*>(&node);
                 }
-
-                return closest;
-            };
-
-        path_recalc_timer_ += elapsed_time;
-        if (path_recalc_timer_ >= path_recalc_interval_)
-        {
-            path_recalc_timer_ = 0.f;
-
-            Node* start_node = FindClosestNode(monster_pos, node_list);
-            Node* goal_node = FindClosestNode(player_pos, node_list);
-            if (!start_node || !goal_node) return;
-
-        // 경로 탐색
-            auto path = a_star::AStar(start_node, goal_node);
-            //if (path.size() < 2) return; // path[1]이 없으면 이동 불필요
-            if (path.size() >= 2)
-            {
-                current_path_ = path;
-                current_path_index_ = 1; // path[0]은 start_node
+                float target_distance_sq = xmath_util_float3::LengthSq(node.position - target_->world_position_vector());
+                if (target_distance_sq < goal_min_distance_sq)
+                {
+                    goal_min_distance_sq = target_distance_sq;
+                    goal_node = const_cast<Node*>(&node);
+                }
             }
-        }
 
-        //// 다음 목적지로 이동
-        //XMFLOAT3 next_point = path[1]->position;
-        //XMFLOAT3 dir = next_point - monster_pos;
-        //dir.y = 0.f;
-        //dir = xmath_util_float3::Normalize(dir);
+            const auto& path = a_star::AStar(start_node, goal_node);
 
-        //movement->MoveXZ(dir.x, dir.z, 5.f); // 속도는 임의 지정
+            XMFLOAT3 direction;
+            if (path.size() < 2)
+            {
+                direction = target_->world_position_vector() - owner_->world_position_vector();
+                direction.y = 0.f;
+                direction = xmath_util_float3::Normalize(direction);
+            }
+            else
+            {
+                // A* 경로를 따라 이동
+                XMFLOAT3 next_position = path[1]->position; // 다음 노드의 위치
+                direction = next_position - owner_->world_position_vector();
+                direction.y = 0.f;
+                direction = xmath_util_float3::Normalize(direction);
+            }
 
-        // 경로 따라가기
-        if (current_path_.size() < 2 || current_path_index_ >= current_path_.size())
-            return;
+            float angle = xmath_util_float3::AngleBetween(look, direction);
+            if (angle > XM_PI / 180.f * 5.f)
+            {
+                //회전 방향 연산
+				XMFLOAT3 cross = xmath_util_float3::CrossProduct(look, direction);
+				if (cross.y < 0)
+				{
+					angle = -angle;
+				}
+				angle = XMConvertToDegrees(angle);
+				owner_->Rotate(0.f, angle, 0.f);
+            }
+            if (owner_->tag() == "Shot_Dragon")
+            {
+                auto animator = Object::GetComponent<AnimatorComponent>(owner_);
+                auto animation_state = animator->animation_state();
+                animation_state->ChangeAnimationTrack((int)ShotDragonAnimationTrack::kAttack, owner_, animator);
+                animation_state->set_animation_loop_type(0); // Loop
 
-        XMFLOAT3 target_pos = current_path_[current_path_index_]->position;
-        XMFLOAT3 dir = target_pos - monster_pos;
-        dir.y = 0.f;
+                return;
+            }
+            if (owner_->tag() == "Strong_Dragon")
+            {
+                return;
+            }
 
-        float distance = xmath_util_float3::Length(dir);
-        if (distance < 0.3f)
-        {
-            ++current_path_index_; // 다음 노드로
-            return;
-        }
+			movement->MoveXZ(direction.x, direction.z, 5.f);
+            if (!electric_slow_applied_)
+            {
+                movement->set_max_speed_xz(3.5f);
+            }
+		}
 
-        dir = xmath_util_float3::Normalize(dir);
-        movement->MoveXZ(dir.x, dir.z, 3.5f);
 	}
-
-
-
-
-
 
     // 상태이상 처리
     for (auto& [type, effect] : status_effects_)

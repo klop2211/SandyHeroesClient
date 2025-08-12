@@ -165,6 +165,13 @@ namespace xmath_util_float3
 		return r_value.x;
 	}
 
+	inline float LengthSq(const XMFLOAT3& vector)
+	{
+		XMFLOAT3 r_value;
+		XMStoreFloat3(&r_value, XMVector3LengthSq(XMLoadFloat3(&vector)));
+		return r_value.x;
+	}
+
 }
 
 namespace xmath_util_float4
