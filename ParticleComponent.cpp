@@ -150,6 +150,16 @@ void ParticleComponent::Update(float elapsed_time)
 	{
 		//TODO: Particle Movement Update.
 		XMVECTOR vPosition = XMLoadFloat3(&particles_[i].position_);
+
+		//TODO: Sphere면 중력 적용
+		{
+			if (shape_ == Sphere)
+			{
+				constexpr float GRAVITY_VALUE = -4.8f;
+				particle_data_[i].velocity_ = XMVectorLerp(particle_data_[i].velocity_, XMVectorSet(0.0f, GRAVITY_VALUE, 0.0f, 0.0f), elapsed_time);
+			}
+		}
+
 		vPosition += particle_data_[i].velocity_ * particle_data_[i].speed_ * elapsed_time;
 		XMStoreFloat3(&particles_[i].position_, vPosition);
 
